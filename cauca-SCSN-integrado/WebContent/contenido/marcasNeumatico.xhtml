@@ -1,0 +1,291 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Marcas Neumático</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Marcas de Neumáticos</h1>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+<!-- ······················································· BOTONERA ··············································· -->			
+			
+			<!-- Esta botonera hace una solicitud al servidor donde se activan las funciones que se van a ejecutar, esto se hace
+			a través de la clase ServiciosVentanaMarcaNeumatico y javascript recibe los parámetros, los cuales se usarán
+			para abrir la ventana corresppondiente según la operación requerida -->
+			
+			<!-- Etiqueta que define un formulario -->
+			<h:form id="formBotonera">
+			
+			<!-- Etiquetas que definen una serie de botones los cuales ejecutan funciones al presionarse -->
+				<p:commandButton id="btnNuevo" image="ui-icon-plusthick" onclick="ventanaRegistro.show()" update=":formNuevo:data" value="Nuevo"/>
+				<p:commandButton id="btnModificar" image="ui-icon-wrench" action="#{serviciosVentanaMarcaNeumatico.activarModificar}" update=":formModificar:dataMod" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Modificar" />
+				<p:commandButton id="btnEliminar" image="ui-icon-trash" action="#{serviciosVentanaMarcaNeumatico.activarEliminar}" update=":formEliminar:eliminar" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Eliminar"/>
+				<p:commandButton id="btnConsultar" image="ui-icon-search" action="#{serviciosVentanaMarcaNeumatico.activarConsultar}" update=":formConsulta:dataConsulta" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Consultar"/>
+			</h:form>
+			
+			<!-- Script que permite decidir que ventana de manipulacion de datos va a mostrar (M: Modificar, E: Eliminar, C: Consultar) -->
+			<script type="text/javascript">
+			
+				//Metodo que decide que funcion ejecutar dependiendo del contenido del atributo args.tarea
+		        function handleRequest(xhr, status, args) {
+		            if (args.ok) {
+		            	switch (args.tarea) {
+							case "M":
+								ventanaModificar.show();	//Se ejecuta la ventana modificar
+								break;
+							case "E":
+				                confirmacion.show();		//Se ejecuta la ventana eliminar
+								break;
+							case "C":
+								ventanaConsulta.show();		//Se ejecuta la ventana consultar
+								break;
+						}
+		            }else{
+		                errorSeleccion.show();
+		            }
+		        }
+		    </script>
+		    
+		    <!-- Etiqueta que define una ventana de mensaje en caso de que no se halla seleccionado ningun elemento de la tabla -->
+		   	<p:dialog header="Operación Negada" widgetVar="errorSeleccion"
+		   				showEffect="fade" hideEffect="blind" modal="true" appendToBody="true" closable="false" closeOnEscape="false">
+		   		<!-- Etiqueta que define un formulario simple con un boton de aceptar para ocultar la ventana -->
+		   		<h:form>
+		   			<h:panelGrid>
+		   				<f:facet name="header">
+		   					<br/>
+		   						Debe seleccionar un elemento
+		   					<br/>
+		   				</f:facet>
+		   			</h:panelGrid>
+		   			<p:separator/>
+		   			<p:commandButton id="aceptar" image="ui-icon-check" onclick="errorSeleccion.hide();" styleClass="botonVentana" title="Aceptar" type="buttom"/>
+		   		</h:form>
+		   	</p:dialog>
+		
+<!-- ······················································· TABLA ··············································· -->	
+
+			<!-- Esta es tabla contiene los registros de las Marcas de Neumáticos introducidas en la base de datos. 
+			Esta tabla permite organizar los registros por páginas y ofrece la funición de filtrar los registros
+			según la propiedad indicada. Además, permite hace la selección de un registro para manipularlo(Consultarlo, Modificarlo y Eliminarlo) -->
+
+			<!-- Etiqueta que define el formulario de la tabla con todos los datos de las Marcas de Neumático -->
+			<h:form id="formTabla">
+			
+				<!-- Etiqueta que define un panel que contendra la tabla con los datos de las Marcas de Neumático -->
+				<p:outputPanel id="tbMarcaNeumatico" style="width:100%;overflow:auto;">
+				
+					<!-- Etiqueta que define la tabla con los datos de los Marcas de Neumático -->
+					<p:dataTable id="marcaVehiculo" value="#{serviciosVentanaMarcaNeumatico.marcaNeumaticoDataModel}" var="marcaNeumatico" style="width:129%" scrollable="false" 
+                    				paginator="true" paginatorPosition="top" scrollHeight="450"
+                 				paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+					                rowsPerPageTemplate="5,10,15"
+					                emptyMessage="No se encontraron resultados" selectionMode="single" 
+									selection="#{serviciosVentanaMarcaNeumatico.marcaNeumaticoSeleccionada}" onRowSelectUpdate=":formModificar:dataMod">
+						
+						<!-- Etiqueta que define el contenido de la primera columna de la tabla, en la que iran los nombres de las Marcas de Neumático-->
+						<p:column filterBy="#{marcaNeumatico.nombre}" filterMatchMode="contains" >
+						
+							<!-- Etiqueta que define el titulo de la culumna -->
+							<f:facet name="header">
+						        <h:outputText value="Nombre" />
+						    </f:facet>
+						    
+						    <!-- Etiqueta que carga los datos del campo nombre -->
+							<h:outputText value="#{marcaNeumatico.nombre}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Descripción" />
+						    </f:facet>
+							<h:outputText value="#{marcaNeumatico.descripcion}" />
+						</p:column>
+						
+					</p:dataTable>
+				</p:outputPanel>
+			</h:form>
+
+<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá al usuario agregar un nueva Marca de Neumático a la base de datos, 
+			una vez llenados y validados todos los campos -->
+			
+			<!-- Etiqueta que habilita los mensajes FacesMessage, de informacion -->
+			<p:growl id="mensajes" showDetail="true" life="4000"/>
+			
+			
+				<script type="text/javascript">
+				
+					//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+					function refrescarNuevo(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevo").reset();
+						}
+					}
+				</script>
+				
+				
+		<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+		<p:dialog widgetVar="ventanaRegistro" header="Registro de Marcas de Neumático" closeOnEscape="false" modal="true" appendToBody="true"
+				  showEffect="fade" hideEffect="fade" closable="false" height="200" width="370">
+	       
+	       
+	       <!-- Etiqueta que define el formulario que contendra los campos de los a llenar del cargo nuevo -->
+		   <h:form id="formNuevo">
+		       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+		       <h:panelGrid id="grid" columns="2">
+			   		
+			   		<h:outputLabel value="Nombre: *" for="nombre"/>
+			   		<h:inputText id="nombre" value="#{serviciosVentanaMarcaNeumatico.marcaNeumatico.nombre}" label="Nombre" required="true" >
+			   			<f:validateLength maximum="60"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Descripción: " for="descripcion"/>
+			   		<h:inputTextarea id="descripcion" value="#{serviciosVentanaMarcaNeumatico.marcaNeumatico.descripcion}" label="Descripcion">
+			   			<f:validateLength maximum="255"/>
+			   		</h:inputTextarea>
+			   		
+			   		<h:outputLabel value="Empresa: *" for="empresa"/>
+					<h:inputText id="empresa" label="Empresa" value="#{serviciosVentanaMarcaNeumatico.marcaNeumatico.empresa.nombre}" disabled="true"/>
+					
+				</h:panelGrid>
+				
+				<!-- Etiqueta que dibuja un separador en el panel -->
+				<p:separator/>
+				
+				<!-- Los siguientes botones, permiten al usuario decidir entre: 
+				Guardar la información ingresada en los campos(Aceptar)
+				Salirse de la ventana sin guardar ninguna información(Cancelar)
+				Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->
+	       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+	       						 actionListener="#{serviciosVentanaMarcaNeumatico.guardarOModificar}" 
+	       						 image="ui-icon-disk" oncomplete="refrescarNuevo(xhr, status, args);" update=":mensajes,:formTabla:tbMarcaNeumatico">
+		        </p:commandButton> 
+				<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+								 actionListener="#{serviciosVentanaMarcaNeumatico.cancelar}" oncomplete="refrescarNuevo(xhr, status, args); ventanaRegistro.hide();"
+								 image="ui-icon-closethick" update=":formTabla:tbMarcaNeumatico">
+		        </p:commandButton> 
+	   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset"
+	   							 style="margin-left:5px" image="ui-icon-refresh"/>
+   			</h:form>
+		</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº MODIFICAR ººººººººººººººººººººººººººººº -->
+
+			<!-- Esta ventana permitirá realizar cambios sobre las Marcas de Neumático ingresadas en la base de datos 
+				 un vez que haya sido seleccionado de la tabla -->
+
+			
+				<script type="text/javascript">
+				
+					//Funcion que llama a los formularios "Modificar" y los vuelve a cargar
+					function refrescarMod(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formModificar").reset();
+							ventanaModificar.hide();
+						}
+					}
+				</script>
+				
+			<p:dialog widgetVar="ventanaModificar" header="Modificar Datos de la Marca" closeOnEscape="false" modal="true" appendToBody="true"
+						showEffect="fade" hideEffect="fade" closable="false" height="200" width="400">
+				<h:form id="formModificar">
+					<h:panelGrid id="dataMod" columns="2">
+				   		<h:outputLabel value="Nombre: *" for="nombreMod"/>
+				   		<h:inputText id="nombreMod" value="#{serviciosVentanaMarcaNeumatico.marcaNeumaticoSeleccionada.nombre}" label="Nombre" required="true" />
+				   		
+				   		<h:outputLabel value="Descripción: *" for="descripcionMod"/>
+				   		<h:inputTextarea id="descripcionMod" value="#{serviciosVentanaMarcaNeumatico.marcaNeumaticoSeleccionada.descripcion}" label="Descripcion"/>
+				   		
+				   		<h:outputLabel value="Empresa: *" for="empresaMod"/>
+						<h:inputText value="#{serviciosVentanaMarcaNeumatico.marcaNeumaticoSeleccionada.empresa.nombre}" id="empresaMod" label="Empresa" disabled="true" required="true"/>
+					
+			       </h:panelGrid>  
+			 
+			       <p:separator />
+		       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+		       						 actionListener="#{serviciosVentanaMarcaNeumatico.guardarOModificar}" 
+		       						 image="ui-icon-disk" oncomplete="refrescarMod(xhr, status, args);" update=":mensajes,dataMod,:formTabla:tbMarcaNeumatico">
+			        </p:commandButton>
+					<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+									 actionListener="#{serviciosVentanaMarcaNeumatico.cancelar}" oncomplete="refrescarMod(xhr, status, args); ventanaModificar.hide();"
+									 image="ui-icon-closethick" update=":formTabla:tbMarcaNeumatico,dataMod">
+			        </p:commandButton>
+		        </h:form>
+			</p:dialog>
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº ELIMINAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá eliminar una Marca de Neumático seleccionada previamente en la tabla
+				 esta ventana pide confirmación antes de procesar la operación -->
+			
+			<p:dialog id="ventanaEliminar" header="Confirme la operación" widgetVar="confirmacion"
+						showEffect="fade" hideEffect="blind" closable="false" closeOnEscape="false" modal="true" appendToBody="true">
+				 <h:form id="formEliminar">
+					<script type="text/javascript">
+					
+							//Funcion que llama a los formularios eliminar y los vuelve a cargar
+							function refrescarEliminar() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formEliminar").reset();
+							}
+					</script>
+			       <h:panelGrid>
+			       		<f:facet name="header">
+			       			<br/>
+			       				Está seguro que desea eliminar esta Marca?
+			       			<br/>
+			       		</f:facet>  
+			       </h:panelGrid>
+			       <p:separator/>
+			       <p:commandButton id="confirmar" styleClass="botonVentana" title="Aceptar" actionListener="#{serviciosVentanaMarcaNeumatico.eliminar}"
+				        				 image="ui-icon-check" oncomplete="refrescarEliminar(); confirmacion.hide();" update=":formTabla:tbMarcaNeumatico,:mensajes"/>  
+				   <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" title="Cancelar" update=":formTabla:tbMarcaNeumatico"
+				        				 actionListener="#{serviciosVentanaMarcaNeumatico.cancelar}" oncomplete="confirmacion.hide();"/> 
+			   </h:form>
+			</p:dialog>
+		   	
+<!-- ººººººººººººººººººººººººººººººººººººººº CONSULTA ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana se encarga de mostrar toda la información referente al Cargo seleccionado -->
+			
+			
+				<p:dialog widgetVar="ventanaConsulta" header="Consultar Marca de Neumáticos"
+					showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" modal="true" appendToBody="true" height="200" width="400">
+	       		   <h:form id="formConsulta">
+				       <h:panelGrid id="dataConsulta" columns="2">
+					   		<h:outputLabel value="Nombre: " for="nombreConsulta"/>
+					   		<h:outputText id="nombreConsulta" value="#{serviciosVentanaMarcaNeumatico.marcaNeumaticoSeleccionada.nombre}"/>
+					   		
+					   		<h:outputLabel value="Descripción: " for="descripcionConsulta"/>
+					   		<h:inputTextarea id="descripcionConsulta" value="#{serviciosVentanaMarcaNeumatico.marcaNeumaticoSeleccionada.descripcion}" label="Descripcion" disabled="true"/>
+					   		
+					   		<h:outputLabel value="Empresa: " for="empresaConsulta"/>
+							<h:outputText id="empresaConsulta" value="#{serviciosVentanaMarcaNeumatico.marcaNeumaticoSeleccionada.empresa.nombre}"/>
+							
+						</h:panelGrid>
+						<p:separator/>
+		     			<p:commandButton styleClass="botonVentana" title="Aceptar" onclick="ventanaConsulta.hide();"
+										 image="ui-icon-check" update=":formTabla:tbMarcaVehiculo"/>
+					</h:form>
+				</p:dialog>
+			
+			
+		</div>
+		
+		
+		
+	</ui:define>
+</ui:composition>

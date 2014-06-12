@@ -1,0 +1,440 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Empleados</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Gestión de Empleados</h1>
+		<br/>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+<!-- ······················································· BOTONERA ··············································· -->			
+			
+			<!-- Esta botonera hace una solicitud al servidor donde se activan las funciones que se van a ejecutar, esto se hace
+			a través de la clase ServiciosVentanaEmpleado y javascript recibe los parámetros, los cuales se usarán
+			para abrir la ventana corresppondiente según la operación requerida -->
+			
+			<!-- Etiqueta que define un formulario -->
+			<h:form id="formBotonera">
+				
+			<!-- Etiquetas que definen una serie de botones los cuales ejecutan funciones al presionarse -->
+				<p:commandButton id="btnNuevo" image="ui-icon-plusthick" onclick="ventanaRegistro.show()" update=":formNuevo:data" value="Nuevo" disabled="false"/>
+				<p:commandButton id="btnModificar" image="ui-icon-wrench" action="#{serviciosVentanaEmpleado.activarModificar}" update=":formModificar:dataMod" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Modificar" />
+				<p:commandButton id="btnEliminar" image="ui-icon-trash" action="#{serviciosVentanaEmpleado.activarEliminar}" update=":formEliminar:eliminar" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Eliminar" />
+				<p:commandButton id="btnConsultar" image="ui-icon-search" action="#{serviciosVentanaEmpleado.activarConsultar}" update=":formConsulta:dataConsulta" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Consultar" />
+			</h:form>
+			
+			<!-- Script que permite decidir que ventana de manipulacion de datos va a mostrar (M: Modificar, E: Eliminar, C: Consultar) -->
+			<script type="text/javascript">
+			
+				//Metodo que decide que funcion ejecutar dependiendo del contenido del atributo args.tarea
+		        function handleRequest(xhr, status, args) {
+		            if (args.ok) {
+		            	switch (args.tarea) {
+							case "M":
+								ventanaModificar.show();	//Se ejecuta la ventana modificar
+								break;
+							case "E":
+				                confirmacion.show();		//Se ejecuta la ventana eliminar
+								break;
+							case "C":
+								ventanaConsulta.show();		//Se ejecuta la ventana consultar
+								break;
+						}
+		            }else{
+		                errorSeleccion.show();
+		            }
+		        }
+		    </script>
+		    
+		    <!-- Etiqueta que define una ventana de mensaje en caso de que no se halla seleccionado ningun elemento de la tabla -->
+			<p:dialog widgetVar="errorSeleccion" header="Operación Negada"
+					  showEffect="fade" hideEffect="blind" closable="false" closeOnEscape="false"
+					  modal="true" appendToBody="true">
+					  
+				<h:form>
+					<h:panelGrid>
+						<f:facet name="header">
+							<br/>
+								Debe seleccionar un elemento
+							<br/>
+						</f:facet>
+					</h:panelGrid>
+					<p:separator/>
+					<p:commandButton id="aceptar" image="ui-icon-check" onclick="errorSeleccion.hide();" styleClass="botonVentana" title="Aceptar" type="buttom"/>
+				</h:form>
+				
+			</p:dialog>		  
+		  
+<!-- ······················································· TABLA ··············································· -->	
+
+			<!-- Esta es tabla contiene los registros de los Empleados introducidos en la base de datos. 
+			Esta tabla permite organizar los registros por páginas y ofrece la funición de filtrar los registros
+			según la propiedad indicada. Además, permite hace la selección de un registro para manipularlo(Consultarlo, Modificarlo y Eliminarlo) -->
+
+			<!-- Etiqueta que define el formulario de la tabla con todos los datos de los empleados -->
+			<h:form id="formTabla">
+			
+				<!-- Etiqueta que define un panel que contendra la tabla con los datos de los empleados -->
+				<p:outputPanel id="tbEmpleado" style="width:100%;overflow:auto;">
+				
+					<!-- Etiqueta que define la tabla con los datos de los empleados -->
+					<p:dataTable id="empleados" value="#{serviciosVentanaEmpleado.empleadoDataModel}" var="empleado" style="width:129%" scrollable="false"
+                    				paginator="true" paginatorPosition="top" scrollHeight="450"
+                 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+					                rowsPerPageTemplate="5,10,15"
+					                emptyMessage="No se encontraron resultados" selectionMode="single" 
+									selection="#{serviciosVentanaEmpleado.empleadoSeleccionado}" onRowSelectUpdate=":formModificar:dataMod">
+						
+						<!-- Etiqueta que define el contenido de la primera columna de la tabla, en la que iran los nombres de los empleados-->
+						<p:column filterBy="#{empleado.cedulaEmpleado}" filterMatchMode="contains">
+							
+							<!-- Etiqueta que define el titulo de la culumna -->
+							<f:facet name="header">
+						        <h:outputText value="Cédula" />
+						    </f:facet>
+						    
+						    <!-- Etiqueta que carga los datos del campo nombre -->
+							<h:outputText value="#{empleado.cedulaEmpleado}" />
+						</p:column>
+						<p:column filterBy="#{empleado.nombre}" filterMatchMode="contains" >
+							<f:facet name="header">
+						        <h:outputText value="Nombre" />
+						    </f:facet>
+							<h:outputText value="#{empleado.nombre}" />
+						</p:column>
+						<p:column filterBy="#{empleado.apellido}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Apellido" />
+						    </f:facet>
+							<h:outputText value="#{empleado.apellido}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Dirección" />
+						    </f:facet>
+							<h:outputText value="#{empleado.direccion}" />
+						</p:column>
+						<p:column >
+							<f:facet name="header">
+						        <h:outputText value="Teléfono" />
+						    </f:facet>
+							<h:outputText value="#{empleado.telefono}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Celular" />
+						    </f:facet>
+							<h:outputText value="#{empleado.celular}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Correo" />
+						    </f:facet>
+							<h:outputText value="#{empleado.correo}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Cargo" />
+						    </f:facet>
+							<h:outputText value="#{empleado.cargo.nombre}" />
+						</p:column>
+						
+					</p:dataTable>
+				</p:outputPanel>
+			</h:form>
+
+<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+
+			<!-- Esta ventana permitirá al usuario agregar un nuevo Empleado a la base de datos, 
+			una vez llenados y validados todos los campos -->
+			
+			<!-- Etiqueta que habilita los mensajes FacesMessage, de informacion -->
+			<p:growl id="mensajes" showDetail="true" life="4000"/>
+			
+				<script type="text/javascript">
+				
+					//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+					function refrescarNuevo(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevo").reset();
+						}
+					}
+				</script>
+				
+				
+			<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+			<p:dialog widgetVar="ventanaRegistro" header="Registro de Empleados" closeOnEscape="false" modal="true" appendToBody="true"
+					showEffect="fade" hideEffect="fade" closable="false"  height="450" width="350">
+			       
+			    <!-- Etiqueta que define el formulario que contendra los campos de los a llenar del empleado nuevo -->
+				<h:form id="formNuevo">
+				       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+				       <h:panelGrid id="grid" columns="2">
+				       
+				       		
+					   		<h:outputLabel value="Cédula: *" for="cedula"/>
+					   		
+					   		
+					   		<h:inputText id="cedula" value="#{serviciosVentanaEmpleado.empleado.cedulaEmpleado}" label="Cedula"  >
+					   			<f:validateLength minimum="6" maximum="10"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Nombre: *" for="nombre"/>
+					   		<h:inputText id="nombre" value="#{serviciosVentanaEmpleado.empleado.nombre}" label="Nombre"  >
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Apellido: *" for="apellido"/>
+					   		<h:inputText id="apellido" value="#{serviciosVentanaEmpleado.empleado.apellido}" label="Apellido" >
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Dirección:*" for="direccion"/>
+					   		<h:inputTextarea id="direccion" value="#{serviciosVentanaEmpleado.empleado.direccion}" label="Direccion" >
+					   			<f:validateLength maximum="150"/>
+					   		</h:inputTextarea>
+					   		
+					   		<h:outputLabel value="Teléfono:" for="telefono"/>
+					   		<p:inputMask  id="telefono" value="#{serviciosVentanaEmpleado.empleado.telefono}" mask="(999) 999-9999" label="Teléfono"></p:inputMask>
+					   		
+					   		<h:outputLabel value="Celular: *" for="celular"/>
+					   		<p:inputMask  id="celular" value="#{serviciosVentanaEmpleado.empleado.celular}" mask="(999) 999-9999"  label="Celular"></p:inputMask>
+					   		
+					   		<h:outputLabel value="Email:" for="email"/>
+					   		<h:inputText id="email" value="#{serviciosVentanaEmpleado.empleado.correo}" label="Email" >
+					   			<f:validateLength maximum="30"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Empresa: *" for="empresa"/>
+							<h:inputText id="empresa" label="Empresa" value="#{serviciosVentanaEmpleado.empleado.empresa.nombre}" disabled="true"/>
+							
+							<h:outputLabel value="Cargo: *" for="cargo"/>
+							<h:panelGrid columns="2">
+					     		<h:selectOneMenu id="cargo" label="Cargo" value="#{serviciosVentanaEmpleado.idCargo}" >
+					                <f:selectItem itemLabel="-Seleccione-" itemValue="" />  
+					                <f:selectItems value="#{serviciosVentanaCargo.listaCargos}" var="cargo" itemLabel="#{cargo.nombre}" itemValue="#{cargo.idCargo}"/> 
+					            </h:selectOneMenu>
+						       	<p:commandButton styleClass="botonVentana" height="10" width="10" title="Nuevo Cargo" id="nuevoCargo"  style="width:20px;" onclick="ventanaNuevoCargo.show();" image="ui-icon-plusthick"/>
+					   		</h:panelGrid>
+						</h:panelGrid>
+						
+						<!-- Etiqueta que dibuja un separador en el panel -->
+						<p:separator/>					
+			       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaEmpleado.guardarOModificar}" 
+			       						 image="ui-icon-disk" oncomplete="refrescarNuevo(xhr, status, args);" update=":mensajes,:formTabla:tbEmpleado">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+										 actionListener="#{serviciosVentanaEmpleado.cancelar}" oncomplete="refrescarNuevo(xhr, status, args); ventanaRegistro.hide();"
+										 image="ui-icon-closethick" update=":formTabla:tbEmpleado,grid">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset" update="grid"
+			   							 style="margin-left:5px" image="ui-icon-refresh"/>
+		   		</h:form>
+			</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº MODIFICAR ººººººººººººººººººººººººººººº -->
+			
+	<!-- Esta ventana permitirá realizar cambios sobre los Empleados ingresados en la base de datos 
+		 un vez que haya sido seleccionado de la tabla -->
+
+	
+		<script type="text/javascript">
+		
+			//Funcion que llama a los formularios "Modificar" y los vuelve a cargar
+			function refrescarMod(xhr, status, args) {
+				if (args.limpiar) {
+					document.getElementById("formTabla").reset();
+					document.getElementById("formModificar").reset();
+				}
+			}
+		</script>
+				
+		<p:dialog widgetVar="ventanaModificar" header="Modificar Datos del Empleado" closeOnEscape="false" 
+					showEffect="fade" hideEffect="fade" closable="false" height="450" width="350" modal="true" appendToBody="true"> 
+			<h:form id="formModificar">
+				<h:panelGrid id="dataMod" columns="2">
+			   		<h:outputLabel value="Cédula: *" for="cedulaMod"/>
+			   		<h:inputText id="cedulaMod" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.cedulaEmpleado}" label="Cedula" required="true" disabled="true"/>
+			   		
+			   		<h:outputLabel value="Nombre: *" for="nombreMod"/>
+			   		<h:inputText id="nombreMod" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.nombre}" label="Nombre" required="true" />
+			   		
+			   		<h:outputLabel value="Apellido: *" for="apellidoMod"/>
+			   		<h:inputText id="apellidoMod" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.apellido}" label="Apellido" required="true" />
+			   		
+			   		<h:outputLabel value="Direccion: *" for="direccionMod"/>
+			   		<h:inputTextarea id="direccionMod" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.direccion}" label="Direccion" required="true"/>
+			   		
+			   		<h:outputLabel value="Teléfono:" for="telefonoMod"/>
+			   		<p:inputMask  id="telefonoMod" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.telefono}" mask="(999) 999-9999" label="Teléfono"></p:inputMask>
+			   		
+			   		<h:outputLabel value="Celular: *" for="celularMod"/>
+			   		<p:inputMask  id="celularMod" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.celular}" mask="(999) 999-9999" required="true" label="Celular"></p:inputMask>
+			   		
+			   		<h:outputLabel value="Email:" for="emailMod"/>
+			   		<h:inputText id="emailMod" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.correo}" label="Email" required="true" />
+			   		
+			   		<h:outputLabel value="Empresa: *" for="empresaMod"/>
+					<h:inputText value="#{serviciosVentanaEmpleado.empleadoSeleccionado.empresa.nombre}" id="empresaMod" label="Empresa" disabled="true" required="true"/>
+					
+					<h:outputLabel value="Cargo: *" for="cargoMod"/>
+		     		<h:selectOneMenu id="cargoMod" label="Cargo: " value="#{serviciosVentanaEmpleado.idCargo}">  
+		                <f:selectItem itemLabel="#{serviciosVentanaEmpleado.empleadoSeleccionado.cargo.nombre}" itemValue="#{serviciosVentanaEmpleado.empleadoSeleccionado.cargo.idCargo}" />  
+		                <f:selectItems value="#{serviciosVentanaCargo.listaCargos}" var="cargo" itemLabel="#{cargo.nombre}" itemValue="#{cargo.idCargo}"/> 
+		            </h:selectOneMenu>
+		            
+			       	<p:commandButton styleClass="botonVentana" height="10" width="10" title="Nuevo Cargo" onclick="ventanaNuevoCargo.show();" image="ui-icon-plusthick"/>
+			   		
+			   		
+		       </h:panelGrid>  
+		 
+		       <p:separator />
+	       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+	       						 actionListener="#{serviciosVentanaEmpleado.guardarOModificar}" 
+	       						 image="ui-icon-disk" oncomplete="refrescarMod(xhr, status, args); ventanaModificar.hide();" update=":mensajes,dataMod,:formTabla:tbEmpleado">
+		        </p:commandButton>
+				<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+								 actionListener="#{serviciosVentanaEmpleado.cancelar}" oncomplete="refrescarMod(xhr, status, args); ventanaModificar.hide();"
+								 image="ui-icon-closethick" update=":formTabla:tbEmpleado,dataMod">
+		        </p:commandButton>
+	        </h:form>
+		</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº ELIMINAR ººººººººººººººººººººººººººººº -->
+
+			<!-- Esta ventana permitirá eliminar un Empleado seleccionado previamente en la tabla
+				 esta ventana pide confirmación antes de procesar la operación -->
+			<p:dialog id="ventanaEliminar" widgetVar="confirmacion" header="Confirme la operación"
+					  showEffect="fade" hideEffect="blind" closable="false" closeOnEscape="false" 
+					  modal="true" appendToBody="true" >
+				<h:form id="formEliminar">
+					<script type="text/javascript">
+					
+							//Funcion que llama a los formularios eliminar y los vuelve a cargar
+							function refrescarEliminar() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formEliminar").reset();
+							}
+					</script>
+					<h:panelGrid>
+						<f:facet name="header">
+							<br/>
+								Está seguro que desea eliminar este empleado?
+							<br/>
+						</f:facet>
+					</h:panelGrid>
+					<p:separator/>
+					<p:commandButton id="confirmar" styleClass="botonVentana" title="Aceptar" actionListener="#{serviciosVentanaEmpleado.eliminar}"
+				        				 image="ui-icon-check" oncomplete="refrescarEliminar(); confirmacion.hide();" update=":formTabla:tbEmpleado,:mensajes"/>  
+				    <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" title="Cancelar" update=":formTabla:tbEmpleado"
+				        				 actionListener="#{serviciosVentanaEmpleado.cancelar}" oncomplete="confirmacion.hide();"/>  
+				</h:form>
+			</p:dialog>
+		   	
+<!-- ººººººººººººººººººººººººººººººººººººººº CONSULTA ººººººººººººººººººººººººººººº -->
+			
+	<!-- Esta ventana se encarga de mostrar toda la información referente al Empleado seleccionado -->
+	
+	
+		<p:dialog widgetVar="ventanaConsulta" header="Consultar Empleado" closeOnEscape="false" modal="false" 
+			showEffect="fade" hideEffect="fade" closable="false" height="340" width="350">
+      		   <h:form id="formConsulta">
+		       <h:panelGrid id="dataConsulta" columns="2">
+			   		<h:outputLabel value="Cédula: " for="cedulaConsulta"/>
+			   		<h:outputText id="cedulaConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.cedulaEmpleado}"/>
+			   		
+			   		<h:outputLabel value="Nombre: " for="nombreConsulta"/>
+			   		<h:outputText id="nombreConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.nombre}"/>
+			   		
+			   		<h:outputLabel value="Apellido: " for="apellidoConsulta"/>
+			   		<h:outputText id="apellidoConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.apellido}" />
+			   		
+			   		<h:outputLabel value="Direccion: " for="direccionConsulta"/>
+			   		<h:inputTextarea id="direccionConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.direccion}" label="Direccion:" disabled="true"/>
+			   		
+			   		<h:outputLabel value="Teléfono:" for="telefonoConsulta"/>
+			   		<h:outputText  id="telefonoConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.telefono}"></h:outputText>
+			   		
+			   		<h:outputLabel value="Celular: " for="celularConsulta"/>
+			   		<h:outputText  id="celularConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.celular}"></h:outputText>
+			   		
+			   		<h:outputLabel value="Email:" for="emailConsulta"/>
+			   		<h:outputText id="emailConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.correo}"/>
+			   		
+			   		<h:outputLabel value="Empresa: " for="empresaConsulta"/>
+					<h:outputText id="empresaConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.empresa.nombre}"/>
+					
+					<h:outputLabel value="Cargo: " for="cargoConsulta"/>
+		     		<h:outputText id="cargoConsulta" value="#{serviciosVentanaEmpleado.empleadoSeleccionado.cargo.nombre}"/>
+		     		
+				</h:panelGrid>
+				<p:separator/>
+     			<p:commandButton styleClass="botonVentana" title="Aceptar" onclick="ventanaConsulta.hide();"
+								 image="ui-icon-check" update=":formTabla:tbEmpleado"/>
+			</h:form>
+		</p:dialog>
+			
+			
+<!-- ºººººººººººººººººººººººººººººº REGISTRO EMERGENTE ººººººººººººººººººººººººººººº -->
+			
+	<!-- Esta ventana permite ingresar un nuevo Cargo en caso de que el cargo asignado al empleado no este registrado aún -->
+	
+	
+	
+		<script type="text/javascript">
+		
+				//Funcion que llama a los formularios de "Nuevo Cargo" y los vuelve a cargar
+				function refrescarNuevoCargo() {
+					document.getElementById("formTabla").reset();
+					document.getElementById("formNuevoCargo").reset();
+				}
+		</script>
+						
+		<p:dialog widgetVar="ventanaNuevoCargo" header="Registrar Nuevo Cargo" modal="true" appendToBody="true"
+        			showEffect="fade" hideEffect="fade" closable="false" width="390" closeOnEscape="false">
+        		<h:form id="formNuevoCargo">
+	         		<h:panelGrid columns="2">
+		         		<h:outputLabel value="Nombre: *" for="nombreCargo"/>
+		         		<h:inputText id="nombreCargo" value="#{serviciosVentanaCargo.cargo.nombre}" required="true" label="Nombre" />
+		         		
+		         		<h:outputLabel value="Descripción: " for="descripcionCargo"/>
+		         		<h:inputTextarea id="descripcionCargo" value="#{serviciosVentanaCargo.cargo.descripcion}" label="Descripción"/>
+	         		</h:panelGrid>
+	         		
+	         		<p:separator />
+	         		
+	         		 
+		         		 <p:commandButton title="Aceptar"
+			       						 actionListener="#{serviciosVentanaCargo.guardarOModificar}" 
+			       						 image="ui-icon-disk" oncomplete="refrescarNuevoCargo(); ventanaNuevoCargo.hide();"
+			       						 update=":mensajes, :formNuevo:cargo, :formModificar:cargoMod">	       				
+				        </p:commandButton> 
+						<p:commandButton title="Cancelar" style="margin-left:5px"
+										 actionListener="#{serviciosVentanaCargo.cancelar}" oncomplete="refrescarNuevoCargo(); ventanaNuevoCargo.hide();"
+										 image="ui-icon-closethick" update=":formTabla:tbEmpleado,gridCargo">
+				        </p:commandButton> 
+			   			<p:commandButton title="Limpiar" type="reset" update="gridCargo"
+			   							 style="margin-left:5px" image="ui-icon-refresh"/>
+         		
+        		 </h:form>
+         </p:dialog>
+			
+		</div>
+		
+		
+	</ui:define>
+</ui:composition>
