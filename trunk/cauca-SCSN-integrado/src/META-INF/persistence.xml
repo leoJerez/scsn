@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+	
+	<persistence-unit name="pasantia" transaction-type="RESOURCE_LOCAL">
+		
+		<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+		<mapping-file>META-INF/eclipselink-orm.xml</mapping-file>
+		
+		<class>cauca.scsn.modelo.entidad.Neumatico</class>
+		<class>cauca.scsn.modelo.entidad.Medida</class>
+		<class>cauca.scsn.modelo.entidad.Empresa</class>
+		<class>cauca.scsn.modelo.entidad.Proveedor</class>
+		<class>cauca.scsn.modelo.entidad.Movimiento</class>
+		<class>cauca.scsn.modelo.entidad.CausaOperacion</class>
+		<class>cauca.scsn.modelo.entidad.Empleado</class>
+		<class>cauca.scsn.modelo.entidad.TipoCarretera</class>
+		<class>cauca.scsn.modelo.entidad.RutaVehiculo</class>
+		<class>cauca.scsn.modelo.entidad.VehiculoEmpleado</class>
+		<class>cauca.scsn.modelo.entidad.Cargo</class>
+		<class>cauca.scsn.modelo.entidad.Ruta</class>
+		<class>cauca.scsn.modelo.entidad.OperacionNeumatico</class>
+		<class>cauca.scsn.modelo.entidad.TipoDesgaste</class>
+		<class>cauca.scsn.modelo.entidad.id.OperacionNeumaticoId</class>
+		<class>cauca.scsn.modelo.entidad.id.VehiculoEmpleadoId</class>
+		<class>cauca.scsn.modelo.entidad.id.MovimientoId</class>
+		<class>cauca.scsn.modelo.entidad.id.RutaVehiculoId</class>
+		<class>cauca.scsn.modelo.entidad.MarcaNeumatico</class>
+		<class>cauca.scsn.modelo.entidad.Diseno</class>
+		<class>cauca.scsn.modelo.entidad.DisenoMedida</class>
+		<class>cauca.scsn.modelo.entidad.id.DisenoMedidaId</class>
+		<class>cauca.scsn.modelo.entidad.EsquemaEje</class>
+		<class>cauca.scsn.modelo.entidad.Vehiculo</class>
+		<class>cauca.scsn.modelo.entidad.MarcaVehiculo</class>
+		<class>cauca.scsn.modelo.entidad.ModeloVehiculo</class>
+		<class>cauca.scsn.modelo.entidad.TipoVehiculo</class>
+		<class>cauca.scsn.modelo.entidad.NeumaticoVehiculo</class>
+		<class>cauca.scsn.modelo.entidad.id.NeumaticoVehiculoID</class>
+		<class>cauca.scsn.modelo.entidad.EjeTraccion</class>
+		<class>cauca.scsn.modelo.entidad.seguridad.Usuario</class>
+		<class>cauca.scsn.modelo.entidad.seguridad.Rol</class>
+		<class>cauca.scsn.modelo.entidad.seguridad.Interfaz</class>
+		<class>cauca.scsn.modelo.entidad.seguridad.Operacion</class>
+		<class>cauca.scsn.modelo.entidad.seguridad.OperacionRol</class>
+		<class>cauca.scsn.modelo.entidad.seguridad.Visita</class>
+		<class>cauca.scsn.modelo.entidad.seguridad.Log</class>
+		<class>cauca.scsn.modelo.entidad.seguridad.Encuesta</class>
+		<class>cauca.scsn.modelo.entidad.EmpleadoCauca</class>
+
+		<properties>
+	       <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
+	        <property name="javax.persistence.jdbc.url"
+	           value="jdbc:postgresql://192.168.1.70:5432/cauca" /> 
+	       <!-- <property name="javax.persistence.jdbc.url"
+	           value="jdbc:postgresql://localhost:5432/cauca" />  -->
+	       <property name="javax.persistence.jdbc.user" value="postgres" />
+	       <property name="javax.persistence.jdbc.password" value="postgres" />
+	
+	       <!-- EclipseLink should create the database schema automatically 
+		   <property name="eclipselink.ddl-generation" value="drop-and-create-tables" />
+	       <property name="eclipselink.ddl-generation.output-mode"
+	           value="database" /> -->
+	    </properties>
+	   
+	</persistence-unit>
+</persistence>
