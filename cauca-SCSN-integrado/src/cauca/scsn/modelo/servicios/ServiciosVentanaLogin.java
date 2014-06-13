@@ -107,6 +107,7 @@ public class ServiciosVentanaLogin implements Serializable{
 		session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
 		System.out.println("MAC -- LOGIN: "+session.getAttribute("mac"));
 		cargo = ((Cargo) CargoDAO.getInstancia().buscarEntidadPorClave(1)).getNombre();
+		
 	}
 	
 	 public void listoCarga() {
@@ -141,9 +142,6 @@ public class ServiciosVentanaLogin implements Serializable{
 					session.setAttribute("empleado", this.empleado);
 					if(usuario.getRol().getIdRol() == 4 || usuario.getRol().getIdRol() == 5 || usuario.getRol().getIdRol() == 7){
 						listaLog = LogDAO.getInstancia().buscarTodasEntidades();
-						
-						mensajes.error("hohasd","-->"+empleado.getEmpresa().getIdEmpresa());
-						
 						
 						servicioEncuesta.cargarListaUsuario(empleado.getEmpresa().getIdEmpresa());
 						servicioEncuesta.cargarListaEncuesta();
@@ -223,15 +221,9 @@ public class ServiciosVentanaLogin implements Serializable{
 			registrarAdministrador();
 			empleado.setEmpresa(empresa);
 			EmpleadoDAO.getInstancia().insertarOActualizar(this.empleado);
+			registrarPrimerEncuesta();
 			new ControladorMensajes().informativo("Operación exitosa", "Empleado: "+ this.empleado.getNombre() +" ha sido guardado!");
-			Encuesta encuesta = new Encuesta();
-			encuesta.setEmpleadoCauca((EmpleadoCauca)EmpleadoCaucaDAO.getInstancia().buscarEntidadPorClave(12345678));
-			encuesta.setFechaEncuesta(new Date());
-			encuesta.setFechaVisita("6-6-14");
-			encuesta.setHoraVisita("2:30pm");
-			encuesta.setUsuario(usuario);
-			encuesta.setVisita("S");
-			EncuestaDAO.getInstancia().insertarOActualizar(encuesta);
+			
 			login(actionEvent);
 		} catch (Exception e) {
 			System.out.println("========"+e);
@@ -240,6 +232,15 @@ public class ServiciosVentanaLogin implements Serializable{
 		}
 	}
 		
+	public void registrarPrimerEncuesta(){
+		Encuesta encuesta = new Encuesta();
+		encuesta.setObservaciones("Primer Ingreso");
+		encuesta.setFechaEncuesta(new Date());
+		encuesta.setUsuario( (Usuario) UsuarioDAO.getInstancia().buscarEntidadPorClave(empleado.getUsuario().getIdUsuario()));
+		encuesta.setVisita("S");
+		EncuestaDAO.getInstancia().insertarOActualizar(encuesta);
+	}
+	
 	public void cancelar(){
 		System.out.println("entramos a cancelar");
 		this.nombre = "";
