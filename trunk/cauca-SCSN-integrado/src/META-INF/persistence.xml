@@ -50,10 +50,10 @@
 
 		<properties>
 	       <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
-	        <property name="javax.persistence.jdbc.url"
-	           value="jdbc:postgresql://192.168.1.70:5432/cauca" /> 
 	       <!-- <property name="javax.persistence.jdbc.url"
-	           value="jdbc:postgresql://localhost:5432/cauca" />  -->
+	           value="jdbc:postgresql://192.168.1.70:5432/cauca" /> -->
+	        <property name="javax.persistence.jdbc.url"
+	           value="jdbc:postgresql://localhost:5432/cauca" />  
 	       <property name="javax.persistence.jdbc.user" value="postgres" />
 	       <property name="javax.persistence.jdbc.password" value="postgres" />
 	
