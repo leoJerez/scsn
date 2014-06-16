@@ -39,6 +39,7 @@ public class ServiciosVentanaMarcaVehiculo implements ServiciosMaestros{
 	private ActionEvent 			eventoCancelar;
 	private String					mensajeEliminar;
 	private List<MarcaVehiculo>		listaMarca					=	new ArrayList<MarcaVehiculo>();
+	private int cantidad;
 	
 	public ServiciosVentanaMarcaVehiculo() {
 		super();
@@ -98,7 +99,12 @@ public class ServiciosVentanaMarcaVehiculo implements ServiciosMaestros{
 	public void llenarDataModel() {
 		setListaMarca(marcaVehiculoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
 		setMarcaVehiculoDataModel(new MarcaVehiculoDataModel(this.listaMarca));
-		
+	
+		if(listaMarca.size() > 0){
+			cantidad = 5;
+		}else{
+			cantidad = 0;
+		}
 	}
 
 	@Override
@@ -227,5 +233,13 @@ public class ServiciosVentanaMarcaVehiculo implements ServiciosMaestros{
 
 	public void setListaMarca(List<MarcaVehiculo> listaMarca) {
 		this.listaMarca = listaMarca;
+	}
+
+	public int getCantidad() {
+		return cantidad;
+	}
+
+	public void setCantidad(int cantidad) {
+		this.cantidad = cantidad;
 	}
 }

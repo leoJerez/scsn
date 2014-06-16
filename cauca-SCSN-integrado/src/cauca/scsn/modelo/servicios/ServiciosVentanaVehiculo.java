@@ -135,6 +135,7 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 	private boolean						traccionTildado			= false;
 	private boolean						renderedCheck			= false;
 	private List<Empleado> 				listaEmpleado = new ArrayList<Empleado>();
+	private int 						rows;
 	
 	public ServiciosVentanaVehiculo() {
 		super();
@@ -220,9 +221,10 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		listaEmpleadosOrigen.clear();
 		listaEmpleado = empleadoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa);
 		for (int h = 0; h < listaEmpleado.size(); h++) {
-			if(listaEmpleado.get(h).getCargo().getIdCargo() == 4){
+			if(listaEmpleado.get(h).getCargo().getIdCargo() == 6){
 				listaEmpleadosOrigen.add(listaEmpleado.get(h));
 			}
+			
 		}
 		
 		for(int i = 0; i<listaConductoresEnVehiculoEmpleado.size(); i++) {
@@ -840,6 +842,12 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 	public void llenarDataModel() {
 		this.listaVehiculo = vehiculoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa);
 		setVehiculoDataModel(new VehiculoDataModel(listaVehiculo));
+		
+		if(listaVehiculo.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 	}
 
 	@Override
@@ -1530,6 +1538,14 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 
 	public void setListaEjeTraccion(List<EjeTraccion> listaEjeTraccion) {
 		this.listaEjeTraccion = listaEjeTraccion;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 
 

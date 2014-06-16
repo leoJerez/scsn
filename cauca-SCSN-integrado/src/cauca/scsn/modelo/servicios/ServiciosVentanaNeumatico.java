@@ -98,6 +98,7 @@ public class ServiciosVentanaNeumatico implements ServiciosMaestros{
 	private double				recorridoProyectado		= 0.0;  
 	private int					tabIndex				= 0;
 	private ServiciosVentanaMedida serviciosVentanaMedida = new ServiciosVentanaMedida();
+	private int					rows;
 	
 	
 	public ServiciosVentanaNeumatico() {
@@ -727,6 +728,12 @@ public class ServiciosVentanaNeumatico implements ServiciosMaestros{
 		setListaNeumaticos(neumaticoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
 		this.cambiarFormato(listaNeumaticos);
 		setNeumaticoDataModel(new NeumaticoDataModel(this.listaNeumaticos));
+		
+		if(listaNeumaticos.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 	}
 
 	@Override
@@ -1113,6 +1120,16 @@ public class ServiciosVentanaNeumatico implements ServiciosMaestros{
 	public void setServiciosVentanaMedida(
 			ServiciosVentanaMedida serviciosVentanaMedida) {
 		this.serviciosVentanaMedida = serviciosVentanaMedida;
+	}
+
+
+	public int getRows() {
+		return rows;
+	}
+
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 
 }
