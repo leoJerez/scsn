@@ -41,6 +41,7 @@ public class ServiciosVentanaTipoVehiculo implements ServiciosMaestros{
 	private ActionEvent 			eventoCancelar;
 	private String					mensajeEliminar;
 	private List<TipoVehiculo>		listaTipoVehiculo			=	new ArrayList<TipoVehiculo>();
+	private int						rows;
 	
 	public ServiciosVentanaTipoVehiculo() {
 		super();
@@ -130,6 +131,12 @@ public class ServiciosVentanaTipoVehiculo implements ServiciosMaestros{
 //		}
 		setListaTipoVehiculo(tipoVehiculoDAO.buscarTodasEntidades());
 		setTipoVehiculoDataModel(new TipoVehiculoDataModel(this.listaTipoVehiculo));
+		
+		if(listaTipoVehiculo.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 		
 	}
 
@@ -258,6 +265,14 @@ public class ServiciosVentanaTipoVehiculo implements ServiciosMaestros{
 
 	public void setListaTipoVehiculo(List<TipoVehiculo> listaTipoVehiculo) {
 		this.listaTipoVehiculo = listaTipoVehiculo;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 
 }

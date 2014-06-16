@@ -53,6 +53,7 @@ public class ServiciosVentanaDiseno implements ServiciosMaestros {
 	private StreamedContent		streamedContentImagen;
 	//private StreamedContent		imagenTabla;
 	private List<Diseno>		listaDisenosCompleta 		 =  new ArrayList<Diseno>();
+	private int					rows;
 	
 	public ServiciosVentanaDiseno() {
 		super();
@@ -202,6 +203,12 @@ public class ServiciosVentanaDiseno implements ServiciosMaestros {
 		}
 //		setListaDisenos(disenoDAO.buscarTodasEntidades());
 		setDisenoDataModel(new DisenoDataModel(this.listaDiseno));
+		
+		if(listaDiseno.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 	}
 
 	@Override
@@ -389,6 +396,14 @@ public class ServiciosVentanaDiseno implements ServiciosMaestros {
 
 	public void setStreamedContentImagen(StreamedContent streamedContentImagen) {
 		this.streamedContentImagen = streamedContentImagen;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 
 	/**

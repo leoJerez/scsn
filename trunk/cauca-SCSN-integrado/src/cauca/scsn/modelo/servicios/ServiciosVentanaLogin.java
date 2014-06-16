@@ -175,6 +175,7 @@ public class ServiciosVentanaLogin implements Serializable{
 				}
 			} else {
 				System.out.println("LO SIENTO, NO CONSEGUIMOS ESTE USUARIO");
+				controlMensaje.error("Login Error","Lo siento este usuario no esta registrado");
 			}
 		} else {
 			logueado = true;
@@ -220,6 +221,7 @@ public class ServiciosVentanaLogin implements Serializable{
 			new ControladorMensajes().informativo("Operación exitosa", "Empresa: "+ this.empresa.getNombre() +" ha sido guardada!");
 			registrarAdministrador();
 			empleado.setEmpresa(empresa);
+			empleado.setCargo((Cargo) CargoDAO.getInstancia().buscarEntidadPorClave(4));
 			EmpleadoDAO.getInstancia().insertarOActualizar(this.empleado);
 			registrarPrimerEncuesta();
 			new ControladorMensajes().informativo("Operación exitosa", "Empleado: "+ this.empleado.getNombre() +" ha sido guardado!");

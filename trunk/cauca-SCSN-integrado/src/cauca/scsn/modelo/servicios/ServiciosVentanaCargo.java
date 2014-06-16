@@ -143,7 +143,8 @@ public class ServiciosVentanaCargo implements ServiciosMaestros {
 	}
 
 	public void llenarDataModel() {
-		setListaCargos(cargoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
+//		setListaCargos(cargoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
+		setListaCargos(CargoDAO.getInstancia().buscarTodasEntidades());
 		setCargoDataModel(new CargoDataModel(this.listaCargos));
 	}
 	

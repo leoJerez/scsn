@@ -40,6 +40,7 @@ public class ServiciosVentanaProveedor implements ServiciosMaestros{
 	private ActionEvent 		eventoCancelar;
 	private String				mensajeEliminar;
 	private List<Proveedor>		listaProveedores	 	=  	new ArrayList<Proveedor>();
+	private int 				rows;
 	
 	public ServiciosVentanaProveedor() {
 		super();
@@ -138,9 +139,15 @@ public class ServiciosVentanaProveedor implements ServiciosMaestros{
 		}
 	}
 	
-	public void llenarDataModel() {
+	public void llenarDataModel() {		
 		setListaProveedores(proveedorDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
 		setProveedorDataModel(new ProveedorDataModel(listaProveedores));
+		
+		if(listaProveedores.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 	}
 	
 	public void empresaEnLaSesion() {
@@ -220,5 +227,13 @@ public class ServiciosVentanaProveedor implements ServiciosMaestros{
 
 	public void setMensajeEliminar(String mensajeEliminar) {
 		this.mensajeEliminar = mensajeEliminar;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 }

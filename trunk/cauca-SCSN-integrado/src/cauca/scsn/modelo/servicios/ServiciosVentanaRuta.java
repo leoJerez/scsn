@@ -1,5 +1,7 @@
 package cauca.scsn.modelo.servicios;
 
+import java.util.List;
+
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.bean.ViewScoped;
@@ -13,6 +15,7 @@ import cauca.scsn.controlador.ControladorMensajes;
 import cauca.scsn.modelo.beans.ValidadorBean;
 import cauca.scsn.modelo.dao.TipoCarreteraDAO;
 import cauca.scsn.modelo.dao.RutaDAO;
+import cauca.scsn.modelo.datamodel.ProveedorDataModel;
 import cauca.scsn.modelo.datamodel.RutaDataModel;
 import cauca.scsn.modelo.entidad.TipoCarretera;
 import cauca.scsn.modelo.entidad.Ruta;
@@ -36,6 +39,7 @@ public class ServiciosVentanaRuta implements ServiciosMaestros{
 	private ActionEvent 		eventoCancelar;
 	private String				mensajeEliminar;
 	private Integer				idTipoCarretera;
+	private int					rows;
 	
 	public ServiciosVentanaRuta() {
 		super();
@@ -135,7 +139,14 @@ public class ServiciosVentanaRuta implements ServiciosMaestros{
 	}
 	
 	public void llenarDataModel() {
-		setRutaDataModel(new RutaDataModel(rutaDAO.buscarEntidadesPorPropiedad("empresa", this.empresa)));
+		List<Ruta> listaRuta = rutaDAO.buscarEntidadesPorPropiedad("empresa", this.empresa);
+		setRutaDataModel(new RutaDataModel(listaRuta));
+		
+		if(listaRuta.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 	}
 	
 	public void empresaEnLaSesion() {
@@ -214,5 +225,13 @@ public class ServiciosVentanaRuta implements ServiciosMaestros{
 
 	public void setIdTipoCarretera(Integer idTipoCarretera) {
 		this.idTipoCarretera = idTipoCarretera;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 }

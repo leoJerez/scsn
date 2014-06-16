@@ -1,5 +1,6 @@
 package cauca.scsn.modelo.servicios;
 
+import java.util.Date;
 import java.util.HashMap;
 
 import javax.faces.bean.ManagedBean;
@@ -15,10 +16,16 @@ import cauca.scsn.controlador.ControladorMensajes;
 import cauca.scsn.modelo.beans.ValidadorBean;
 import cauca.scsn.modelo.dao.CargoDAO;
 import cauca.scsn.modelo.dao.EmpleadoDAO;
+import cauca.scsn.modelo.dao.seguridad.EncuestaDAO;
+import cauca.scsn.modelo.dao.seguridad.RolDAO;
+import cauca.scsn.modelo.dao.seguridad.UsuarioDAO;
 import cauca.scsn.modelo.datamodel.EmpleadoDataModel;
 import cauca.scsn.modelo.entidad.Cargo;
 import cauca.scsn.modelo.entidad.Empleado;
 import cauca.scsn.modelo.entidad.Empresa;
+import cauca.scsn.modelo.entidad.seguridad.Encuesta;
+import cauca.scsn.modelo.entidad.seguridad.Rol;
+import cauca.scsn.modelo.entidad.seguridad.Usuario;
 import cauca.scsn.modelo.interfaces.ServiciosMaestros;
 
 @ManagedBean
@@ -66,11 +73,16 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 								if((idCargo !=0) || (empleadoSeleccionado.getCargo()!=null)){
 									if(!guardarConductor) { //este condicional se va a eliminar cuando se modifique la base de datos, es decir, cuando se agregue la parte de ROL
 										Cargo cargo = (Cargo) CargoDAO.getInstancia().buscarEntidadPorClave(this.idCargo);
-										this.empleado.setCargo(cargo);	
+										if(cargo.getIdCargo() == 6){
+											this.empleado.setCargo(cargo);
+										}else{
+											this.empleado.setCargo(cargo);
+											guardarUsuario();
+											this.empleado.setUsuario((Usuario) UsuarioDAO.getInstancia().buscarEntidadPorClave(usuario.getIdUsuario()));
+										}
 									}
 									try {
-										if(validador.validarEmpleado(empleado)
-												|| validador.validarEmpleado(empleadoSeleccionado)){
+										if(validador.validarEmpleado(empleado) || validador.validarEmpleado(empleadoSeleccionado)){
 										
 											if (!modificar) {
 											
@@ -123,6 +135,22 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 			mensajes.error("Error", "Campo requerido, colocar el número de Cedula");
 		}
 		
+	}
+	
+	private Usuario usuario = new Usuario();
+	public void guardarUsuario(){
+		usuario.setLogin(empleado.getCedulaEmpleado());
+		usuario.setPassword(empleado.getCedulaEmpleado());
+		usuario.setRol((Rol) RolDAO.getInstancia().buscarEntidadPorClave(empleado.getCargo().getIdCargo()));
+		UsuarioDAO.getInstancia().insertarOActualizar(usuario);
+		
+		Encuesta encuesta = new Encuesta();
+		encuesta.setObservaciones("Primer Ingreso");
+		encuesta.setFechaEncuesta(new Date());
+		encuesta.setUsuario( (Usuario) UsuarioDAO.getInstancia().buscarEntidadPorClave(usuario.getIdUsuario()));
+		encuesta.setVisita("S");
+		EncuestaDAO.getInstancia().insertarOActualizar(encuesta);
+		mensajes.informativo("Mensaje", "Se a creado el usuario con el login y clave con la cedula del empleado");
 	}
 	
 	public void eliminar(ActionEvent actionEvent) {
@@ -183,7 +211,7 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 			cancelar(eventoCancelar);
 		}
 	}
-	
+	private int rows;
 	public void llenarDataModel() {
 		//setEmpleadoDataModel(new EmpleadoDataModel(empleadoDAO.buscarTodasEntidades()));
 		setEmpleadoDataModel(new EmpleadoDataModel(empleadoDAO.buscarEntidadesPorPropiedad("empresa", empresa)));
@@ -267,6 +295,14 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 
 	public void setIdCargo(Integer idCargo) {
 		this.idCargo = idCargo;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 
 }

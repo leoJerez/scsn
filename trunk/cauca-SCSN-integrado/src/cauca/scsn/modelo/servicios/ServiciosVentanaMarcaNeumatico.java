@@ -37,6 +37,7 @@ public class ServiciosVentanaMarcaNeumatico implements ServiciosMaestros {
 	private ActionEvent 			eventoCancelar;
 	private String					mensajeEliminar;
 	private List<MarcaNeumatico>	listaMarca					=	new ArrayList<MarcaNeumatico>();
+	private int						rows;
 	
 	public ServiciosVentanaMarcaNeumatico() {
 		super();
@@ -146,6 +147,12 @@ public class ServiciosVentanaMarcaNeumatico implements ServiciosMaestros {
 	public void llenarDataModel() {
 		setListaMarca(marcaNeumaticoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
 		setMarcaNeumaticoDataModel(new MarcaNeumaticoDataModel(this.listaMarca));
+		
+		if(listaMarca.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 	}
 
 	@Override
@@ -227,5 +234,13 @@ public class ServiciosVentanaMarcaNeumatico implements ServiciosMaestros {
 
 	public void setListaMarca(List<MarcaNeumatico> listaMarca) {
 		this.listaMarca = listaMarca;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 }

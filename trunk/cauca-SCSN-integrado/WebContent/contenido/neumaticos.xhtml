@@ -92,7 +92,7 @@
 					<p:dataTable id="neumaticos" value="#{serviciosVentanaNeumatico.neumaticoDataModel}" var="neumatico" style="width:221%;align:right;" scrollable="false"
                     				paginator="true" paginatorPosition="top"  
                  					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
-					                rowsPerPageTemplate="5,10,15"
+					                rowsPerPageTemplate="5,10,15" rows="#{serviciosVentanaNeumatico.rows}"
 					                emptyMessage="No se encontraron resultados" selectionMode="single" 
 									selection="#{serviciosVentanaNeumatico.neumaticoSeleccionado}" onRowSelectUpdate=":formModificar:dataMod">
 						

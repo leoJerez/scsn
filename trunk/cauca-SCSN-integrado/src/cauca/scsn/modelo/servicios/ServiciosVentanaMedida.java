@@ -47,6 +47,7 @@ public class ServiciosVentanaMedida implements ServiciosMaestros {
 	private Integer					idMarca;
 	private Integer					idDiseno;
 	private List<Medida>			listaMedida			=	new ArrayList<Medida>();
+	private int 					rows;
 	
 	public ServiciosVentanaMedida() {
 		super();
@@ -182,6 +183,12 @@ public class ServiciosVentanaMedida implements ServiciosMaestros {
 	public void llenarDataModel() {
 		setListaMedida(medidaDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
 		setMedidaDataModel(new MedidaDataModel(this.listaMedida));
+		
+		if(listaMedida.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 	}
 
 	@Override
@@ -285,6 +292,14 @@ public class ServiciosVentanaMedida implements ServiciosMaestros {
 
 	public void setListaDisenos(List<Diseno> listaDisenos) {
 		this.listaDisenos = listaDisenos;
+	}
+
+	public int getRows() {
+		return rows;
+	}
+
+	public void setRows(int rows) {
+		this.rows = rows;
 	}
 
 }

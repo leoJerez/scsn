@@ -77,7 +77,7 @@ public class ServiciosVentanaEmpresa {
 		if(editarCampo == false){
 			editarCampo = true;
 			btonEditar = false;
-			empresa.setDireccion("soy la nueva direccion");
+//			empresa.setDireccion("soy la nueva direccion");
 			EmpresaDAO.getInstancia().insertarOActualizar(empresa);
 			session.setAttribute("empresa", empresa);
 			mensajes.informativo("Mensaje", "Los Datos se modificaron correctamente");
