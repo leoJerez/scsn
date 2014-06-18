@@ -223,7 +223,7 @@
 							<h:panelGrid columns="2">
 					     		<h:selectOneMenu id="cargo" label="Cargo" value="#{serviciosVentanaEmpleado.idCargo}" >
 					                <f:selectItem itemLabel="-Seleccione-" itemValue="" />  
-					                <f:selectItems value="#{serviciosVentanaCargo.listaCargos}" var="cargo" itemLabel="#{cargo.nombre}" itemValue="#{cargo.idCargo}"/> 
+					                <f:selectItems value="#{serviciosVentanaCargo.listaCargoCliente}" var="cargo" itemLabel="#{cargo.nombre}" itemValue="#{cargo.idCargo}"/> 
 					            </h:selectOneMenu>
 						       	<p:commandButton styleClass="botonVentana" height="10" width="10" title="Nuevo Cargo" id="nuevoCargo"  style="width:20px;" onclick="ventanaNuevoCargo.show();" image="ui-icon-plusthick"/>
 					   		</h:panelGrid>
