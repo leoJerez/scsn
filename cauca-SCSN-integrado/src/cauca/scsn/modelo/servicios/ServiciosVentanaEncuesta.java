@@ -93,10 +93,13 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 		 List<Encuesta> listaEncuestaCompleta = EncuestaDAO.getInstancia().buscarTodasEntidades();	
 		 for (int i = 0; i < listaEncuestaCompleta.size(); i++) {
 			for (int j = 0; j < listaEmpleados.size(); j++) {
-				if(listaEncuestaCompleta.get(i).getUsuario().getIdUsuario() == listaEmpleados.get(j).getUsuario().getIdUsuario()){
-					listaEncuesta.add(listaEncuestaCompleta.get(i));
-					
+				if(listaEmpleados.get(j).getCargo().getIdCargo() !=6){
+					if(listaEncuestaCompleta.get(i).getUsuario().getIdUsuario() == listaEmpleados.get(j).getUsuario().getIdUsuario()){
+						listaEncuesta.add(listaEncuestaCompleta.get(i));
+						
+					}
 				}
+				
 			}
 		}
 		 

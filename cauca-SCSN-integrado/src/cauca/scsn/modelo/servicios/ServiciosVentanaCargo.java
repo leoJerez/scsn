@@ -142,10 +142,21 @@ public class ServiciosVentanaCargo implements ServiciosMaestros {
 		}
 	}
 
+	private List<Cargo> listaCargoCliente = new ArrayList<Cargo>();
 	public void llenarDataModel() {
 //		setListaCargos(cargoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
 		setListaCargos(CargoDAO.getInstancia().buscarTodasEntidades());
-		setCargoDataModel(new CargoDataModel(this.listaCargos));
+		for (int i = 0; i < listaCargos.size(); i++) {
+			if(listaCargos.get(i).getIdCargo() == 4 || listaCargos.get(i).getIdCargo() == 5 || listaCargos.get(i).getIdCargo() == 6 || listaCargos.get(i).getIdCargo() == 7 ){
+				listaCargoCliente.add(listaCargos.get(i));
+			}
+		}
+		
+		for (int j = 0; j < listaCargoCliente.size(); j++) {
+			System.out.println("lista de cargo: "+listaCargoCliente.get(j).getNombre());
+		}
+		setCargoDataModel(new CargoDataModel(this.listaCargoCliente));
+		
 	}
 	
 	public void empresaEnLaSesion() {
@@ -224,6 +235,14 @@ public class ServiciosVentanaCargo implements ServiciosMaestros {
 
 	public void setMensajeEliminar(String mensajeEliminar) {
 		this.mensajeEliminar = mensajeEliminar;
+	}
+
+	public List<Cargo> getListaCargoCliente() {
+		return listaCargoCliente;
+	}
+
+	public void setListaCargoCliente(List<Cargo> listaCargoCliente) {
+		this.listaCargoCliente = listaCargoCliente;
 	}
 
 
