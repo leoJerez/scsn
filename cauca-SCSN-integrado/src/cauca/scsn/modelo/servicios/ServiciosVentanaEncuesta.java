@@ -245,9 +245,14 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 		          --use-set-session-authorization --disable-dollar-quoting --verbose --quote-all-identifiers 
 		          --no-unlogged-table-data --file "path" "postgres" */
 		   if(!format.equalsIgnoreCase("")) {
-		    pb = new ProcessBuilder("C:/Archivos de programa/PostgreSQL/9.2/bin\\pg_dump.exe", "--verbose", "--format", format, "-f", path);
+//		    pb = new ProcessBuilder("C:/Archivos de programa/PostgreSQL/9.2/bin\\pg_dump.exe", "--verbose", "--format", format, "-f", path);
+//		   } else {
+//		    pb = new ProcessBuilder("C:/Archivos de programa/PostgreSQL/9.2/bin\\pg_dump.exe", "--verbose", "--inserts", "--column-inserts", "-f", path);
+//		   }
+			   
+			pb = new ProcessBuilder("C:/Program Files (x86)/PostgreSQL/9.2/bin\\pg_dump.exe", "--verbose", "--format", format, "-f", path);
 		   } else {
-		    pb = new ProcessBuilder("C:/Archivos de programa/PostgreSQL/9.2/bin\\pg_dump.exe", "--verbose", "--inserts", "--column-inserts", "-f", path);
+		    pb = new ProcessBuilder("C:/Program Files (x86)/PostgreSQL/9.2/bin\\pg_dump.exe", "--verbose", "--inserts", "--column-inserts", "-f", path);
 		   }
 		         pb.environment().put("PGHOST", host);
 		         pb.environment().put("PGPORT", puerto);
@@ -268,7 +273,8 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 	 public void guardarRespaldo(){
 		 if(guardarArchivo != ""){
 			 System.out.println("nombre del archivo: "+guardarArchivo+".backup");
-			 String path = "webapps/proyecto/respaldos/"+guardarArchivo+".backup";
+			 //String path = "webapps/proyecto/respaldos/"+guardarArchivo+".backup";
+			 String path = "C:/Users/cauca/Desktop/"+guardarArchivo+".backup";
 			 crearBackup("localhost", "5432", "postgres", "postgres", "cauca", "Tar", path);
 		 }else{
 			 mensajes.error("Error: Campo requerido", "Colocar nombre a la bases de datos");

@@ -41,8 +41,8 @@
     <init-param>
       <param-name>uploadDirectory</param-name>
       <!-- <param-value>C:\Documents and Settings\user-pasante\Escritorio\proyecto-cauca\workspace\proyecto-cauca-SCSN\WebContent\imagenes\filesUploaded</param-value> -->
-      <!-- <param-value>C:\Users\cauca\Desktop\SCSN-Coord-Informática\WorkSpace\proyecto-cauca-SCSN-integrar\WebContent\imagenes\filesUploaded</param-value>  --> 
-      <param-value>\var\lib\tomcat7\webapps\cauca-SCSN\WebContent\imagenes\filesUploaded</param-value>
+       <param-value>C:\Users\cauca\Desktop\SCSN-Coord-Informática\WorkSpace\proyecto-cauca-SCSN-integrar\WebContent\imagenes\filesUploaded</param-value>   
+     <!-- <param-value>\var\lib\tomcat7\webapps\cauca-SCSN\WebContent\imagenes\filesUploaded</param-value>-->
     </init-param>
   </filter>
   <filter-mapping>

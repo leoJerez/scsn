@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pageflow:Pageflow xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf13663098857382" configfile="/proyecto-cauca-SCSN/WebContent/WEB-INF/faces-config.xml"/>
+<pageflow:Pageflow xmlns:pageflow="http://www.sybase.com/suade/pageflow" id="pf13663098857382" configfile="/proyecto-cauca-SCSN-integrar/WebContent/WEB-INF/faces-config.xml"/>
