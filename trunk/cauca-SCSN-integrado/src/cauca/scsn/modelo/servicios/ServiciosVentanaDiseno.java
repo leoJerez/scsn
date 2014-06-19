@@ -254,8 +254,8 @@ public class ServiciosVentanaDiseno implements ServiciosMaestros {
 	 */
 	public void colocarImagenDefault() {
 //		Path path = Paths.get("C:/Documents and Settings/user-pasante/Escritorio/proyecto-cauca/workspace/proyecto-cauca-SCSN/WebContent/imagenes/mascaraDiseno.jpg");
-//		Path path = Paths.get("C:/Users/cauca/Desktop/SCSN-Coord-Informática/WorkSpace/proyecto-cauca-SCSN-integrar/WebContent/imagenes/mascaraDiseno.jpg");
-		Path path = Paths.get("/var/lib/tomcat7/webapps/cauca-SCSN/WebContent/imagenes/mascaraDiseno.jpg");
+		Path path = Paths.get("C:/Users/cauca/Desktop/SCSN-Coord-Informática/WorkSpace/proyecto-cauca-SCSN-integrar/WebContent/imagenes/mascaraDiseno.jpg");
+//		Path path = Paths.get("/var/lib/tomcat7/webapps/cauca-SCSN/WebContent/imagenes/mascaraDiseno.jpg");
 		byte[] data;
 		try {
 			data = Files.readAllBytes(path);

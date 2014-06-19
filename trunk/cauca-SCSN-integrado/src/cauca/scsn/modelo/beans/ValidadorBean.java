@@ -319,7 +319,7 @@ public class ValidadorBean{
 		//SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 		if((fecha1 != null) && (fecha2 != null)) {
 			if(fecha2.before(fecha1)) {
-				mensajes.error("Error!", msj);
+				//mensajes.error("Error!", msj);
 				return false;
 			} else {
 				return true;
@@ -381,7 +381,7 @@ public class ValidadorBean{
 			if(fechaIngresada.compareTo(fechaHoy.getTime()) < 1) {
 				return true;
 			} else {
-				mensajes.error("Error!", msj);
+				//mensajes.error("Error!", msj);
 				return false;
 			}
 		} else {

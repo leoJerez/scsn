@@ -1,7 +1,9 @@
 package cauca.scsn.modelo.servicios;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
@@ -214,7 +216,14 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 	private int rows;
 	public void llenarDataModel() {
 		//setEmpleadoDataModel(new EmpleadoDataModel(empleadoDAO.buscarTodasEntidades()));
-		setEmpleadoDataModel(new EmpleadoDataModel(empleadoDAO.buscarEntidadesPorPropiedad("empresa", empresa)));
+		List<Empleado> listaEmpleado = empleadoDAO.buscarEntidadesPorPropiedad("empresa", empresa);
+		setEmpleadoDataModel(new EmpleadoDataModel(listaEmpleado));
+		
+		if(listaEmpleado.size() > 0){
+			rows = 5;
+		}else{
+			rows = 0;
+		}
 	}
 	
 	public void empresaEnLaSesion() {

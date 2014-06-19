@@ -50,6 +50,7 @@ import cauca.scsn.modelo.dao.EmpleadoCaucaDAO;
 import cauca.scsn.modelo.dao.EmpleadoDAO;
 import cauca.scsn.modelo.dao.EmpresaDAO;
 import cauca.scsn.modelo.dao.NeumaticoDAO;
+import cauca.scsn.modelo.dao.ProveedorDAO;
 import cauca.scsn.modelo.dao.seguridad.EncuestaDAO;
 import cauca.scsn.modelo.dao.seguridad.InterfazDAO;
 import cauca.scsn.modelo.dao.seguridad.LogDAO;
@@ -62,6 +63,7 @@ import cauca.scsn.modelo.entidad.Empleado;
 import cauca.scsn.modelo.entidad.EmpleadoCauca;
 import cauca.scsn.modelo.entidad.Empresa;
 import cauca.scsn.modelo.entidad.NeumaticoVehiculo;
+import cauca.scsn.modelo.entidad.Proveedor;
 import cauca.scsn.modelo.entidad.seguridad.Encuesta;
 import cauca.scsn.modelo.entidad.seguridad.Interfaz;
 import cauca.scsn.modelo.entidad.seguridad.Log;
@@ -224,6 +226,7 @@ public class ServiciosVentanaLogin implements Serializable{
 			empleado.setCargo((Cargo) CargoDAO.getInstancia().buscarEntidadPorClave(4));
 			EmpleadoDAO.getInstancia().insertarOActualizar(this.empleado);
 			registrarPrimerEncuesta();
+			registrarProveedorCauca();
 			new ControladorMensajes().informativo("Operación exitosa", "Empleado: "+ this.empleado.getNombre() +" ha sido guardado!");
 			
 			login(actionEvent);
@@ -234,6 +237,20 @@ public class ServiciosVentanaLogin implements Serializable{
 		}
 	}
 		
+	public void registrarProveedorCauca(){
+		Empresa empresaCauca = new Empresa();
+		empresaCauca = (Empresa) EmpresaDAO.getInstancia().buscarEntidadPorClave(1);
+		Proveedor proveedor = new Proveedor();
+		proveedor.setEmpresa((Empresa) EmpresaDAO.getInstancia().buscarEntidadPorClave(empresa.getIdEmpresa()));
+		proveedor.setNombre(empresaCauca.getNombre());
+		proveedor.setDireccion(empresaCauca.getDireccion());
+		proveedor.setRif(empresaCauca.getRif());
+		proveedor.setTelefono(empresaCauca.getTelefono());
+		proveedor.setCorreo(empresaCauca.getCorreo());
+		proveedor.setCelular(empresaCauca.getCelular());
+		ProveedorDAO.getInstancia().insertarOActualizar(proveedor);
+	}
+	
 	public void registrarPrimerEncuesta(){
 		Encuesta encuesta = new Encuesta();
 		encuesta.setObservaciones("Primer Ingreso");

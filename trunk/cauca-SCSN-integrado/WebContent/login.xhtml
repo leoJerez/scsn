@@ -86,7 +86,7 @@
 			                    <h:outputLabel value="Nombre: *" for="nombreEmpresa"/>
 			                    <h:inputText id="nombreEmpresa" required="true" label="Nombre" value="#{serviciosVentanaLogin.empresa.nombre}" requiredMessage="* Campo requerido: Nombre" 
 						   					 maxlength="60" validatorMessage="Nombre:Ingrese solo LETRAS con inicial en Mayúscula" >
-                                	<f:validateRegex pattern="^[A-Z]+[a-zÃ¡Ã©Ã­Ã³ÃºÃ±]*" for="nombreEmpresa"/>
+                                	<f:validateRegex pattern="^[A-Z\s]+[a-z\sÃ¡Ã©Ã­Ã³ÃºÃ±]*" for="nombreEmpresa"/>
 						   		</h:inputText> 
 						   		<p:message for="nombreEmpresa"/>
 			                      
