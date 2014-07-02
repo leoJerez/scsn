@@ -1,0 +1,541 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Desmontaje</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Gestionar Desmontaje</h1>
+		<br/>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+		
+		<h:form id="formDesmontaje">
+		    
+		    <script type="text/javascript">
+	            function handleDrop(event,ui) {
+	            	ventanaDatosMovimiento.show();
+	            }
+	            
+	            function refrescarDesmontaje(xhr, status, args) {
+					if (args.limpiar) {
+						document.getElementById("formDesmontaje").reset();
+						ventanaTerminar.hide();
+		            } else {
+		            	ventanaTerminar.hide();
+		            }
+	            }
+	            function handleClick(xhr, status, args){
+	            	switch (args.tarea) {
+						case "C":
+							confirmacion.show();
+							break;			
+						case "D":
+							confirmarDatosDesmontajes.show();
+					}
+	           
+	            }
+	            
+	        </script>
+	        
+			<h:panelGrid columns="1" border="1" cellpadding="1" cellspacing="30">
+			    <h:panelGrid columns="2">
+				    <h:panelGrid id="panelDatosVehiculo" columns="2">
+				    	<h:outputLabel value="Placa: " for="placa"/>
+				   		<h:selectOneMenu id="placa" label="Placa" value="#{serviciosVentanaDesmontaje.vehiculoSeleccionado.idVehiculo}" require="true" height="10" scrollable="true" scrollHeight="100">
+			                <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+		               		<f:selectItems value="#{serviciosVentanaVehiculo.vehiculoDataModel}" var="vehiculo" itemValue="#{vehiculo.idVehiculo}" itemLabel="#{vehiculo.placa}"/>
+		               		
+		               		<p:ajax action="#{serviciosVentanaDesmontaje.actualizarVehiculoDesmontaje('')}" 
+		               				update="modelo, marca, tipoVehiculo, dentroCarretera, kilometrajeAnterior, esquemaEje, 
+		               					primerNeumatico11, primerNeumatico12, primerNeumatico13, primerNeumatico14, rutaDestino"/>
+							            	
+		               	 </h:selectOneMenu>
+			            
+			            <h:outputLabel value="Modelo:" for="modelo"/>
+					    <h:inputText id="modelo" value="#{serviciosVentanaDesmontaje.vehiculoSeleccionado.modeloVehiculo.nombre}" disabled="true" ajax="true"/>
+			            
+				    	<h:outputLabel value="Marca:" for="marca"/>
+					    <h:inputText id="marca" value="#{serviciosVentanaDesmontaje.vehiculoSeleccionado.modeloVehiculo.marcaVehiculo.nombre}" disabled="true"/>
+					    
+					    <h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculo"/>
+					    <h:inputText id="tipoVehiculo" value="#{serviciosVentanaDesmontaje.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.nombre}" disabled="true"/>
+				    
+				    	<h:outputLabel value=""/>
+				    	<h:selectOneRadio id="dentroCarretera" disabled="true" 
+					                      value="#{serviciosVentanaDesmontaje.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.dentroCarretera}">
+					        <f:selectItem id="item1" itemLabel="Dentro Carretera" itemValue="S" />
+					        <f:selectItem id="item2" itemLabel="Fuera de Carretera" itemValue="N" />
+					    </h:selectOneRadio>
+					    
+					    <h:outputLabel value="Ruta:" for="rutaDestino"/>
+					   	<h:inputText id="rutaDestino" value="#{serviciosVentanaDesmontaje.rutaVehiculo.ruta.nombre}" disabled="true"/>
+				    </h:panelGrid>
+				    
+				    <h:panelGrid id="panelDatosOperacion" columns="3">
+				    	
+				    	<h:outputLabel value="Fecha: " for="fecha" />
+				    	<p:calendar id="fecha" value="#{serviciosVentanaDesmontaje.movimientoActualId.fecha}" showOn="button"/>
+				    	<h:outputLabel value="" />
+				    	
+				    	<h:outputLabel value="Kilometraje Anterior:" for="kilometrajeAnterior"/>
+						<h:inputText id="kilometrajeAnterior" label="Kilometraje Anterior" value="#{serviciosVentanaDesmontaje.vehiculoSeleccionado.kilometraje}" 
+									disabled="true">
+				   			<f:validateLength maximum="20"/>
+				   		</h:inputText>
+				   		<h:outputLabel value="Kilómetros" />
+				    	
+				    	<h:outputLabel value="Kilometraje Desmonte:" for="kilometrajeDesmonte"/>
+						<h:inputText id="kilometrajeDesmonte" label="Kilometraje al Desmonte" value="#{serviciosVentanaDesmontaje.movimientoActual.kilometraje}" >
+				   			<f:validateLength maximum="20"/>
+				   			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularRecorridoAcumulado}" render="recorridoAcumulado"/>
+				   		</h:inputText>
+				   		<h:outputLabel value="Kilómetros" />
+				    </h:panelGrid>
+			    		    
+			    </h:panelGrid>
+			    <h:panelGrid columns="1" cellpadding="1" cellspacing="5">
+				    <h:panelGrid columns="5" cellpadding="1" cellspacing="30" style="padding-left: 60px;">  
+		            	
+		            	<p:panel id="pnlListoMontar" styleClass="almacen" >
+		            		<p:commandButton actionListener="#{serviciosVentanaDesmontaje.abrirVentanaAlmacen('L')}" process="@this" 
+		            						 styleClass="almacen2"
+		            						 style="background: url(../imagenes/almacenListos.png) no-repeat; background-position: center; border: 0px;"
+		            						 oncomplete="ventanaDatosRegresar.show();" update="tablaAlmacen ventanaDatosRegresar"/>
+			                <p:droppable scope="neumatico" tolerance="pointer" onDrop="handleDrop" dropListener="#{serviciosVentanaDesmontaje.onDrop}"
+			                    			onDropUpdate="mensajes datosMovimiento neumatico12" hoverStyleClass="ui-state-highlight">
+			                    <f:attribute name="id" value="L"/>
+		                    </p:droppable>
+		                </p:panel>
+		                		                    
+		                <p:panel id="reencauche" styleClass="almacen" >  
+			                <p:commandButton actionListener="#{serviciosVentanaDesmontaje.abrirVentanaAlmacen('R')}" process="@this" 
+		            						 styleClass="almacen2"
+		            						 style="background: url(../imagenes/reencauche.png) no-repeat; background-position: center; border: 0px;"
+		            						 oncomplete="ventanaDatosRegresar.show();" update="tablaAlmacen ventanaDatosRegresar"/> 
+			                <p:droppable  scope="neumatico" tolerance="pointer" onDrop="handleDrop" dropListener="#{serviciosVentanaDesmontaje.onDrop}"
+			                    			onDropUpdate="mensajes datosMovimiento" hoverStyleClass="ui-state-highlight">
+			                     <f:attribute name="id" value="R"/>
+			                </p:droppable>  
+		                </p:panel>  
+		  
+		                <p:panel id="reparacion" styleClass="almacen">  
+		                   <p:commandButton action="#{serviciosVentanaDesmontaje.abrirVentanaAlmacen('P')}" process="@this" 
+		            						 styleClass="almacen2"
+		            						 style="background: url(../imagenes/reparacion.png) no-repeat; background-position: center; border: 0px;"
+		            						 oncomplete="ventanaDatosRegresar.show();" update="tablaAlmacen ventanaDatosRegresar"/> 
+		                   <p:droppable scope="neumatico" tolerance="fit" onDrop="handleDrop" dropListener="#{serviciosVentanaDesmontaje.onDrop}"
+		                    			onDropUpdate="mensajes datosMovimiento" hoverStyleClass="ui-state-highlight">
+		                    	<f:attribute name="id" value="P"/>
+		                   </p:droppable>
+		                </p:panel> 
+		               
+		                <p:panel id="reclamo" styleClass="almacen">  
+		                	<p:commandButton action="#{serviciosVentanaDesmontaje.abrirVentanaAlmacen('Ce')}" process="@this" 
+		            						 styleClass="almacen2"
+		            						 style="background: url(../imagenes/reclamo.png) no-repeat; background-position: center; border: 0px;"
+		            						 oncomplete="ventanaDatosRegresar.show();" update="tablaAlmacen ventanaDatosRegresar"/> 
+		                    <p:droppable scope="neumatico" tolerance="fit" onDrop="handleDrop" dropListener="#{serviciosVentanaDesmontaje.onDrop}"
+		                    			onDropUpdate="mensajes datosMovimiento " hoverStyleClass="ui-state-highlight">  
+		                     	<f:attribute name="id" value="C"/>
+		                    </p:droppable>  
+		                </p:panel>  
+		  
+		                <p:panel id="deBaja" styleClass="almacen" >  
+		                    <p:commandButton action="#{serviciosVentanaDesmontaje.abrirVentanaAlmacen('Ba')}" process="@this" 
+		            						 styleClass="almacen2"
+		            						 style="background: url(../imagenes/deBaja.png) no-repeat; background-position: center; border: 0px;"
+		            						 oncomplete="ventanaDatosRegresar.show();" update="tablaAlmacen ventanaDatosRegresar"/>
+		                    <p:droppable scope="neumatico" tolerance="fit" onDrop="handleDrop" dropListener="#{serviciosVentanaDesmontaje.onDrop}"
+		                    			onDropUpdate="mensajes datosMovimiento" hoverStyleClass="ui-state-highlight">  
+		                     <f:attribute name="id" value="B"/>
+		                    </p:droppable>  
+		                </p:panel> 
+		            </h:panelGrid>
+		            
+		            
+		            <h:panelGrid id="esquemaEje" columns="2" style="margin-left:35px;">
+						
+						<h:panelGrid columns="2" style="margin-left:20px;">
+							
+							<h:outputLabel id="primerNeumaticoR21" value="R1"/>
+							<h:outputLabel id="primerNeumaticoR22" value="R2"/>
+							
+							<p:graphicImage id="neumaticoR21" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico21}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumaticoRepIzqDrag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumaticoR22" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico22}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumaticoRepDerDrag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							
+						</h:panelGrid>
+						
+						<h:panelGrid columns="5" style="margin-left:85px;">
+							<h:outputLabel id="primerNeumatico11" value="#{serviciosVentanaDesmontaje.primerNeumatico1}" />
+							<h:outputLabel id="primerNeumatico12"  value="#{serviciosVentanaDesmontaje.primerNeumatico2}" />
+							<h:outputLabel id="primerNeumaticoNull1" value="" />
+							<h:outputLabel id="primerNeumatico13" value="#{serviciosVentanaDesmontaje.primerNeumatico3}" />
+							<h:outputLabel id="primerNeumatico14" value="#{serviciosVentanaDesmontaje.primerNeumatico4}" />
+							
+							<p:graphicImage id="neumatico11" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico1}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico11Drag}" revert="true" scope="neumatico " helper="clone"/>
+							</p:graphicImage>			
+							<p:graphicImage id="neumatico12" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico2}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico12Drag}" revert="true"  scope="neumatico" helper="clone"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje1" styleClass="eje" style="#{serviciosVentanaDesmontaje.serviciosVentanaEsquemaEjes.fondoEje1}; margin-left:10px;" disabled="true"/>
+							<p:graphicImage id="neumatico13" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico3}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico13Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico14" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico4}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico14Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+			                   
+							<h:outputLabel id="primerNeumatico21" value="#{serviciosVentanaDesmontaje.primerNeumatico5}" />
+							<h:outputLabel id="primerNeumatico22"  value="#{serviciosVentanaDesmontaje.primerNeumatico6}" />
+							<h:outputLabel id="primerNeumaticoNull2" value="" />
+							<h:outputLabel id="primerNeumatico23" value="#{serviciosVentanaDesmontaje.primerNeumatico7}" />
+							<h:outputLabel id="primerNeumatico24" value="#{serviciosVentanaDesmontaje.primerNeumatico8}" />
+							<p:graphicImage id="neumatico21" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico5}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico21Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico22" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico6}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico22Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje2" styleClass="eje" style="#{serviciosVentanaDesmontaje.serviciosVentanaEsquemaEjes.fondoEje2}; margin-left:10px;" disabled="true"/>
+							<p:graphicImage id="neumatico23" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico7}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico23Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico24" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico8}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico24Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+			                   
+							<h:outputLabel id="primerNeumatico31" value="#{serviciosVentanaDesmontaje.primerNeumatico9}" />
+							<h:outputLabel id="primerNeumatico32"  value="#{serviciosVentanaDesmontaje.primerNeumatico10}" />
+							<h:outputLabel id="primerNeumaticoNull3" value="" />
+							<h:outputLabel id="primerNeumatico33" value="#{serviciosVentanaDesmontaje.primerNeumatico11}" />
+							<h:outputLabel id="primerNeumatico34" value="#{serviciosVentanaDesmontaje.primerNeumatico12}" />
+							<p:graphicImage id="neumatico31" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico9}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico31Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico32" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico10}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico32Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje3" styleClass="eje" style="#{serviciosVentanaDesmontaje.serviciosVentanaEsquemaEjes.fondoEje3}; margin-left:10px;" disabled="true"/>
+							<p:graphicImage id="neumatico33" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico11}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico33Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico34" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico12}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico34Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+			                   
+							<h:outputLabel id="primerNeumatico41" value="#{serviciosVentanaDesmontaje.primerNeumatico13}" />
+							<h:outputLabel id="primerNeumatico42"  value="#{serviciosVentanaDesmontaje.primerNeumatico14}" />
+							<h:outputLabel id="primerNeumaticoNull4" value="" />
+							<h:outputLabel id="primerNeumatico43" value="#{serviciosVentanaDesmontaje.primerNeumatico15}" />
+							<h:outputLabel id="primerNeumatico44" value="#{serviciosVentanaDesmontaje.primerNeumatico16}" />
+							<p:graphicImage id="neumatico41" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico13}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico41Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico42" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico14}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico41Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje4" styleClass="eje" style="#{serviciosVentanaDesmontaje.serviciosVentanaEsquemaEjes.fondoEje4}; margin-left:10px;" disabled="true"/>
+							<p:graphicImage id="neumatico43" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico15}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico43Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico44" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico16}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico44Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+			                   
+							<h:outputLabel id="primerNeumatico51" value="#{serviciosVentanaDesmontaje.primerNeumatico17}" />
+							<h:outputLabel id="primerNeumatico52"  value="#{serviciosVentanaDesmontaje.primerNeumatico18}" />
+							<h:outputLabel id="primerNeumaticoNull5" value="" />
+							<h:outputLabel id="primerNeumatico53" value="#{serviciosVentanaDesmontaje.primerNeumatico19}" />
+							<h:outputLabel id="primerNeumatico54" value="#{serviciosVentanaDesmontaje.primerNeumatico20}" />
+							<p:graphicImage id="neumatico51" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico17}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico51Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico52" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico18}" ajax="true" cache="false">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico52Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje5" styleClass="eje" style="#{serviciosVentanaDesmontaje.serviciosVentanaEsquemaEjes.fondoEje5}; margin-left:10px;" disabled="true"/>
+							<p:graphicImage id="neumatico53" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico19}" ajax="true" cache="false">
+								<p:draggable  disabled="#{serviciosVentanaDesmontaje.neumatico53Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico54" styleClass="neumatico" value="#{serviciosVentanaDesmontaje.neumatico20}" ajax="true" cache="false" disabled="true">
+								<p:draggable disabled="#{serviciosVentanaDesmontaje.neumatico54Drag}" revert="true" scope="neumatico"/>
+							</p:graphicImage>
+			                    
+						</h:panelGrid>
+					</h:panelGrid>
+			    </h:panelGrid>
+	    	</h:panelGrid>
+	    	
+	    	
+	    	 
+		 <p:dialog widgetVar="ventanaDatosMovimiento" header="Finalizar Operación" closeOnEscape="false"
+						showEffect="fade" hideEffect="fade" height="500" width="850" closable="false">
+		    <h:panelGrid id="datosMovimiento" columns="2"  style="margin: 0 auto; text-align: center; border: none;">
+		    	<h:panelGrid columns="1">
+				    <p:layout style="width: 420px; height:360px; border: none;">
+						<p:layoutUnit position="top" height="50" style="margin: 0 auto; text-align: center; border: none;">
+							<h:panelGrid columns="9" >
+					    		<h:outputLabel value="a: " for="superiorA" style="font-weight:bold;"/>
+					    		<h:inputText id="superiorA" value="#{serviciosVentanaDesmontaje.remanenteSuperiorA}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalSuperior}" render="totalSuperior  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="b: " for="superiorB" style="font-weight:bold;"/>
+					    		<h:inputText id="superiorB" value="#{serviciosVentanaDesmontaje.remanenteSuperiorB}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalSuperior}" render="totalSuperior  totalMovimiento" />
+					    		</h:inputText>
+					    		<h:outputLabel value="c: " for="superiorC" style="font-weight:bold;"/>
+					    		<h:inputText id="superiorC" value="#{serviciosVentanaDesmontaje.remanenteSuperiorC}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalSuperior}" render="totalSuperior  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="d: " for="superiorD" style="font-weight:bold;"/>
+					    		<h:inputText id="superiorD" value="#{serviciosVentanaDesmontaje.remanenteSuperiorD}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalSuperior}" render="totalSuperior  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:inputText id="totalSuperior" value="#{serviciosVentanaDesmontaje.totalSuperior}" style="width: 50px;" disabled="true"/>
+					    	</h:panelGrid>
+						</p:layoutUnit>
+						<p:layoutUnit position="bottom" height="50" style="margin: 0 auto; text-align: right;">
+							<h:panelGrid columns="9">
+					    		<h:outputLabel value="a: " for="inferiorA" style="font-weight:bold;"/>
+					    		<h:inputText id="inferiorA" value="#{serviciosVentanaDesmontaje.remanenteInferiorA}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalInferior}" render="totalInferior  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="b: " for="inferiorB" style="font-weight:bold;"/>
+					    		<h:inputText id="inferiorB" value="#{serviciosVentanaDesmontaje.remanenteInferiorB}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalInferior}" render="totalInferior  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="c: " for="inferiorC" style="font-weight:bold;"/>
+					    		<h:inputText id="inferiorC" value="#{serviciosVentanaDesmontaje.remanenteInferiorC}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalInferior}" render="totalInferior  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="d: " for="inferiorD" style="font-weight:bold;"/>
+					    		<h:inputText id="inferiorD" value="#{serviciosVentanaDesmontaje.remanenteInferiorD}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalInferior}" render="totalInferior  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:inputText id="totalInferior" value="#{serviciosVentanaDesmontaje.totalInferior}" style="width: 50px;" disabled="true"/>
+					    	</h:panelGrid>
+						</p:layoutUnit>
+						<p:layoutUnit position="left" width="80">
+							<h:panelGrid columns="1">
+					    		<h:outputLabel value="a: " for="izquierdoA" style="font-weight:bold;"/>
+					    		<h:inputText id="izquierdoA" value="#{serviciosVentanaDesmontaje.remanenteIzquierdoA}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalIzquierdo}" render="totalIzquierdo  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="b: " for="superiorB" style="font-weight:bold;"/>
+					    		<h:inputText id="izquierdoB" value="#{serviciosVentanaDesmontaje.remanenteIzquierdoB}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalIzquierdo}" render="totalIzquierdo  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="c: " for="superiorC" style="font-weight:bold;"/>
+					    		<h:inputText id="izquierdoC" value="#{serviciosVentanaDesmontaje.remanenteIzquierdoC}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalIzquierdo}" render="totalIzquierdo  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="d: " for="superiorD" style="font-weight:bold;"/>
+					    		<h:inputText id="izquierdoD" value="#{serviciosVentanaDesmontaje.remanenteIzquierdoD}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalIzquierdo}" render="totalIzquierdo  totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:inputText id="totalIzquierdo" value="#{serviciosVentanaDesmontaje.totalIzquierdo}" style="width: 50px;" disabled="true"/>
+					    	</h:panelGrid>
+						</p:layoutUnit>
+						<p:layoutUnit position="right" width="80">
+							<h:panelGrid columns="1">
+					    		<h:outputLabel value="a: " for="derechaA" style="font-weight:bold;"/>
+					    		<h:inputText id="derechaA" value="#{serviciosVentanaDesmontaje.remanenteDerechaA}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalDerecha}" render="totalDerecha totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="b: " for="derechaB" style="font-weight:bold;"/>
+					    		<h:inputText id="derechaB" value="#{serviciosVentanaDesmontaje.remanenteDerechaB}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalDerecha}" render="totalDerecha totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="c: " for="derechaC" style="font-weight:bold;"/>
+					    		<h:inputText id="derechaC" value="#{serviciosVentanaDesmontaje.remanenteDerechaC}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalDerecha}" render="totalDerecha totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:outputLabel value="d: " for="derechaD" style="font-weight:bold;"/>
+					    		<h:inputText id="derechaD" value="#{serviciosVentanaDesmontaje.remanenteDerechaD}" style="width: 50px;">
+					    			<f:ajax event="change" listener="#{serviciosVentanaDesmontaje.calcularTotalDerecha}" render="totalDerecha totalMovimiento"/>
+					    		</h:inputText>
+					    		<h:inputText id="totalDerecha" value="#{serviciosVentanaDesmontaje.totalDerecha}" style="width: 50px;" disabled="true"/>
+					    	</h:panelGrid>
+						</p:layoutUnit>
+						<p:layoutUnit position="center" >
+							<p:graphicImage id="graficImage" styleClass="neumaticoLectura" value="../imagenes/cauchoBrigestone.png" ajax="true" cache="false"/>
+						</p:layoutUnit>
+					</p:layout>
+				</h:panelGrid>
+				
+				<h:panelGrid columns="2">
+		    		<h:outputLabel value="Remanente Total:" for="totalMovimiento"/>
+		    		<h:inputText id="totalMovimiento" value="#{serviciosVentanaDesmontaje.totalMovimiento} mm" style="width: 70px;" disabled="true"/>
+				   	
+		    		<h:outputLabel value="Recorrido Acumulado:" for="recorridoAcumulado"/>
+		    		<h:inputText id="recorridoAcumulado" value="#{serviciosVentanaDesmontaje.recorridoAcumulado} Km" disabled="true" style="width: 70px;"/>
+		    		
+		    		<h:outputLabel for="tipoDesgaste" value="Tipo de Desgate:"/>
+		    		<h:selectOneMenu id="tipoDesgaste" value="#{serviciosVentanaDesmontaje.tipoDesgasteSeleccionado.idTipoDesgaste}">
+		    			<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+		    			<f:selectItems value="#{serviciosVentanaTipoDesgaste.tipoDesgasteDataModel}" var="tipoDesgaste" itemLabel="#{tipoDesgaste.nombre}" itemValue="#{tipoDesgaste.idTipoDesgaste}"/>
+		    		</h:selectOneMenu>
+		    		
+		    		<h:outputLabel for="presionMovimiento" value="Presión:"/>
+		    		<h:inputText id="presionMovimiento" value="#{serviciosVentanaDesmontaje.presion} psi" style="width: 70px;"/>
+		    		
+		    		<h:outputLabel for="observacionMovimiento" value="Observaciones:"/>
+		    		<h:inputTextarea id="observacionMovimiento" value="#{serviciosVentanaDesmontaje.observacionesMovimiento}"/>
+		    	</h:panelGrid>
+		    	
+		    	<h:panelGrid columns="2" >
+				<p:commandButton title="Desmontar" image="ui-icon-check" value="Desmontar" 
+								 oncomplete="handleClick(xhr, status, args)" update="pnlConfirmar growl" style="margin:0;"
+								 process="@this presionMovimiento tipoDesgaste" actionListener="#{serviciosVentanaDesmontaje.validarDatosDesmontajes}"/>
+				<p:commandButton id="btnCancelar" value="Cancelar" onclick="confirmacion2.show()"/>
+				</h:panelGrid>
+			
+			</h:panelGrid>
+							
+			<h:panelGrid columns="2">
+				<h:outputLabel>
+				</h:outputLabel>
+			</h:panelGrid>
+		 </p:dialog>
+	    	
+	    	<p:dialog widgetVar="ventanaTerminar" header="Finalizar Operación" closeOnEscape="false"
+							showEffect="fade" hideEffect="fade" closable="false" height="310" width="400">
+		    	<h:panelGrid id="pnlConfirmar" columns="1">
+		    		<h:panelGrid columns="2">
+			    		<h:outputLabel value="Fecha" for="fechaTerminar" />
+			    		<h:inputText id="fechaTerminar" value="#{serviciosVentanaDesmontaje.movimiento.id.fecha}" disabled="true"/>
+			    		
+			    		<h:outputLabel value="Vehiculo" for="vehiculoTerminar" />
+			    		<h:inputText id="vehiculoTerminar" value="#{serviciosVentanaDesmontaje.vehiculoSeleccionado.placa}" disabled="true" />
+			    		
+			    		<h:outputLabel value="Neumático" for="neumaticoTerminar" />
+			    		<h:inputText id="neumaticoTerminar" value="#{serviciosVentanaDesmontaje.movimiento.neumatico.codInterno}" disabled="true" />
+			    		
+			    		<h:outputLabel value="Remanente de la Operación" for="remanenteTerminar"/>
+			    		<h:inputText id="remanenteTerminar" value="#{serviciosVentanaDesmontaje.movimiento.remanenteMovimiento}" disabled="true"/>
+			    		
+			    		<h:outputLabel value="Estado Final del Neumático" for="estadoTerminar"/>
+			    		<h:inputText id="estadoTerminar" value="#{serviciosVentanaDesmontaje.movimiento.neumatico.estado}" disabled="true"/>
+		    		</h:panelGrid>
+		    		
+		    		<p:separator />
+		    		
+		    		<h:panelGrid columns="2" >
+				        <p:commandButton id="confirmar" styleClass="botonVentana" actionListener="#{serviciosVentanaDesmontaje.procesarOperacion}" title="Aceptar"
+				        				 image="ui-icon-check" oncomplete="refrescarTerminar(), ventanaTerminar.hide()" update=":formTabla:tbVehiculos,:mensajes"/>  
+				        <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" update=":formTabla:tbVehiculos" title="Cancelar"
+				        				 actionListener="#{serviciosVentanaVehiculo.cancelar}" oncomplete="ventanaTerminar.hide()"/>  
+		       		</h:panelGrid>
+		       </h:panelGrid>
+	    	</p:dialog>
+	    	
+	    	 <p:growl id="mensajes" showDetail="true" life="8000"/>
+	    	  
+		  	<p:tooltip for="L" value="Almacén Listos para Montar" />
+		  	<p:tooltip for="R" value="Reencauche" />
+		  	<p:tooltip for="P" value="Reparación" />
+		  	<p:tooltip for="C" value="Reclamos" />
+		  	<p:tooltip for="B" value="Dar de Baja" />
+		  	
+		  	
+	    	<p:growl id="growl" showDetail="true"/>
+	    	
+	    	<p:dialog widgetVar="ventanaDatosRegresar" header="Neumáticos en Almacén" closeOnEscape="false" scrollable="true"
+						showEffect="fade" hideEffect="fade" height="400" width="800" id="ventana" onCloseUpdate="growl" closable="false">
+	  
+	    		<h:panelGrid columns="1">
+	    		
+    				<p:outputPanel id="tablaAlmacen">
+		    			<p:dataTable value="#{serviciosVentanaDesmontaje.neumaticoDataModel}" var="neumatico" update="neumatico.codInterno"
+						                emptyMessage="No se encontraron resultados" selectionMode="single" scrollHeight="true" 
+										selection="#{serviciosVentanaDesmontaje.neumaticoSeleccionado}" 
+						                rowSelectListener="#{serviciosVentanaDesmontaje.habilitarBotonRegresar}"
+										onRowSelectUpdate="btnRegresar"
+										rowUnselectListener="#{serviciosVentanaDesmontaje.inhabilitarBotonRegresar}"
+										onRowUnselectUpdate="btnRegresar" >
+		    				
+		    				<p:column headerText="Neumático">
+		    					<h:outputText value="#{neumatico.codInterno}"/>
+		    				</p:column>
+		    				
+		    				<p:column headerText="Marca">
+		    					<h:outputText value="#{neumatico.disenoMedida.diseno.marcaNeumatico.nombre}"/>
+		    				</p:column>
+		    				
+		    				<p:column headerText="Medida">
+		    					<h:outputText value="#"/>
+		    				</p:column>
+		    				
+		    				<p:column headerText="Diseño">
+		    					<h:outputText value="#"/>
+		    				</p:column>
+		    				
+		    				<p:column headerText="Condición">
+		    					<h:outputText value="#"/>
+		    				</p:column>
+		    				
+		    				<p:column headerText="Rem. Actual">
+		    					<h:outputText value="#"/>
+		    				</p:column>
+		    				
+		    				<p:column headerText="Recorrido Acumulado">
+		    					<h:outputText value="#"/>
+		    				</p:column>
+		    				
+		    			</p:dataTable>
+    				</p:outputPanel>
+	    			<h:panelGrid columns="2">
+	    				<p:commandButton id="btnRegresar" value="Regresar Neumático" update="growl " process="@this" 
+	    								 actionListener="#{serviciosVentanaDesmontaje.mensajeNeumaticoSeleccionado}" disabled="#{serviciosVentanaDesmontaje.regresarDisabled}"
+	    								 image="ui-icon-check" oncomplete="handleClick(xhr, status, args);" />  
+	    				<p:commandButton value="Cancelar" oncomplete="ventanaDatosRegresar.hide();"/>
+	    			</h:panelGrid>
+	    		</h:panelGrid> 
+	    			
+	    			
+	    	</p:dialog>
+	  	</h:form>
+	  	
+	  	<h:form>
+	  		<p:growl id="growl" showDetail="true"/>
+    			<p:confirmDialog message="¿Esta seguro que desea regresar el Neumático?" 
+    						 hideEffect="fade" header="Mensaje" widgetVar="confirmacion" closable="falde" >
+    				<p:commandButton value="Aceptar" oncomplete="confirmacion.hide();"
+    								 actionListener="#{serviciosVentanaDesmontaje.regresarNeumatico}" update="growl :formDesmontaje:tablaAlmacen"/>
+    				<p:commandButton value="Cancelar" onclick="confirmacion.hide()"/>
+    			</p:confirmDialog>
+    			
+    			<p:confirmDialog message="¿Esta seguro que desea cerrar la Operación Desmontaje, perdera todos los datos?"  
+    						 hideEffect="fade" header="Mensaje" widgetVar="confirmacion2" closable="falde" >
+    				<p:commandButton value="Aceptar" update="datosMovimiento :formDesmontaje:esquemaEje"  process="@this" actionListener="#{serviciosVentanaDesmontaje.botonCancelar}" oncomplete="ventanaDatosMovimiento.hide(), confirmacion2.hide()"/>
+    				<p:commandButton value="Cancelar"  oncomplete="confirmacion2.hide()">
+    					
+    				</p:commandButton>
+    			</p:confirmDialog>
+    			
+    			<p:confirmDialog message="¿Esta seguro que desea efectuar la operación?" hideEffect="fade" header="Mensaje"
+    							 widgetVar="confirmarDatosDesmontajes" closable="falde">
+    				<p:commandButton styleClass="botonVentana" actionListener="#{serviciosVentanaDesmontaje.procederDesmontaje}"
+    								 title="Aceptar" image="ui-icon-check" 
+    								 oncomplete="confirmarDatosDesmontajes.hide(), ventanaDatosMovimiento.hide()"/>
+    				<p:commandButton styleClass="botonVentana" title="Cancelar" image="ui-icon-closethick"
+    								 oncomplete="confirmarDatosDesmontajes.hide()"/>
+    			</p:confirmDialog>
+		</h:form>
+		
+		
+	</div>					
+	</ui:define>
+</ui:composition>

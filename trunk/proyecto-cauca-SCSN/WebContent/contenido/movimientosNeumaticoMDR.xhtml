@@ -1,0 +1,1144 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Movimientos</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Portal Unificado para Movimientos</h1>
+		<br/>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+		
+		<h:form id="formMovimientos">
+		    
+		    <script type="text/javascript">
+	            
+		        function handleRequest(xhr, status, args) {
+	            	switch (args.tarea) {
+						case "E":
+							posicionFinalErrada.show();
+							break;
+						case "DR":
+							detalleRotacion.show();
+							break;
+						case "C":
+							confirmacion.show();
+							break;			
+						case "D":
+							confirmarDatosDesmontajes.show();
+							break;
+					}
+		        }
+		        
+		        function handleDrop(event,ui) {
+		        	ventanaDatosMovimiento.show();
+	            }
+		        
+		        function handleDropRotacion(event,ui) {
+	            }
+		        
+		        function refrescarRotacion(xhr, status, args) {
+					document.getElementById("formRotacion").reset();
+				}
+	        </script>
+	        
+			<h:panelGrid columns="2" cellpadding="1" cellspacing="30">
+			    <h:panelGrid id="panelDatosVehiculo" columns="2">
+				      <f:facet name="header">
+				         <h:outputText value="Datos del Vehículo"/>
+				      </f:facet>
+			    	<h:outputLabel value="Placa: " for="placa"/>
+			   		<h:selectOneMenu id="placa" label="Placa" value="#{serviciosVentanaMovimientos.vehiculoSeleccionado.idVehiculo}" require="true" height="10" scrollable="true" scrollHeight="100">
+		                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+	               		<f:selectItems value="#{serviciosVentanaMovimientos.serviciosVentanaVehiculo.vehiculoDataModel}" var="vehiculo" itemValue="#{vehiculo.idVehiculo}" itemLabel="#{vehiculo.placa}"/>
+	               		
+	               		<p:ajax action="#{serviciosVentanaMovimientos.actualizarVehiculo('')}" oncomplete="handleRequest(xhr, status, args);"
+	               				update="placa, modelo, marcaVehiculo, tipoVehiculo, dentroCarretera, ruta, kilometrajeAnterior, :dialogoDemontajeRotacion:esquemaEje, mensajes
+	               						:neumatico :dialogoMontaje:panelDatosNeumatico :dialogoTerminarGuardar:datosTerminar"/>
+	               	 </h:selectOneMenu>
+		            
+		            <h:outputLabel value="Modelo:" for="modelo"/>
+				    <h:inputText id="modelo" value="#{serviciosVentanaMovimientos.vehiculoSeleccionado.modeloVehiculo.nombre}" disabled="true" ajax="true"/>
+		            
+			    	<h:outputLabel value="Marca:" for="marcaVehiculo"/>
+				    <h:inputText id="marcaVehiculo" value="#{serviciosVentanaMovimientos.vehiculoSeleccionado.modeloVehiculo.marcaVehiculo.nombre}" disabled="true"/>
+				    
+				    <h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculo"/>
+				    <h:inputText id="tipoVehiculo" value="#{serviciosVentanaMovimientos.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.nombre}" disabled="true"/>
+			    
+			    	<h:outputLabel value=""/>
+			    	<h:selectOneRadio id="dentroCarretera" disabled="true"
+				                      value="#{serviciosVentanaMovimientos.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.dentroCarretera}">
+				        <f:selectItem id="item1" itemLabel="Dentro Carretera" itemValue="S" />
+				        <f:selectItem id="item2" itemLabel="Fuera de Carretera" itemValue="N" />
+				    </h:selectOneRadio>
+				    
+				    <h:outputLabel value="Ruta:" for="ruta"/>
+				    <h:inputText id="ruta" value="#{serviciosVentanaMovimientos.rutaVehiculo.ruta.nombre}" disabled="true"/>
+			    </h:panelGrid>
+				
+				
+				
+				<h:panelGrid columns="1" style="text-align: center;">
+	            	<p:commandButton value="Montaje" onclick="ventanaMontaje.show();" process="@this"/>
+	            	<p:commandButton value="Desmontaje y Rotación" onclick="ventanaDemontajeRotacion.show();" process="@this"/>
+	            	<p:commandButton value="Finalizar y Guardar" onclick="terminar.show();" process="@this"/>
+			   	</h:panelGrid>
+			   	
+			   	
+			   	
+			   	
+			</h:panelGrid>
+	    	
+	    	<p:growl id="mensajes" showDetail="true" life="8000"/>
+		</h:form>
+		
+		
+		
+		<p:dialog widgetVar="ventanaMontaje" header="Montaje de Nemáticos" closeOnEscape="false" scrollable="true" draggable="false" resizable="false"
+					showEffect="fade" hideEffect="fade" height="590" width="640" id="ventanaMontaje" modal="true" appendToBody="true"
+					onCloseUpdate=":formMovimientos:mensajes :formMovimientos:esquemaEje" closable="false">
+	 
+			<h:form id="dialogoMontaje">
+				<h:panelGrid id="panelDatosNeumatico" columns="1"  style="margin: 0 auto; text-align: center; border: none;">
+					    <h:panelGrid columns="2">
+					    	<h:panelGrid columns="3">
+						    	<h:outputLabel value="Neumático: " for="neumatico"/>
+						   		<h:selectOneMenu id="neumatico" label="Neumatico" value="#{serviciosVentanaMovimientos.neumaticoSeleccionadoMontaje.idNeumatico}" require="true" height="10" scrollable="true" scrollHeight="100">
+					                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+				               		<f:selectItems value="#{serviciosVentanaMovimientos.neumaticoDataModelListos}" var="neumatico" itemValue="#{neumatico.idNeumatico}" itemLabel="#{neumatico.codInterno}"/>
+				               		
+				               		<p:ajax action="#{serviciosVentanaMovimientos.actualizarNeumaticoMontaje}"
+				               				update="listoMontar
+				               				marca, diseno, medida, tipoNeumatico, condicion, presion, remanente, imagenDiseno, mensajes, unidireccional, observaciones, posicionMontaje"/>    	
+				               	</h:selectOneMenu>
+							  	<h:outputLabel value=""/>
+					            
+					            <h:outputLabel value="Marca:" for="marca"/>
+							    <h:inputText id="marca" value="#{serviciosVentanaMovimientos.neumaticoSeleccionadoMontaje.disenoMedida.diseno.marcaNeumatico.nombre}" disabled="true" ajax="true"/>
+							  	<h:outputLabel value=""/>
+					            
+						    	<h:outputLabel value="Diseño:" for="diseno"/>
+							    <h:inputText id="diseno" value="#{serviciosVentanaMovimientos.neumaticoSeleccionadoMontaje.disenoMedida.diseno.nombre}" disabled="true"/>
+							  	<h:outputLabel value=""/>
+							    
+							    <h:outputLabel value="Medida:" for="medida"/>
+							    <h:inputText id="medida" value="#{serviciosVentanaMovimientos.neumaticoSeleccionadoMontaje.disenoMedida.medida.nombre}" disabled="true"/>
+							  	<h:outputLabel value=""/>
+							    
+							    <h:outputLabel value="Tipo:" for="tipoNeumatico"/>
+							    <h:inputText id="tipoNeumatico" value="#{serviciosVentanaMovimientos.tipoNeumatico}" disabled="true"/>
+							  	<h:outputLabel value=""/>
+							    
+							    <h:outputLabel value="Condicion:" for="condicion"/>
+							    <h:inputText id="condicion" value="#{serviciosVentanaMovimientos.condicion}" disabled="true"/>
+							  	<h:outputLabel value=""/>
+							    
+							  	<h:outputLabel value="Presión de Montaje:" for="presion"/>
+							    <h:inputText id="presion" value="#{serviciosVentanaMovimientos.presion}" disabled="#{serviciosVentanaMovimientos.disabledDatosMontaje}">
+							    	<f:ajax event="change" listener="#{serviciosVentanaMovimientos.habilitarBotonMontaje}" render="btnHabilitarMontaje"/>
+							    </h:inputText>
+							  	<h:outputLabel value="Psi" style="font-weight: bold;"/>
+							    
+							  	<h:outputLabel value="Remanente Actual:" for="remanente"/>
+							    <h:inputText id="remanente" value="#{serviciosVentanaMovimientos.neumaticoSeleccionadoMontaje.remanenteActual}" disabled="true"/>
+							  	<h:outputLabel value="mm" style="font-weight: bold;"/>
+							    
+							    <h:outputLabel value="Unidireccional"/>
+						    	<h:selectOneRadio id="unidireccional" disabled="true"
+							                      value="#{serviciosVentanaMovimientos.neumaticoSeleccionadoMontaje.unidireccional}">
+							        <f:selectItem id="uniSi" itemLabel="Si" itemValue="S" />
+							        <f:selectItem id="uniNo" itemLabel="No" itemValue="N" />
+							    </h:selectOneRadio>
+							  	<h:outputLabel value=""/>
+							    
+						   		<h:outputLabel value="Observaciones: " for="observaciones" />
+						   		<h:inputTextarea id="observaciones" value="#{serviciosVentanaMovimientos.observacionesMovimiento}" disabled="#{serviciosVentanaMovimientos.disabledDatosMontaje}"/>
+							  	<h:outputLabel value=""/>
+							</h:panelGrid>
+							<h:panelGrid columns="1">
+								<p:graphicImage id="imagenDiseno" styleClass="muestraImagenDiseno" value="#{serviciosVentanaMovimientos.streamedContentImagen}" ajax="true" cache="false"/>
+								
+						    	<h:outputLabel value="Posición de Montaje: " for="posicionMontaje"/>
+						   		<h:selectOneMenu id="posicionMontaje" label="Posicion" value="#{serviciosVentanaMovimientos.posicionSeleccionada}" 
+						   						 require="true" height="10" scrollable="true" scrollHeight="100" disabled="#{serviciosVentanaMovimientos.disabledDatosMontaje}">
+					                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+				               		<f:selectItems value="#{serviciosVentanaMovimientos.listaPosicionesDisponibles}" var="posicion" itemValue="#{posicion}" itemLabel="#{posicion}"/>
+				               		
+				               		<p:ajax action="#{serviciosVentanaMovimientos.actualizarPosicionMontaje}" update="esquemaEjeMontaje btnHabilitarMontaje"/>    	
+				               	</h:selectOneMenu>
+								
+								<h:panelGrid id="esquemaEjeMontaje" columns="2" style="margin-left:35px;">
+									<h:panelGrid columns="2" >
+									
+										<h:outputText id="primerNeumaticoR21Montaje" value="R1" styleClass="repuestosMini"/>
+										<h:outputText id="primerNeumaticoR22Montaje" value="R2" styleClass="repuestosMini"/>
+										<p:graphicImage id="neumaticoR21Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumaticoRepIzqImage}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumaticoR22Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumaticoRepDerImage}" ajax="true" cache="false"/>
+								
+									</h:panelGrid>
+									
+									<h:panelGrid columns="5">
+										<h:outputLabel id="primerNeumatico11Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico1}" />
+										<h:outputLabel id="primerNeumatico12Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico2}" />
+										<h:outputLabel id="primerNeumaticoNull1Montaje" value="" />
+										<h:outputLabel id="primerNeumatico13Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico3}" />
+										<h:outputLabel id="primerNeumatico14Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico4}" />
+								
+										<p:graphicImage id="neumatico11Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico11Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico12Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico12Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="eje1Mini" styleClass="ejeMini" value="#{serviciosVentanaMovimientos.eje1Image}"/>
+										<p:graphicImage id="neumatico13Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico13Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico14Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico14Image}" ajax="true" cache="false"/>
+										
+										<h:outputLabel id="primerNeumatico21Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico5}" />
+										<h:outputLabel id="primerNeumatico22Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico6}" />
+										<h:outputLabel id="primerNeumaticoNull2Montaje" value="" />
+										<h:outputLabel id="primerNeumatico23Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico7}" />
+										<h:outputLabel id="primerNeumatico24Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico8}" />
+										<p:graphicImage id="neumatico21Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico21Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico22Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico22Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="eje2Mini" styleClass="ejeMini" value="#{serviciosVentanaMovimientos.eje2Image}"/>
+										<p:graphicImage id="neumatico23Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico23Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico24Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico24Image}" ajax="true" cache="false"/>
+										
+										<h:outputLabel id="primerNeumatico31Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico9}" />
+										<h:outputLabel id="primerNeumatico32Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico10}" />
+										<h:outputLabel id="primerNeumaticoNull3Montaje" value="" />
+										<h:outputLabel id="primerNeumatico33Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico11}" />
+										<h:outputLabel id="primerNeumatico34Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico12}" />
+										<p:graphicImage id="neumatico31Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico31Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico32Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico32Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="eje3Mini" styleClass="ejeMini" value="#{serviciosVentanaMovimientos.eje3Image}"/>
+										<p:graphicImage id="neumatico33Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico33Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico34Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico34Image}" ajax="true" cache="false"/>
+										
+										<h:outputLabel id="primerNeumatico41Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico13}" />
+										<h:outputLabel id="primerNeumatico42Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico14}" />
+										<h:outputLabel id="primerNeumaticoNull4Montaje" value="" />
+										<h:outputLabel id="primerNeumatico43Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico15}" />
+										<h:outputLabel id="primerNeumatico44Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico16}" />
+										<p:graphicImage id="neumatico41Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico41Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico42Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico42Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="eje4Mini" styleClass="ejeMini" value="#{serviciosVentanaMovimientos.eje4Image}"/>
+										<p:graphicImage id="neumatico43Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico43Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico44Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico44Image}" ajax="true" cache="false"/>
+										
+										<h:outputLabel id="primerNeumatico51Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico17}" />
+										<h:outputLabel id="primerNeumatico52Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico18}" />
+										<h:outputLabel id="primerNeumaticoNull5Montaje" value="" />
+										<h:outputLabel id="primerNeumatico53Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico19}" />
+										<h:outputLabel id="primerNeumatico54Montaje" value="#{serviciosVentanaMovimientos.primerNeumatico20}" />
+										<p:graphicImage id="neumatico51Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico51Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico52Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico52Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="eje5Mini" styleClass="ejeMini" value="#{serviciosVentanaMovimientos.eje5Image}"/>
+										<p:graphicImage id="neumatico53Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico53Image}" ajax="true" cache="false"/>
+										<p:graphicImage id="neumatico54Mini" styleClass="neumaticoMini" value="#{serviciosVentanaMovimientos.neumatico54Image}" ajax="true" cache="false"/>
+									</h:panelGrid>
+								</h:panelGrid>
+								
+							</h:panelGrid>
+					
+					</h:panelGrid>
+					
+					<p:separator />
+					<h:panelGrid columns="2">
+					   	<p:commandButton id="btnHabilitarMontaje" title="Montar" image="ui-icon-check" value="Procesar Montaje" 
+					   					 disabled="#{serviciosVentanaMovimientos.disabledBtnMontar}"
+									 	 ajax="true" async="true" action="#{serviciosVentanaMovimientos.habilitarMontaje}" process="@this"
+									 	 oncomplete="handleRequest(xhr, status, args);" update=":dialogoConfirmacion"/>
+		   				<p:commandButton value="Cancelar" actionListener="#{serviciosVentanaMovimientos.cancelarMontaje}" process="@this"
+		   								 update="panelDatosNeumatico esquemaEjeMontaje" oncomplete="ventanaMontaje.hide();"/>
+		   			</h:panelGrid>
+					<h:outputText value="Nota: Seleccione la posición de montaje e introduzca la presión del neumático para poder habilitar el botón de montaje"/>
+				   	
+		    	</h:panelGrid>
+			</h:form>
+	   	</p:dialog>
+	   	
+	   	
+	   	
+	   	<p:dialog widgetVar="ventanaDemontajeRotacion" header="Desmontaje y Rotación" closeOnEscape="false" scrollable="true" draggable="false" resizable="false"
+					showEffect="fade" hideEffect="fade" height="590" width="1050" id="ventanaDemontajeRotacion" modal="true" appendToBody="true"
+					onCloseUpdate=":formMovimientos:mensajes" closable="false">
+	 
+			<h:form id="dialogoDemontajeRotacion">
+				<h:panelGrid columns="1" cellpadding="1" cellspacing="5">
+					<h:panelGrid columns="6" cellpadding="1" cellspacing="30" style="padding-left: 7px;">  
+			            	
+		            	<p:commandLink actionListener="#{serviciosVentanaMovimientos.abrirVentanaAlmacen('L')}" oncomplete="ventanaDatosRegresar.show();" update=":dialogos:tablaAlmacen :dialogos:ventanaDatosRegresar" process="@this">
+			            	<p:panel id="listoMontar" header="Listos" styleClass="almacen" style="background: url(../imagenes/almacenListos.png) no-repeat; background-position: center;">
+			            		<p:droppable scope="neumatico" tolerance="pointer" onDrop="handleDrop" dropListener="#{serviciosVentanaMovimientos.onDrop}" disabled="#{serviciosVentanaMovimientos.montado}"
+				                    			onDropUpdate="mensajes :dialogos:datosMovimiento :dialogos:btnRegresar esquemaEje esquemaEjeMontaje panelDatosNeumatico" hoverStyleClass="ui-state-highlight">
+				                    <f:attribute name="id" value="L"/>
+			                    </p:droppable>
+			                </p:panel>
+			            </p:commandLink>
+		                
+		                <p:commandLink actionListener="#{serviciosVentanaMovimientos.abrirVentanaAlmacen('R')}" oncomplete="ventanaDatosRegresar.show();" update=":dialogos:tablaAlmacen :dialogos:ventanaDatosRegresar" process="@this">            
+			                <p:panel id="reencauche" header="Renovación" styleClass="almacen" style="background: url(../imagenes/reencauche.png) no-repeat; background-position: center;">
+			                	<p:droppable  scope="neumatico" tolerance="pointer" onDrop="handleDrop" dropListener="#{serviciosVentanaMovimientos.onDrop}"
+				                    			onDropUpdate="mensajes :dialogos:datosMovimiento :dialogos:btnRegresar esquemaEje esquemaEjeMontaje panelDatosNeumatico" hoverStyleClass="ui-state-highlight">
+				                     <f:attribute name="id" value="R"/>
+				                </p:droppable>
+			                </p:panel>
+			            </p:commandLink>
+		  				
+		  				<p:commandLink actionListener="#{serviciosVentanaMovimientos.abrirVentanaAlmacen('P')}" oncomplete="ventanaDatosRegresar.show();" update=":dialogos:tablaAlmacen :dialogos:ventanaDatosRegresar" process="@this">
+			                <p:panel id="reparacion" header="Reparación" styleClass="almacen" style="background: url(../imagenes/reparacion.png) no-repeat; background-position: center;"> 
+			                   <p:droppable scope="neumatico" tolerance="pointer" onDrop="handleDrop" dropListener="#{serviciosVentanaMovimientos.onDrop}"
+			                    			onDropUpdate="mensajes :dialogos:datosMovimiento :dialogos:btnRegresar esquemaEje esquemaEjeMontaje panelDatosNeumatico" hoverStyleClass="ui-state-highlight">
+			                    	<f:attribute name="id" value="P"/>
+			                   </p:droppable>
+			                </p:panel>
+			            </p:commandLink>
+	               
+		                <p:commandLink actionListener="#{serviciosVentanaMovimientos.abrirVentanaAlmacen('C')}" oncomplete="ventanaDatosRegresar.show();" update=":dialogos:tablaAlmacen :dialogos:ventanaDatosRegresar" process="@this">
+			                <p:panel id="reclamo" header="Reclamo" styleClass="almacen" style="background: url(../imagenes/reclamo.png) no-repeat; background-position: center;">  
+			                	<p:droppable scope="neumatico" tolerance="pointer" onDrop="handleDrop" dropListener="#{serviciosVentanaMovimientos.onDrop}"
+			                    			onDropUpdate="mensajes :dialogos:datosMovimiento :dialogos:btnRegresar esquemaEje esquemaEjeMontaje panelDatosNeumatico" hoverStyleClass="ui-state-highlight">  
+			                     	<f:attribute name="id" value="C"/>
+			                    </p:droppable>  
+			                </p:panel>  
+			            </p:commandLink>
+		  
+		  				<p:commandLink actionListener="#{serviciosVentanaMovimientos.abrirVentanaAlmacen('B')}" oncomplete="ventanaDatosRegresar.show();" update=":dialogos:tablaAlmacen :dialogos:ventanaDatosRegresar" process="@this">
+			                <p:panel id="deBaja" header="Desechar" styleClass="almacen" style="background: url(../imagenes/deBaja.png) no-repeat; background-position: center;">  
+			                    <p:droppable scope="neumatico" tolerance="pointer" onDrop="handleDrop" dropListener="#{serviciosVentanaMovimientos.onDrop}"
+			                    			onDropUpdate="mensajes :dialogos:datosMovimiento :dialogos:btnRegresar esquemaEje esquemaEjeMontaje panelDatosNeumatico" hoverStyleClass="ui-state-highlight">  
+			                     	<f:attribute name="id" value="B"/>
+			                    </p:droppable>  
+			                </p:panel>
+			            </p:commandLink> 
+	                
+		                <p:commandLink actionListener="#{serviciosVentanaMovimientos.abrirVentanaAlmacen('T')}" oncomplete="ventanaDatosRotacion.show();" update=":dialogos:tablaAlmacen :dialogos:ventanaDatosRegresar :formRotacion:datosRotacion" process="@this">            
+			                <p:panel id="rotacion" header="Rotación" styleClass="almacen" style="background: url(../imagenes/rotacion.png) no-repeat; background-position: center;">
+			                	<p:droppable  scope="neumatico" tolerance="pointer" onDrop="handleDropRotacion" dropListener="#{serviciosVentanaMovimientos.onDrop}"
+				                    			onDropUpdate="mensajes :dialogos:datosMovimiento :dialogos:btnRegresar esquemaEje esquemaEjeMontaje panelDatosNeumatico" hoverStyleClass="ui-state-highlight">
+				                     <f:attribute name="id" value="T"/>
+				                </p:droppable>
+			                </p:panel>
+			            </p:commandLink>
+			    	</h:panelGrid>
+			    	
+		            <h:panelGrid id="esquemaEje" columns="3" style="margin-left:160px;">
+						
+						<h:panelGrid columns="2" >
+						
+							<h:outputLabel id="primerNeumaticoR21" value="R1"/>
+							<h:outputLabel id="primerNeumaticoR22" value="R2"/>
+							<p:graphicImage id="neumaticoR21" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumaticoRepIzqImage}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumaticoR21DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumaticoR22" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumaticoRepDerImage}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumaticoR22DragDisabled}"/>
+							</p:graphicImage>
+							
+						</h:panelGrid>
+						
+						<h:panelGrid columns="5">
+							<h:outputLabel id="primerNeumatico11" value="#{serviciosVentanaMovimientos.primerNeumatico1}" />
+							<h:outputLabel id="primerNeumatico12" value="#{serviciosVentanaMovimientos.primerNeumatico2}" />
+							<h:outputLabel id="primerNeumaticoNull1" value="" />
+							<h:outputLabel id="primerNeumatico13" value="#{serviciosVentanaMovimientos.primerNeumatico3}" />
+							<h:outputLabel id="primerNeumatico14" value="#{serviciosVentanaMovimientos.primerNeumatico4}" />
+							
+							<p:graphicImage id="neumatico11" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico11Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico11DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico12" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico12Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico12DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje1" styleClass="eje" value="#{serviciosVentanaMovimientos.eje1Image}"/>
+							<p:graphicImage id="neumatico13" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico13Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico13DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico14" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico14Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico14DragDisabled}"/>
+							</p:graphicImage>
+							
+							<h:outputLabel id="primerNeumatico21" value="#{serviciosVentanaMovimientos.primerNeumatico5}" />
+							<h:outputLabel id="primerNeumatico22" value="#{serviciosVentanaMovimientos.primerNeumatico6}" />
+							<h:outputLabel id="primerNeumaticoNull2" value="" />
+							<h:outputLabel id="primerNeumatico23" value="#{serviciosVentanaMovimientos.primerNeumatico7}" />
+							<h:outputLabel id="primerNeumatico24" value="#{serviciosVentanaMovimientos.primerNeumatico8}" />
+							<p:graphicImage id="neumatico21" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico21Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico21DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico22" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico22Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico22DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje2" styleClass="eje" value="#{serviciosVentanaMovimientos.eje2Image}"/>
+							<p:graphicImage id="neumatico23" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico23Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico23DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico24" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico24Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico24DragDisabled}"/>
+							</p:graphicImage>
+							
+							<h:outputLabel id="primerNeumatico31" value="#{serviciosVentanaMovimientos.primerNeumatico9}" />
+							<h:outputLabel id="primerNeumatico32" value="#{serviciosVentanaMovimientos.primerNeumatico10}" />
+							<h:outputLabel id="primerNeumaticoNull3" value="" />
+							<h:outputLabel id="primerNeumatico33" value="#{serviciosVentanaMovimientos.primerNeumatico11}" />
+							<h:outputLabel id="primerNeumatico34" value="#{serviciosVentanaMovimientos.primerNeumatico12}" />
+							<p:graphicImage id="neumatico31" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico31Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico31DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico32" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico32Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico32DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje3" styleClass="eje" value="#{serviciosVentanaMovimientos.eje3Image}"/>
+							<p:graphicImage id="neumatico33" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico33Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico33DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico34" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico34Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico34DragDisabled}"/>
+							</p:graphicImage>
+							
+							<h:outputLabel id="primerNeumatico41" value="#{serviciosVentanaMovimientos.primerNeumatico13}" />
+							<h:outputLabel id="primerNeumatico42" value="#{serviciosVentanaMovimientos.primerNeumatico14}" />
+							<h:outputLabel id="primerNeumaticoNull4" value="" />
+							<h:outputLabel id="primerNeumatico43" value="#{serviciosVentanaMovimientos.primerNeumatico15}" />
+							<h:outputLabel id="primerNeumatico44" value="#{serviciosVentanaMovimientos.primerNeumatico16}" />
+							<p:graphicImage id="neumatico41" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico41Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico41DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico42" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico42Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico42DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje4" styleClass="eje" value="#{serviciosVentanaMovimientos.eje4Image}"/>
+							<p:graphicImage id="neumatico43" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico43Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico43DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico44" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico44Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico43DragDisabled}"/>
+							</p:graphicImage>
+							
+							<h:outputLabel id="primerNeumatico51" value="#{serviciosVentanaMovimientos.primerNeumatico17}" />
+							<h:outputLabel id="primerNeumatico52" value="#{serviciosVentanaMovimientos.primerNeumatico18}" />
+							<h:outputLabel id="primerNeumaticoNull5" value="" />
+							<h:outputLabel id="primerNeumatico53" value="#{serviciosVentanaMovimientos.primerNeumatico19}" />
+							<h:outputLabel id="primerNeumatico54" value="#{serviciosVentanaMovimientos.primerNeumatico20}" />
+							<p:graphicImage id="neumatico51" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico51Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico51DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico52" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico52Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico52DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="eje5" styleClass="eje" value="#{serviciosVentanaMovimientos.eje5Image}"/>
+							<p:graphicImage id="neumatico53" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico53Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico53DragDisabled}"/>
+							</p:graphicImage>
+							<p:graphicImage id="neumatico54" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico54Image}" ajax="true" cache="false">
+								<p:draggable revert="true" scope="neumatico" disabled="#{serviciosVentanaMovimientos.neumatico54DragDisabled}"/>
+							</p:graphicImage>
+						</h:panelGrid>
+					</h:panelGrid>
+					
+					<p:commandButton value="Regresar" actionListener="#{serviciosVentanaMovimientos.cancelar}" process="@this"
+		   							 update="panelDatosNeumatico @this" oncomplete="ventanaDemontajeRotacion.hide();"/>
+		    	</h:panelGrid>
+		    	
+				<p:tooltip for="listoMontar" value="Almacén Listos para Montar" />
+			  	<p:tooltip for="reencauche" value="Reencauche" />
+			  	<p:tooltip for="reparacion" value="Reparación" />
+			  	<p:tooltip for="reclamo" value="Reclamos" />
+			  	<p:tooltip for="deBaja" value="Dar de Baja" />
+			  	<p:tooltip for="rotacion" value="Rotación" />
+			</h:form>
+	   	</p:dialog>
+		
+		
+		
+	    	<p:dialog widgetVar="ventanaDatosRegresar" header="Neumáticos en Almacén" closeOnEscape="false" scrollable="true"  modal="true" appendToBody="true"
+						showEffect="fade" hideEffect="fade" height="400" width="800" id="ventanaRegresarNeumatico" onCloseUpdate=":formMovimientos:mensajes" 
+						closable="false" draggable="false" resizable="false">
+	  
+				<h:form id="dialogos">
+		    		<h:panelGrid columns="1">
+		    		
+	    				<p:outputPanel id="tablaAlmacen">
+			    			<p:dataTable value="#{serviciosVentanaMovimientos.neumaticoDataModel}" var="neumatico"
+						                emptyMessage="No hay neumáticos en este almacén" selectionMode="single" scrollHeight="true" 
+										selection="#{serviciosVentanaMovimientos.neumaticoSeleccionadoAlmacen}" 
+						                rowSelectListener="#{serviciosVentanaMovimientos.habilitarBotonRegresar}"
+										onRowSelectUpdate="btnRegresar"
+										rowUnselectListener="#{serviciosVentanaMovimientos.inhabilitarBotonRegresar}"
+										onRowUnselectUpdate="btnRegresar" >
+			    				
+			    				<p:column headerText="Neumático">
+			    					<h:outputText value="#{neumatico.codInterno}"/>
+			    				</p:column>
+			    				
+			    				<p:column headerText="Marca">
+			    					<h:outputText value="#{neumatico.disenoMedida.diseno.marcaNeumatico.nombre}"/>
+			    				</p:column>
+			    				
+			    				<p:column headerText="Medida">
+			    					<h:outputText value="#{neumatico.disenoMedida.medida.nombre}"/>
+			    				</p:column>
+			    				
+			    				<p:column headerText="Diseño">
+			    					<h:outputText value="#{neumatico.disenoMedida.diseno.nombre}"/>
+			    				</p:column>
+			    				
+			    				<p:column headerText="Condición">
+			    					<h:outputText value="#{neumatico.condicion}"/>
+			    				</p:column>
+			    				
+			    				<p:column headerText="Rem. Actual">
+			    					<h:outputText value="#{neumatico.remanenteActual}"/>
+			    				</p:column>
+			    				
+			    				<p:column headerText="Recorrido Acumulado">
+			    					<h:outputText value="#{neumatico.recorridoAcumulado}"/>
+			    				</p:column>
+			    				
+			    			</p:dataTable>
+	    				</p:outputPanel>
+		    			<h:panelGrid columns="2">
+		    				<p:commandButton id="btnRegresar" value="Regresar Neumático" process="@this"
+		    								 update=":formMovimientos:mensajes" 
+		    								 actionListener="#{serviciosVentanaMovimientos.habilitarSeleccionNeumaticoAlmacen}" disabled="#{serviciosVentanaMovimientos.regresarDisabled}"
+		    								 image="ui-icon-check" oncomplete="handleRequest(xhr, status, args);" />  
+		    				<p:commandButton value="Cancelar" actionListener="#{serviciosVentanaMovimientos.cancelar}" process="@this"
+		    								 oncomplete="ventanaDatosRegresar.hide();" update="tablaAlmacen btnRegresar :formMovimientos:panelDatosNeumatico"/>
+		    			</h:panelGrid>
+		    		</h:panelGrid> 
+				</h:form>
+	    	</p:dialog>
+   			
+   			
+		 	
+		
+		
+		<p:dialog widgetVar="ventanaDatosMovimiento" header="Desmontar Neumático" closeOnEscape="false" modal="true" appendToBody="true"
+						showEffect="fade" hideEffect="fade" height="600" width="860" closable="false" draggable="false" resizable="false">
+			<h:form id="formDesmontaje">
+				<h:panelGrid columns="1">
+				    <h:panelGrid id="datosMovimiento" columns="2"  style="margin: 0 auto; text-align: center; border: none;">
+				    	<h:panelGrid columns="1">
+						    <p:layout id="posicionesTomaMedidas" style="width: 420px; height:450px; border: none;">
+								<p:layoutUnit id="laySup" position="top" collapsible="true" collapsed="#{serviciosVentanaMovimientos.collapsedSuperior}" header="Superior" height="80" style="margin: 0 auto; text-align: center; border: none;">
+									<h:panelGrid columns="9" >
+							    		<h:outputLabel value="a: " for="superiorA" style="font-weight:bold;"/>
+							    		<h:inputText id="superiorA" label="Remanente Superior A" value="#{serviciosVentanaMovimientos.remanenteSuperiorA}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalSuperior}" render=":formMovimientos:mensajes totalSuperior  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="b: " for="superiorB" style="font-weight:bold;"/>
+							    		<h:inputText id="superiorB" label="Remanente Superior B" value="#{serviciosVentanaMovimientos.remanenteSuperiorB}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalSuperior}" render=":formMovimientos:mensajes totalSuperior  totalMovimiento" />
+							    		</h:inputText>
+							    		<h:outputLabel value="c: " for="superiorC" style="font-weight:bold;"/>
+							    		<h:inputText id="superiorC" label="Remanente Superior C" value="#{serviciosVentanaMovimientos.remanenteSuperiorC}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalSuperior}" render=":formMovimientos:mensajes totalSuperior  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="d: " for="superiorD" style="font-weight:bold;"/>
+							    		<h:inputText id="superiorD" label="Remanente Superior D" value="#{serviciosVentanaMovimientos.remanenteSuperiorD}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalSuperior}" render=":formMovimientos:mensajes totalSuperior  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:inputText id="totalSuperior" value="#{serviciosVentanaMovimientos.totalSuperior}" style="width: 50px;" disabled="true"/>
+							    	</h:panelGrid>
+								</p:layoutUnit>
+								<p:layoutUnit id="layInf" position="bottom" collapsible="true" collapsed="#{serviciosVentanaMovimientos.collapsedInferior}" header="Inferior" height="80" style="margin: 0 auto; text-align: right;">
+									<h:panelGrid columns="9">
+							    		<h:outputLabel value="a: " for="inferiorA" style="font-weight:bold;"/>
+							    		<h:inputText id="inferiorA" label="Remanente Inferior A" value="#{serviciosVentanaMovimientos.remanenteInferiorA}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalInferior}" render=":formMovimientos:mensajes totalInferior  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="b: " for="inferiorB" style="font-weight:bold;"/>
+							    		<h:inputText id="inferiorB" label="Remanente Inferior B" value="#{serviciosVentanaMovimientos.remanenteInferiorB}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalInferior}" render=":formMovimientos:mensajes totalInferior  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="c: " for="inferiorC" style="font-weight:bold;"/>
+							    		<h:inputText id="inferiorC" label="Remanente Inferior C" value="#{serviciosVentanaMovimientos.remanenteInferiorC}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalInferior}" render=":formMovimientos:mensajes totalInferior  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="d: " for="inferiorD" style="font-weight:bold;"/>
+							    		<h:inputText id="inferiorD" label="Remanente Inferior D" value="#{serviciosVentanaMovimientos.remanenteInferiorD}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalInferior}" render=":formMovimientos:mensajes totalInferior  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:inputText id="totalInferior" value="#{serviciosVentanaMovimientos.totalInferior}" style="width: 50px;" disabled="true"/>
+							    	</h:panelGrid>
+								</p:layoutUnit>
+								<p:layoutUnit id="layIzq" position="left" collapsible="true" collapsed="#{serviciosVentanaMovimientos.collapsedIzquierdo}" width="70">
+									<h:panelGrid columns="1">
+							    		<h:outputLabel value="a: " for="izquierdoA" style="font-weight:bold;"/>
+							    		<h:inputText id="izquierdoA" label="Remanente Izquierdo A" value="#{serviciosVentanaMovimientos.remanenteIzquierdoA}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalIzquierdo}" render=":formMovimientos:mensajes totalIzquierdo  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="b: " for="superiorB" style="font-weight:bold;"/>
+							    		<h:inputText id="izquierdoB" label="Remanente Izquierdo B" value="#{serviciosVentanaMovimientos.remanenteIzquierdoB}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalIzquierdo}" render=":formMovimientos:mensajes totalIzquierdo  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="c: " for="superiorC" style="font-weight:bold;"/>
+							    		<h:inputText id="izquierdoC" label="Remanente Izquierdo C" value="#{serviciosVentanaMovimientos.remanenteIzquierdoC}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalIzquierdo}" render=":formMovimientos:mensajes totalIzquierdo  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="d: " for="superiorD" style="font-weight:bold;"/>
+							    		<h:inputText id="izquierdoD" label="Remanente Izquierdo D" value="#{serviciosVentanaMovimientos.remanenteIzquierdoD}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalIzquierdo}" render=":formMovimientos:mensajes totalIzquierdo  totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:inputText id="totalIzquierdo" value="#{serviciosVentanaMovimientos.totalIzquierdo}" style="width: 50px;" disabled="true"/>
+							    	</h:panelGrid>
+								</p:layoutUnit>
+								<p:layoutUnit id="layDer" position="right" collapsible="true" collapsed="#{serviciosVentanaMovimientos.collapsedDerecho}" width="70">
+									<h:panelGrid columns="1">
+							    		<h:outputLabel value="a: " for="derechaA" style="font-weight:bold;"/>
+							    		<h:inputText id="derechaA" label="Remanente Derecho A" value="#{serviciosVentanaMovimientos.remanenteDerechaA}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalDerecha}" render=":formMovimientos:mensajes totalDerecha totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="b: " for="derechaB" style="font-weight:bold;"/>
+							    		<h:inputText id="derechaB" label="Remanente Derecho B" value="#{serviciosVentanaMovimientos.remanenteDerechaB}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalDerecha}" render=":formMovimientos:mensajes totalDerecha totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="c: " for="derechaC" style="font-weight:bold;"/>
+							    		<h:inputText id="derechaC" label="Remanente Derecho C" value="#{serviciosVentanaMovimientos.remanenteDerechaC}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalDerecha}" render=":formMovimientos:mensajes totalDerecha totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="d: " for="derechaD" style="font-weight:bold;"/>
+							    		<h:inputText id="derechaD" label="Remanente Derecho D" value="#{serviciosVentanaMovimientos.remanenteDerechaD}" style="width: 50px;">
+    										<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalDerecha}" render=":formMovimientos:mensajes totalDerecha totalMovimiento"/>
+							    		</h:inputText>
+							    		<h:inputText id="totalDerecha" value="#{serviciosVentanaMovimientos.totalDerecha}" style="width: 50px;" disabled="true"/>
+							    	</h:panelGrid>
+								</p:layoutUnit>
+								<p:layoutUnit position="center">
+									<p:graphicImage id="graficImage" styleClass="neumaticoLectura" value="../imagenes/cauchoBrigestone.png" ajax="true" cache="false"/>
+								</p:layoutUnit>
+							</p:layout>
+						</h:panelGrid>
+						
+						<h:panelGrid columns="1">
+							<h:panelGrid columns="3">
+					    		<h:outputLabel value="Remanente Total:" for="totalMovimiento"/>
+					    		<h:inputText id="totalMovimiento" value="#{serviciosVentanaMovimientos.totalOperacion}" disabled="true"/>
+					    		<h:outputLabel value="mm"  style="font-weight: bold;"/>
+					    		
+					    		<h:outputLabel for="tipoDesgaste" value="Tipo de Desgate:"/>
+					    		<h:selectOneMenu id="tipoDesgaste" value="#{serviciosVentanaMovimientos.tipoDesgasteSeleccionado.idTipoDesgaste}">
+					    			<f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+					    			<f:selectItems value="#{serviciosVentanaTipoDesgaste.tipoDesgasteDataModel}" var="tipoDesgaste" itemLabel="#{tipoDesgaste.nombre}" itemValue="#{tipoDesgaste.idTipoDesgaste}"/>
+					    			<p:ajax event="valueChange" execute="@this" listener="#{serviciosVentanaMovimientos.buscarConsejoDesgaste}" update=":formMovimientos:mensajes consejo"/>
+					    		</h:selectOneMenu>
+						       	<p:commandButton styleClass="botonVentana" height="10" width="10" title="Nuevo Desgaste" id="nuevoDesgaste"
+						       					 onclick="ventanaNuevoDesgaste.show();" image="ui-icon-plusthick"/>
+					    		
+					    		<h:outputLabel for="presionMovimiento" value="Presión:"/>
+					    		<h:inputText id="presionMovimiento" value="#{serviciosVentanaMovimientos.presion}"/>
+					    		<h:outputLabel value="Psi"  style="font-weight: bold;"/>
+					    		
+					    		<h:outputLabel for="observacionMovimiento" value="Observaciones:"/>
+					    		<h:inputTextarea id="observacionMovimiento" value="#{serviciosVentanaMovimientos.observacionesMovimiento}"/>
+					    		<h:outputLabel value=""/>
+					    	</h:panelGrid>
+					    	<h:outputLabel value=""/>
+					    	<h:outputLabel value=""/>
+					    	<h:outputLabel id="consejo" value="Consejo: #{serviciosVentanaMovimientos.tipoDesgasteSeleccionado.accionesCorrectivas}" 
+					    				   rendered="#{serviciosVentanaMovimientos.renderedConsejos}" style="color:red;"/>
+					    </h:panelGrid>
+				    </h:panelGrid>
+			    	<p:separator />
+			    	<h:panelGrid columns="2" >
+						<p:commandButton title="Desmontar" image="ui-icon-check" value="Desmontar" 
+										 oncomplete="handleRequest(xhr, status, args)" update=":dialogoConfirmacion :formMovimientos:mensajes" style="margin:0;"
+										 process="@this presionMovimiento tipoDesgaste" actionListener="#{serviciosVentanaMovimientos.confirmarDesmontajes}"/>
+						<p:commandButton id="btnCancelar" value="Cancelar" process="@this" actionListener="#{serviciosVentanaMovimientos.cancelar}"
+										 oncomplete="ventanaDatosMovimiento.hide();" 
+										 update=":dialogoDemontajeRotacion:esquemaEje :dialogoMontaje:esquemaEjeMontaje :dialogoMontaje:posicionMontaje
+										 datosMovimiento posicionesTomaMedidas"/>
+					</h:panelGrid>
+				
+				</h:panelGrid>
+			</h:form>
+		 </p:dialog>
+		 
+		 
+		 <p:dialog widgetVar="ventanaDatosRotacion" header="Rotación de Neumáticos" closeOnEscape="false" modal="true" appendToBody="true"
+						showEffect="fade" hideEffect="fade" height="600" width="1230" closable="false" draggable="false" resizable="false">
+			<h:form id="formRotacion">
+				    <h:panelGrid id="datosRotacion" columns="3"  style="border: none;">
+				    	<h:panelGrid id="esquemaEjeRo" columns="2">
+						
+							<h:panelGrid columns="2" >
+							
+								<h:outputLabel id="primerNeumaticoR21Ro" value="R1"/>
+								<h:outputLabel id="primerNeumaticoR22Ro" value="R2"/>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumaticoR21DragDisabled}">
+									<p:graphicImage id="rotneumaticoR21" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumaticoRepIzqImage}" ajax="true" cache="false"/>
+      								<f:ajax event="click" update="dropRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumaticoR21')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumaticoR22DragDisabled}">
+									<p:graphicImage id="rotneumaticoR22" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumaticoRepDerImage}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumaticoR22')}" />
+								</h:commandLink>
+								
+							</h:panelGrid>
+							
+							<h:panelGrid columns="5">
+								<h:outputLabel id="primerNeumatico11Ro" value="#{serviciosVentanaMovimientos.primerNeumatico1}" />
+								<h:outputLabel id="primerNeumatico12Ro" value="#{serviciosVentanaMovimientos.primerNeumatico2}" />
+								<h:outputLabel id="primerNeumaticoNull1Ro" value="" />
+								<h:outputLabel id="primerNeumatico13Ro" value="#{serviciosVentanaMovimientos.primerNeumatico3}" />
+								<h:outputLabel id="primerNeumatico14Ro" value="#{serviciosVentanaMovimientos.primerNeumatico4}" />
+								
+								
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico11DragDisabled}">
+									<p:graphicImage id="rotneumatico11" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico11Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico11')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico12DragDisabled}">
+									<p:graphicImage id="rotneumatico12" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico12Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico12')}" />
+								</h:commandLink>
+								<p:graphicImage id="roteje1" styleClass="eje" value="#{serviciosVentanaMovimientos.eje1Image}"/>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico13DragDisabled}">
+									<p:graphicImage id="rotneumatico13" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico13Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico13')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico14DragDisabled}">
+									<p:graphicImage id="rotneumatico14" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico14Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico14')}" />
+								</h:commandLink>
+								
+								<h:outputLabel id="primerNeumatico21Ro" value="#{serviciosVentanaMovimientos.primerNeumatico5}" />
+								<h:outputLabel id="primerNeumatico22Ro" value="#{serviciosVentanaMovimientos.primerNeumatico6}" />
+								<h:outputLabel id="primerNeumaticoNull2Ro" value="" />
+								<h:outputLabel id="primerNeumatico23Ro" value="#{serviciosVentanaMovimientos.primerNeumatico7}" />
+								<h:outputLabel id="primerNeumatico24Ro" value="#{serviciosVentanaMovimientos.primerNeumatico8}" />
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico21DragDisabled}">
+									<p:graphicImage id="rotneumatico21" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico21Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico21')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico22DragDisabled}">
+									<p:graphicImage id="rotneumatico22" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico22Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico22')}" />
+								</h:commandLink>
+								<p:graphicImage id="roteje2" styleClass="eje" value="#{serviciosVentanaMovimientos.eje2Image}"/>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico23DragDisabled}">
+									<p:graphicImage id="rotneumatico23" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico23Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico23')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico24DragDisabled}">
+									<p:graphicImage id="rotneumatico24" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico24Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico24')}" />
+								</h:commandLink>
+								
+								<h:outputLabel id="primerNeumatico31Ro" value="#{serviciosVentanaMovimientos.primerNeumatico9}" />
+								<h:outputLabel id="primerNeumatico32Ro" value="#{serviciosVentanaMovimientos.primerNeumatico10}" />
+								<h:outputLabel id="primerNeumaticoNull3Ro" value="" />
+								<h:outputLabel id="primerNeumatico33Ro" value="#{serviciosVentanaMovimientos.primerNeumatico11}" />
+								<h:outputLabel id="primerNeumatico34Ro" value="#{serviciosVentanaMovimientos.primerNeumatico12}" />
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico31DragDisabled}">
+									<p:graphicImage id="rotneumatico31" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico31Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico31')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico32DragDisabled}">
+									<p:graphicImage id="rotneumatico32" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico32Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico32')}" />
+								</h:commandLink>
+								<p:graphicImage id="roteje3" styleClass="eje" value="#{serviciosVentanaMovimientos.eje3Image}"/>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico33DragDisabled}">
+									<p:graphicImage id="rotneumatico33" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico33Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico33')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico34DragDisabled}">
+									<p:graphicImage id="rotneumatico34" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico34Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico34')}" />
+								</h:commandLink>
+								
+								<h:outputLabel id="primerNeumatico41Ro" value="#{serviciosVentanaMovimientos.primerNeumatico13}" />
+								<h:outputLabel id="primerNeumatico42Ro" value="#{serviciosVentanaMovimientos.primerNeumatico14}" />
+								<h:outputLabel id="primerNeumaticoNull4Ro" value="" />
+								<h:outputLabel id="primerNeumatico43Ro" value="#{serviciosVentanaMovimientos.primerNeumatico15}" />
+								<h:outputLabel id="primerNeumatico44Ro" value="#{serviciosVentanaMovimientos.primerNeumatico16}" />
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico41DragDisabled}">
+									<p:graphicImage id="rotneumatico41" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico41Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico41')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico42DragDisabled}">
+									<p:graphicImage id="rotneumatico42" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico42Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico42')}" />
+								</h:commandLink>
+								<p:graphicImage id="roteje4" styleClass="eje" value="#{serviciosVentanaMovimientos.eje4Image}"/>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico43DragDisabled}">
+									<p:graphicImage id="rotneumatico43" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico43Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico43')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico44DragDisabled}">
+									<p:graphicImage id="rotneumatico44" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico44Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico44')}" />
+								</h:commandLink>
+								
+								<h:outputLabel id="primerNeumatico51Ro" value="#{serviciosVentanaMovimientos.primerNeumatico17}" />
+								<h:outputLabel id="primerNeumatico52Ro" value="#{serviciosVentanaMovimientos.primerNeumatico18}" />
+								<h:outputLabel id="primerNeumaticoNull5Ro" value="" />
+								<h:outputLabel id="primerNeumatico53Ro" value="#{serviciosVentanaMovimientos.primerNeumatico19}" />
+								<h:outputLabel id="primerNeumatico54Ro" value="#{serviciosVentanaMovimientos.primerNeumatico20}" />
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico51DragDisabled}">
+									<p:graphicImage id="rotneumatico51" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico51Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico51')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico52DragDisabled}">
+									<p:graphicImage id="rotneumatico52" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico52Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico52')}" />
+								</h:commandLink>
+								<p:graphicImage id="roteje5" styleClass="eje" value="#{serviciosVentanaMovimientos.eje5Image}"/>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico53DragDisabled}">
+									<p:graphicImage id="rotneumatico53" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico53Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico53')}" />
+								</h:commandLink>
+								<h:commandLink disabled="#{serviciosVentanaMovimientos.neumatico54DragDisabled}">
+									<p:graphicImage id="rotneumatico54" styleClass="neumatico" value="#{serviciosVentanaMovimientos.neumatico54Image}" ajax="true" cache="false"/>
+      								<f:ajax event="click" render="dropRotar esquemaEjeRo neumaticosRotar" listener="#{serviciosVentanaMovimientos.pasarParaRotar('rotneumatico54')}" />
+								</h:commandLink>
+							</h:panelGrid>
+						</h:panelGrid>
+				    	<h:panelGrid columns="1">
+				    		<h:panelGrid columns="1">
+					    		<p:fieldset id="neumaticosRotar" legend="Neumáticos para Rotar" style="margin-top:20px">  
+							        <p:outputPanel id="dropRotar"> 
+							  
+							            <p:dataTable var="neumatico" value="#{serviciosVentanaMovimientos.neumaticoDataModel}" scrollable="true"
+							            			emptyMessage="No hay neumáticos para rotar" selectionMode="single" scrollHeight="true"    
+							                    	rendered="#{not empty serviciosVentanaMovimientos.neumaticoDataModel}"
+							                    	selection="#{serviciosVentanaMovimientos.neumaticoSeleccionadoAlmacen}" 
+									                rowSelectListener="#{serviciosVentanaMovimientos.actualizarNeumaticoRotacion}"
+													onRowSelectUpdate="datosNeumaticoRotar posicionFinal btnDevolver"
+													rowUnselectListener="#{serviciosVentanaMovimientos.deseleccionarNeumaticoRotar}"
+													onRowUnselectUpdate="datosNeumaticoRotar posicionFinal btnDevolver" >
+							  
+							               	<p:column headerText="Neumático">
+					    						<h:outputText value="#{neumatico.codInterno}"/>
+						    				</p:column>
+						    				
+						    				<p:column headerText="Marca">
+						    					<h:outputText value="#{neumatico.disenoMedida.diseno.marcaNeumatico.nombre}"/>
+						    				</p:column>
+						    				
+						    				<p:column headerText="Medida">
+						    					<h:outputText value="#{neumatico.disenoMedida.medida.nombre}"/>
+						    				</p:column>
+						    				
+						    				<p:column headerText="Diseño">
+						    					<h:outputText value="#{neumatico.disenoMedida.diseno.nombre}"/>
+						    				</p:column>
+						    				
+						    				<p:column headerText="Condición">
+						    					<h:outputText value="#{neumatico.condicion}"/>
+						    				</p:column> 
+							            </p:dataTable>  
+							        </p:outputPanel>  
+							    </p:fieldset>  
+				    		</h:panelGrid>
+				    	
+							<h:panelGrid id="datosNeumaticoRotar" columns="3">
+							
+								<h:outputLabel for="posicionInicial" value="Posición Inicial: "/>
+					    		<h:inputText id="posicionInicial" value="#{serviciosVentanaMovimientos.posicionInicial}" disabled="true"/>
+					    		<h:outputLabel value=""/>
+					    		
+								<h:outputLabel value="Posición Final: " for="posicionFinal"/>
+						   		<h:selectOneMenu id="posicionFinal" label="Posicion Final" value="#{serviciosVentanaMovimientos.posicionSeleccionada}" 
+						   						 height="10" scrollable="true" scrollHeight="100" disabled="#{serviciosVentanaMovimientos.disabledDatosMontaje}">
+					                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+				               		<f:selectItems value="#{serviciosVentanaMovimientos.listaPosicionesDisponibles}" var="posicion" itemValue="#{posicion}" itemLabel="#{posicion}"/>
+				               		
+				               		<p:ajax action="#{serviciosVentanaMovimientos.actualizarPosicionMontaje}" update="esquemaEjeRo btnRotarActual"/>    	
+				               	</h:selectOneMenu>
+								<h:outputLabel value=""/>
+								
+					    		<h:outputLabel value="Remanente Total Operación:" for="totalMovimientoRo"/>
+					    		<h:inputText id="totalMovimientoRo" value="#{serviciosVentanaMovimientos.totalOperacion}" disabled="true"/>
+					    		<h:outputLabel value="mm"  style="font-weight: bold;"/>
+					    		
+					    		<h:outputLabel for="presionMovimientoRo" value="Presión:"/>
+					    		<h:inputText id="presionMovimientoRo" value="#{serviciosVentanaMovimientos.presion}" disabled="#{serviciosVentanaMovimientos.disabledDatosMontaje}">
+					    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.habilitarBotonMontaje}" render="btnRotarActual"/>
+							    </h:inputText>
+					    		<h:outputLabel value="Psi"  style="font-weight: bold;"/>
+					    		
+					    		<h:outputLabel for="observacionMovimientoRo" value="Observaciones:"/>
+					    		<h:inputTextarea id="observacionMovimientoRo" value="#{serviciosVentanaMovimientos.observacionesMovimiento}" disabled="#{serviciosVentanaMovimientos.disabledDatosMontaje}"/>
+					    		<p:commandButton id="btnRotarActual" title="Rotar" image="ui-icon-transferthick-e-w" styleClass="botonVentana" height="10" width="10"
+					    						 disabled="#{serviciosVentanaMovimientos.disabledBtnMontar}" style="margin:0;"
+												 oncomplete="handleRequest(xhr, status, args)" update="btnRotarActual btnRotar :dialogoConfirmacion :formMovimientos:mensajes :formMovimientos:esquemaEje"
+												 process="@this presionMovimientoRo" actionListener="#{serviciosVentanaMovimientos.rotarPrevio}"/>
+					    	</h:panelGrid>
+					    	
+					    	<p:separator />
+							<h:outputText style="color: RED;" value="Nota: Seleccione los neumáticos desde el dibujo del esquema de ejes, luego debe rotarlos uno por uno a partir de la selección de la tabla"/>
+					    	<p:separator />
+					    	
+					    	<h:panelGrid columns="3">
+					    		<p:commandButton id="btnRotar" title="Procesar Operaciones" image="ui-icon-check" value="Procesar" disabled="#{serviciosVentanaMovimientos.disabledBtnFinalizarRotacion}"
+										 oncomplete="handleRequest(xhr, status, args)" update=":dialogoConfirmacion :formMovimientos:mensajes :formMovimientos:esquemaEje" style="margin:0;"
+										 process="@this presionMovimientoRo posicionFinal" actionListener="#{serviciosVentanaMovimientos.confirmarDesmontajes}"/>
+								
+								<p:commandButton title="Cancelar" image="ui-icon-closethick" value="Cancelar" process="@this"
+										 oncomplete="refrescarRotacion(xhr, status, args); ventanaDatosRotacion.hide();" 
+										 update="btnRotar esquemaEjeRo dropRotar datosRotacion :formMovimientos:esquemaEje" style="margin:0;"
+										 actionListener="#{serviciosVentanaMovimientos.cancelar}"/>
+								
+								<p:commandButton id="btnDevolver" title="Sacar de la lista de rotación" image="ui-icon-closethick" value="Devolver" process="@this"
+										 update="btnRotar btnDevolver esquemaEjeRo dropRotar datosRotacion" style="margin:0;" disabled="#{serviciosVentanaMovimientos.disabledBtnDevolver}"
+										 actionListener="#{serviciosVentanaMovimientos.sacarDeListaRotacion}"/>
+					    	</h:panelGrid>
+					    	
+					    </h:panelGrid>
+					    
+				    	<h:panelGrid columns="1">
+						    <p:layout id="remanentesNeumatico" style="width: 420px; height:450px; border: none;">
+								<p:layoutUnit id="laySupRo" position="top" collapsible="true" collapsed="#{serviciosVentanaMovimientos.collapsedSuperior}" header="Superior" height="80" style="margin: 0 auto; text-align: center; border: none;">
+									<h:panelGrid columns="9" >
+							    		<h:outputLabel value="a: " for="superiorARo" style="font-weight:bold;"/>
+							    		<h:inputText id="superiorARo" label="Remanente Superior A" value="#{serviciosVentanaMovimientos.remanenteSuperiorA}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalSuperior}" render=":formMovimientos:mensajes totalSuperiorRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="b: " for="superiorBRo" style="font-weight:bold;"/>
+							    		<h:inputText id="superiorBRo" label="Remanente Superior B" value="#{serviciosVentanaMovimientos.remanenteSuperiorB}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalSuperior}" render=":formMovimientos:mensajes totalSuperiorRo  totalMovimientoRo btnRotarActual" />
+							    		</h:inputText>
+							    		<h:outputLabel value="c: " for="superiorCRo" style="font-weight:bold;"/>
+							    		<h:inputText id="superiorCRo" label="Remanente Superior C" value="#{serviciosVentanaMovimientos.remanenteSuperiorC}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalSuperior}" render=":formMovimientos:mensajes totalSuperiorRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="d: " for="superiorDRo" style="font-weight:bold;"/>
+							    		<h:inputText id="superiorDRo" label="Remanente Superior D" value="#{serviciosVentanaMovimientos.remanenteSuperiorD}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalSuperior}" render=":formMovimientos:mensajes totalSuperiorRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:inputText id="totalSuperiorRo" value="#{serviciosVentanaMovimientos.totalSuperior}" style="width: 50px;" disabled="true"/>
+							    	</h:panelGrid>
+								</p:layoutUnit>
+								<p:layoutUnit id="layInfRo" position="bottom" collapsible="true" collapsed="#{serviciosVentanaMovimientos.collapsedInferior}" header="Inferior" height="80" style="margin: 0 auto; text-align: right;">
+									<h:panelGrid columns="9">
+							    		<h:outputLabel value="a: " for="inferiorARo" style="font-weight:bold;"/>
+							    		<h:inputText id="inferiorARo" label="Remanente Inferior A" value="#{serviciosVentanaMovimientos.remanenteInferiorA}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalInferior}" render=":formMovimientos:mensajes totalInferiorRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="b: " for="inferiorBRo" style="font-weight:bold;"/>
+							    		<h:inputText id="inferiorBRo" label="Remanente Inferior B" value="#{serviciosVentanaMovimientos.remanenteInferiorB}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalInferior}" render=":formMovimientos:mensajes totalInferiorRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="c: " for="inferiorCRo" style="font-weight:bold;"/>
+							    		<h:inputText id="inferiorCRo" label="Remanente Inferior C" value="#{serviciosVentanaMovimientos.remanenteInferiorC}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalInferior}" render=":formMovimientos:mensajes totalInferiorRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="d: " for="inferiorDRo" style="font-weight:bold;"/>
+							    		<h:inputText id="inferiorDRo" label="Remanente Inferior D" value="#{serviciosVentanaMovimientos.remanenteInferiorD}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalInferior}" render=":formMovimientos:mensajes totalInferiorRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:inputText id="totalInferiorRo" value="#{serviciosVentanaMovimientos.totalInferior}" style="width: 50px;" disabled="true"/>
+							    	</h:panelGrid>
+								</p:layoutUnit>
+								<p:layoutUnit id="layIzqRo" position="left" collapsible="true" collapsed="#{serviciosVentanaMovimientos.collapsedIzquierdo}" width="70">
+									<h:panelGrid columns="1">
+							    		<h:outputLabel value="a: " for="izquierdoARo" style="font-weight:bold;"/>
+							    		<h:inputText id="izquierdoARo" label="Remanente Izquierdo A" value="#{serviciosVentanaMovimientos.remanenteIzquierdoA}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalIzquierdo}" render=":formMovimientos:mensajes totalIzquierdoRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="b: " for="superiorBRo" style="font-weight:bold;"/>
+							    		<h:inputText id="izquierdoBRo" label="Remanente Izquierdo B" value="#{serviciosVentanaMovimientos.remanenteIzquierdoB}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalIzquierdo}" render=":formMovimientos:mensajes totalIzquierdoRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="c: " for="superiorCRo" style="font-weight:bold;"/>
+							    		<h:inputText id="izquierdoCRo" label="Remanente Izquierdo C" value="#{serviciosVentanaMovimientos.remanenteIzquierdoC}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalIzquierdo}" render=":formMovimientos:mensajes totalIzquierdoRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="d: " for="superiorDRo" style="font-weight:bold;"/>
+							    		<h:inputText id="izquierdoDRo" label="Remanente Izquierdo D" value="#{serviciosVentanaMovimientos.remanenteIzquierdoD}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalIzquierdo}" render=":formMovimientos:mensajes totalIzquierdoRo  totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:inputText id="totalIzquierdoRo" value="#{serviciosVentanaMovimientos.totalIzquierdo}" style="width: 50px;" disabled="true"/>
+							    	</h:panelGrid>
+								</p:layoutUnit>
+								<p:layoutUnit id="layDerRo" position="right" collapsible="true" collapsed="#{serviciosVentanaMovimientos.collapsedDerecho}" width="70">
+									<h:panelGrid columns="1">
+							    		<h:outputLabel value="a: " for="derechaARo" style="font-weight:bold;"/>
+							    		<h:inputText id="derechaARo" label="Remanente Derecho A" value="#{serviciosVentanaMovimientos.remanenteDerechaA}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalDerecha}" render=":formMovimientos:mensajes totalDerechaRo totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="b: " for="derechaBRo" style="font-weight:bold;"/>
+							    		<h:inputText id="derechaBRo" label="Remanente Derecho B" value="#{serviciosVentanaMovimientos.remanenteDerechaB}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalDerecha}" render=":formMovimientos:mensajes totalDerechaRo totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="c: " for="derechaCRo" style="font-weight:bold;"/>
+							    		<h:inputText id="derechaCRo" label="Remanente Derecho C" value="#{serviciosVentanaMovimientos.remanenteDerechaC}" style="width: 50px;">
+							    			<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalDerecha}" render=":formMovimientos:mensajes totalDerechaRo totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:outputLabel value="d: " for="derechaDRo" style="font-weight:bold;"/>
+							    		<h:inputText id="derechaDRo" label="Remanente Derecho D" value="#{serviciosVentanaMovimientos.remanenteDerechaD}" style="width: 50px;">
+    										<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularTotalDerecha}" render=":formMovimientos:mensajes totalDerechaRo totalMovimientoRo btnRotarActual"/>
+							    		</h:inputText>
+							    		<h:inputText id="totalDerechaRo" value="#{serviciosVentanaMovimientos.totalDerecha}" style="width: 50px;" disabled="true"/>
+							    	</h:panelGrid>
+								</p:layoutUnit>
+								<p:layoutUnit position="center">
+									<p:graphicImage id="graficImage" styleClass="neumaticoLectura" value="../imagenes/cauchoBrigestone.png" ajax="true" cache="false"/>
+								</p:layoutUnit>
+							</p:layout>
+						</h:panelGrid>
+						
+						
+				    </h:panelGrid>
+			</h:form>
+		 </p:dialog>
+		 
+		 
+		 <p:dialog widgetVar="confirmarDatosDesmontajes" header="Confirmar Operación" closeOnEscape="false"
+				   showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true" draggable="false" resizable="false">
+			<h:form id="dialogoConfirmacion">
+				<h:panelGrid columns="1">
+				      <f:facet name="header">
+				         <h:outputText value="#{serviciosVentanaMovimientos.mensajeConfirmacion}"/>
+				      </f:facet>
+					<p:separator />
+					<h:panelGrid columns="2">
+						 <p:commandButton styleClass="botonVentana" actionListener="#{serviciosVentanaMovimientos.procesarMovimiento}"
+										 title="Aceptar" image="ui-icon-check" process="@this"
+										 update=":formDesmontaje:datosMovimiento :formDesmontaje:posicionesTomaMedidas :dialogoMontaje:panelDatosNeumatico :dialogoDemontajeRotacion:esquemaEje
+										 		:formRotacion:btnRotar :formRotacion:esquemaEjeRo :formRotacion:dropRotar :formRotacion:datosRotacion"
+										 oncomplete="confirmarDatosDesmontajes.hide(); ventanaDatosMovimiento.hide(); ventanaDatosRotacion.hide(); ventanaMontaje.hide();"/>
+						<p:commandButton styleClass="botonVentana" title="Cancelar" image="ui-icon-closethick"
+										 oncomplete="confirmarDatosDesmontajes.hide()"/>
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		 </p:dialog>
+		 
+		 <p:dialog widgetVar="confirmacion" header="Confirmar Operación" closeOnEscape="false" draggable="false" resizable="false"
+				   showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true">
+			<h:form id="dialogoConfirmacionRegresar">
+				<h:panelGrid columns="1">
+				      <f:facet name="header">
+				         ¿Está seguro que desea regresar el Neumático?
+				      </f:facet>
+					<p:separator />
+					<h:panelGrid columns="2">
+		   				<p:commandButton value="Aceptar" oncomplete="confirmacion.hide();"
+		   								 actionListener="#{serviciosVentanaMovimientos.previoRegresarNeumatico}"
+		   								 update=":formMovimientos:mensajes :dialogoDemontajeRotacion:esquemaEje :dialogoMontaje:esquemaEjeMontaje :dialogoMontaje:posicionMontaje :dialogos:tablaAlmacen :dialogos:btnRegresar"/>
+		   				<p:commandButton value="Cancelar" process="@this"  onclick="confirmacion.hide()" update=":dialogos:btnRegresar"/>
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		 </p:dialog>
+		 
+		 
+		 <p:dialog widgetVar="terminar" header="Terminar y Guardar" closeOnEscape="false" draggable="false" resizable="false"
+				   showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true" width="400">
+			<h:form id="dialogoTerminarGuardar">
+				<h:panelGrid columns="1">
+				      <f:facet name="header">
+				         Ingrese los siguientes datos para guardar los movimientos
+				      </f:facet>
+				      <h:panelGrid columns="3" id="datosTerminar">
+					      	<h:outputLabel value="Fecha: " for="fecha" />
+					    	<p:calendar id="fecha" value="#{serviciosVentanaMovimientos.fechaTerminar}" showOn="button" maxdate="#{serviciosVentanaMovimientos.fechaActual}"/>
+					   		<h:outputLabel value="" />
+					    	
+					    	<h:outputLabel value="Último Kilometraje:" for="kilometrajeAnterior"/>
+							<h:inputText id="kilometrajeAnterior" label="KilometrajeAnterior" value="#{serviciosVentanaMovimientos.vehiculoSeleccionado.kilometraje}" disabled="true">
+					   			<f:validateLength maximum="20"/>
+					   		</h:inputText>
+					   		<h:outputLabel value="Km" style="font-weight: bold;"/>
+					    	
+					    	<h:outputLabel value="Kilometraje Actual:" for="kilometrajeMovimientos"/>
+							<h:inputText id="kilometrajeMovimientos" label="KilometrajeMontaje" value="#{serviciosVentanaMovimientos.kilometrajeMovimiento}" >
+					   			<f:validateLength maximum="20"/>
+						   		<f:ajax event="change" listener="#{serviciosVentanaMovimientos.calcularRecorridoAcumulado}" render="recorridoAcumulado"/>
+					   		</h:inputText>
+					   		<h:outputLabel value="Km" style="font-weight: bold;"/>
+					   		
+				    		<h:outputLabel value="Recorrido Acumulado:" for="recorridoAcumulado"/>
+				    		<h:inputText id="recorridoAcumulado" value="#{serviciosVentanaMovimientos.recorridoAcumulado}" disabled="true"/>
+				    		<h:outputLabel value="Km"  style="font-weight: bold;"/>
+				      </h:panelGrid>
+					<p:separator />
+					<h:panelGrid columns="2">
+		   				<p:commandButton value="Aceptar" oncomplete="terminar.hide();"
+		   								 actionListener="#{serviciosVentanaMovimientos.terminarGuardar}"
+		   								 update=":formMovimientos :dialogoDemontajeRotacion :dialogoMontaje :dialogos"/>
+		   				<p:commandButton value="Cancelar" process="@this"  onclick="terminar.hide()"/>
+					</h:panelGrid>
+				</h:panelGrid>
+			</h:form>
+		 </p:dialog>
+		
+   			
+	    	
+		
+		<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+			
+			<!-- Etiqueta que define el formulario que contendra los campos de los a llenar del Tipo de Desgaste nuevo -->
+			<h:form id="formNuevo">
+				<script type="text/javascript">
+				
+					//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+					function refrescarNuevo(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formNuevo").reset();
+						}
+					}
+				</script>
+				
+				<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+				<p:dialog widgetVar="ventanaNuevoDesgaste" header="Registro de Tipos de Desgaste" closeOnEscape="false"
+						  showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true">
+			       
+			       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+			       <h:panelGrid id="gridDesgaste" columns="2">
+			       
+				   		<h:outputLabel value="Nombre: *" for="nombreDesgaste"/>
+				   		<h:inputText id="nombreDesgaste" value="#{serviciosVentanaTipoDesgaste.tipoDesgaste.nombre}" label="Nombre Desgaste" required="true" >
+				   			<f:validateLength maximum="60"/>
+				   		</h:inputText>
+				   		
+				   		<h:outputLabel value="Descripción: " for="descripcionDesgaste"/>
+				   		<h:inputTextarea id="descripcionDesgaste" value="#{serviciosVentanaTipoDesgaste.tipoDesgaste.descripcion}" label="Descripcion Desgaste" >
+				   			<f:validateLength maximum="255"/>
+				   		</h:inputTextarea>
+				   		
+						<h:outputLabel value="Causas: *" for="causaDesgaste"/>
+				   		<h:inputTextarea id="causaDesgaste" value="#{serviciosVentanaTipoDesgaste.tipoDesgaste.causa}" label="Causas Desgaste" required="true">
+				   			<f:validateLength maximum="255"/>
+				   		</h:inputTextarea>
+				   		
+				   		<h:outputLabel value="Acciones Coorrectivas: *" for="accionesCorrectivasDesgaste"/>
+				   		<h:inputTextarea id="accionesCorrectivasDesgaste" value="#{serviciosVentanaTipoDesgaste.tipoDesgaste.accionesCorrectivas}" label="Acciones Correctivas" required="true" >
+				   			<f:validateLength maximum="255"/>
+				   		</h:inputTextarea>
+				   		
+					</h:panelGrid>
+					
+					<p:separator/>
+					
+					<!-- Los siguientes botones, permiten al usuario decidir entre: 
+					Guardar la información ingresada en los campos(Aceptar)
+					Salirse de la ventana sin guardar ninguna información(Cancelar)
+					Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->
+		       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+		       						 action="#{serviciosVentanaTipoDesgaste.guardarOModificar}"  process="@this nombreDesgaste decripcionDesgaste causaDesgaste accionesCorrectivasDesgaste"
+		       						 image="ui-icon-disk" oncomplete="refrescarNuevo(xhr, status, args); ventanaNuevoDesgaste.hide();" update=":formMovimientos:mensajes :formDialogos:datosMovimiento">
+			        </p:commandButton> 
+					<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px" process="@this nombreDesgaste decripcionDesgaste causaDesgaste accionesCorrectivasDesgaste"
+									 action="#{serviciosVentanaTipoDesgaste.cancelar}" oncomplete="refrescarNuevo(xhr, status, args); ventanaNuevoDesgaste.hide();"
+									 image="ui-icon-closethick" update=":formMovimientos:mensajes :formDialogos:datosMovimiento">
+			        </p:commandButton> 
+		   			<p:commandButton title="Limpiar" type="reset" process="@this nombreDesgaste decripcionDesgaste causaDesgaste accionesCorrectivasDesgaste"
+		   							 style="margin-left:5px" image="ui-icon-refresh"/>
+				</p:dialog>
+			</h:form>
+		
+	</div>					
+	</ui:define>
+</ui:composition>

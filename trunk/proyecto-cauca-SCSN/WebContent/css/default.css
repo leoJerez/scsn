@@ -1,0 +1,478 @@
+/*
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+*/
+
+body {
+	margin: 0px;
+	padding: 0;
+	font-size: 10px;
+	color: #616161;
+	/*background-color: #DADBC1;
+	background-image: url('../imagenes/fondo8.jpg'); 
+	background-attachment: fixed;
+	/*background-repeat: no-repeat; 
+	/*background-position: center center;*/ 
+}
+
+h1, h2, h3 {
+	margin-top: 0;
+}
+
+h1 {
+	font-size: 1.6em;
+	font-weight: normal;
+}
+
+h2 {
+	font-size: 1.6em;
+}
+
+h3 {
+	font-size: 1em;
+	margin-top:20px;
+}
+/* Botón que muestra imagen del diseñoNeumatico */
+
+.muestraImagenDiseno {
+  	background-repeat:no-repeat;
+	width: 120px;
+	height: 200px;
+}
+
+.disenoNeumatico {
+  	background-repeat:no-repeat;
+  	height:35px;
+  	width:25px;
+}
+
+.neumaticoLectura {
+  	background-repeat:no-repeat;
+  	height:250px;
+  	width:250x;
+}
+
+.almacen {
+	/*background:#2967F7;*/ 
+	width:70px;
+	height:80px;
+	display:block;
+}
+
+.almacen2 {
+	align: top;
+	width:60px;
+	height:70px;
+	/*border-style:solid;*/
+	border-width:1px;
+	margin-left: -10px;
+}
+
+
+/* Botones para esquema de Ejes*/
+
+.eje {
+  	background-repeat:no-repeat;
+  	height:15px;
+  	width:100px;
+  	border:0;	
+}
+
+.neumatico {
+  	background-repeat:no-repeat;
+  	height:35px;
+  	width:25px;
+}
+
+.panelNeumatico {
+	border: 0px !important;
+}
+
+/* Iconos Link Paginas*/
+
+#menuAbajo{
+	padding-left: 150px;	
+}
+
+ul, li {
+	padding:0;
+	margin:0;
+	list-style:none;
+}
+
+#link {
+	margin: 100px 0 0;
+	padding: 0;
+	list-style: none
+}
+
+#link li {
+	display: block;
+	float: left;
+	width: 140px;
+	height: 160px; 
+	margin: 0 40px 0 0;
+	background: url(../imagenes/menu_box.png) no-repeat
+}
+
+#link li a { 
+	display: block; 
+	width: 120px; 
+	height: 30px; 
+	padding: 130px 10px 0px; 
+	background-repeat: no-repeat; 
+	background-position: 15px 15px; 
+	text-align: center; 
+	line-height: 30px; 
+	font-size: 14px; 
+	color: #000; 
+}
+
+#link li a:hover { 
+	text-shadow: 1px 1px 1px #555; 
+	text-decoration: none; 
+}
+
+#link li a.empleados { 
+	background-image: url(../imagenes/empleado.png); 
+}
+
+#link li a.rutas { 
+	background-image: url(../imagenes/rutas.png); 
+}
+
+#link li a.proveedores { 
+	background-image: url(../imagenes/proveedores.png); 
+}
+
+#link li a.cargos { 
+	background-image: url(../imagenes/cargos.png); 
+}
+
+#link li a.roles { 
+	background-image: url(../imagenes/roles.png); 
+}
+
+#link li a.carretera { 
+	background-image: url(../imagenes/carretera.png); 
+}
+
+#mostrarPegadoBody {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 200px;
+	color: #371C1C;
+}
+
+.consultar {
+	background-image: url(../imagenes/ico/consultar.ico) !important;
+}
+
+.nuevo {
+	background-image: url(../imagenes/ico/nuevo.ico) !important;
+}
+
+.modificar {
+	background-image: url(../imagenes/ico/modificar.ico) !important;
+}
+
+.cancelar {
+	background-image: url(../imagenes/ico/cancelar.ico) !important;
+}
+
+.limpiar {
+	background-image: url(../imagenes/ico/consultar.ico) !important;
+}
+
+.eliminar {
+	background-image: url(../imagenes/ico/eliminar.ico) !important;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a img {
+	border: none;
+}
+
+img.left {
+	float: left;
+	margin: 0 20px 0 0;
+}
+
+img.right {
+	float: right;
+	margin: 0 0 0 20px;
+}
+
+/* Header */
+#logo {
+	width: 960px;
+	height: 75px;
+	margin: 0 auto;
+	padding: 25px 10px 0 10px;
+}
+
+#logo h1, #logo p {
+	float: left;
+	margin: 0;
+}
+
+#logo h1 {
+	padding: 0 0 0 0;
+	letter-spacing: -1px;
+	font-weight: normal;
+	font-size: 3em;
+}
+
+#logo p {
+	text-transform: uppercase;
+	padding: 47px 0 0 3px;
+	font-size: 10px;
+	color: #FFFFFF;
+}
+
+#logo a {
+	border: none;
+	text-decoration: none;
+	color: #DC8700;
+}
+
+/* Menu */
+#menu {
+	width: 960px;
+	margin: 0 auto;
+	padding: 0;
+	height: 59px;
+}
+
+#menu ul {
+	margin: 0;
+	padding-left: 270px;
+	list-style: none;
+}
+
+#menu li {
+	display: inline;
+}
+
+#menu li a {
+	display: block;
+	float: left;
+	height: 42px;
+	margin: 0;
+	padding: 18px 40px 0 40px;
+	text-decoration: none;
+	font-size: 20px;
+}
+
+#menu li a:hover {
+	text-decoration: underline;
+}
+
+
+/* Wrapper */
+
+#wrapper {
+}
+
+/* Page */
+
+#page {
+	width: 960px;
+/* 	height: 900px; */
+	margin: 0 auto;
+	padding-top: 500px;
+	padding: 20px 5px;
+	background-color:#F2F2DC;
+	filter:alpha(opacity=90);
+	-moz-opacity:.90;
+	opacity:.90;
+	
+	
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	-ms-border-radius: 6px;
+}
+
+#page-bg {
+}
+
+/* Latest Post */
+
+#latest-post {
+	padding: 20px;
+	border: 1px solid #E7E7E7;
+}
+
+/* Content */
+
+#content {
+	float: center;
+	width: 740px; /* width: 700px; */
+}
+
+.post {
+	padding-bottom: 15px;
+}
+
+.post h1 {
+	font-weight: normal;
+}
+
+.title {
+	text-align: center;
+	height: 30px;
+	width: 915px;
+	margin-left: 10px;
+	padding: 8px 0 0 20px;
+}
+
+.title a {
+	border-bottom: none;
+	color: #FFFFFF;
+}
+
+.title a:hover {
+	border-bottom: 1px dotted #000000;
+}
+
+.byline {
+	margin: -60px 20px 20px 20px;
+}
+
+.byline a {
+	color: #DC8700;
+}
+
+.tag {
+	padding: 0 15px;
+}
+
+.entry {
+	/*padding: 0 20px;*/
+}
+
+.entry p {
+	line-height: 200%;
+}
+
+/* Search */
+
+#searchform {
+	margin: 0;
+	padding: 0 0 0 0;
+}
+
+#searchform br {
+	display: none;
+}
+
+#searchform h2 {
+}
+
+#s {
+	margin: 10px 0px 0 15px;
+	padding: 2px 2px;
+	width: 180px;
+	height: 18px;
+	border: 1px solid #6F6E6E;
+	background: #FFFFFF;
+	font-size: 10px;
+	color: #000000;
+}
+
+#x {
+	margin: 0;
+	padding: 2px 5px;
+	height: 25px;
+	background: #CA8186;
+	text-decoration: none;
+	text-transform: uppercase;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	color: #CCCCCC;
+}
+/* Calendar */
+
+#calendar_wrap {
+	padding: 0 15px;
+	text-align: center;
+}
+
+#calendar_wrap table {
+	width: 100%;
+}
+
+#calendar_wrap th {
+}
+
+#calendar_wrap td {
+}
+
+#calendar_wrap tfoot td {
+	border: none;
+}
+
+#calendar_wrap tfoot td#prev {
+	text-align: left;
+	font-weight: bold;
+	border: none;
+}
+
+#calendar_wrap tfoot td#prev a {
+	border: none;
+}
+
+#calendar_wrap tfoot td#next {
+	text-align: right;
+	font-weight: bold;
+	border: none;
+}
+
+#calendar_wrap tfoot td#next a {
+	border: none;
+}
+
+/* Footer */
+
+#footer {
+	width: 960px;
+	height: 70px;
+	margin: 0 auto;
+	padding: 0 20px;
+	font-size: small;
+}
+
+#footer p {
+	margin: 0;
+	padding: 25px 0 0 0;
+	text-align: center;
+}
+
+#footer a {
+}
+
+#footer .link {
+	float: right;
+}
+
+#footer .copyright {
+	/*float: left;*/
+}
+
+.homeText {
+	line-height: 175%;
+}
+
+.homeMenu {
+	width:200px;
+	float:left;
+	margin-right:10px
+}
+

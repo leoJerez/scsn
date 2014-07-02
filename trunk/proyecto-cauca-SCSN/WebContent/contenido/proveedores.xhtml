@@ -1,0 +1,364 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Proveedores</ui:define>
+	<ui:define name="content">
+		
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Proveedores de la Empresa</h1>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+<!-- ······················································· BOTONERA ··············································· -->			
+			
+			<!-- Esta botonera hace una solicitud al servidor donde se activan las funciones que se van a ejecutar, esto se hace
+			a través de la clase ServiciosVentanaProveedor y javascript recibe los parámetros, los cuales se usarán
+			para abrir la ventana corresppondiente según la operación requerida -->
+			
+			<!-- Etiqueta que define un formulario -->
+			<h:form id="formBotonera">
+			
+			<!-- Etiquetas que definen una serie de botones los cuales ejecutan funciones al presionarse -->
+				<p:commandButton id="btnNuevo" image="ui-icon-plusthick" onclick="ventanaRegistro.show()" update=":formNuevoProveedor:data" value="Nuevo"/>
+				<p:commandButton id="btnModificar" image="ui-icon-wrench" action="#{serviciosVentanaProveedor.activarModificar}" update=":seleccionarElemento :formModificar:dataMod" style="margin-left:5px" oncomplete="procesarTarea(xhr, status, args);" value="Modificar" />
+				<p:commandButton id="btnEliminar" image="ui-icon-trash" action="#{serviciosVentanaProveedor.activarEliminar}" update=":formEliminar:eliminar" style="margin-left:5px" oncomplete="procesarTarea(xhr, status, args);" value="Eliminar"/>
+				<p:commandButton id="btnConsultar" image="ui-icon-search" action="#{serviciosVentanaProveedor.activarConsultar}" update=":formConsulta:dataConsulta" style="margin-left:5px" oncomplete="procesarTarea(xhr, status, args);" value="Consultar"/>
+			</h:form>
+			
+			<!-- Script que permite decidir que ventana de manipulacion de datos va a mostrar (M: Modificar, E: Eliminar, C: Consultar) -->
+			<script type="text/javascript">
+			
+				//Metodo que decide que funcion ejecutar dependiendo del contenido del atributo args.tarea
+		        function procesarTarea(xhr, status, args) {
+		        	if (args.ok) {
+		            	switch (args.tarea) {
+							case "M":
+								ventanaModificar.show();	//Se ejecuta la ventana modificar
+								break;
+							case "E":
+				                confirmacion.show();		//Se ejecuta la ventana eliminar
+								break;
+							case "C":
+								ventanaConsulta.show();		//Se ejecuta la ventana consultar
+								break;
+						}
+		            }else{
+		                errorSeleccion.show();
+		            }
+		        }
+		    </script>
+		    <p:dialog header="Operación Negada" widgetVar="errorSeleccion"
+		    		  showEffect="fade" hideEffect="blind" modal="true" closable="false" closeOnEscape="false" appendToBody="true">
+		    	<h:form id="seleccionarElemento">
+		    		<h:panelGrid>
+		    			<f:facet name="header">
+		    				<br/>
+		    					Debe seleccionar un elemento
+		    				<br/>
+		    			</f:facet>
+		    		</h:panelGrid>
+		    		<p:separator/>
+		    		<p:commandButton id="aceptar" image="ui-icon-check" onclick="errorSeleccion.hide();" styleClass="botonVentana" title="Aceptar" type="buttom"/>
+		    	</h:form>
+		    </p:dialog>
+		    
+
+<!-- ······················································· TABLA ··············································· -->		   	
+			
+			<!-- Esta es tabla contiene los registros de los Proveedores introducidos en la base de datos. 
+			Esta tabla permite organizar los registros por páginas y ofrece la funición de filtrar los registros
+			según la propiedad indicada. Además, permite hace la selección de un registro para manipularlo(Consultarlo, Modificarlo y Eliminarlo) -->
+			
+			<!-- Etiqueta que define el formulario de la tabla con todos los datos de los Proveedores -->
+			<h:form id="formTablaProveedor">
+			
+				<!-- Etiqueta que define un panel que contendra la tabla con los datos de los Proveedores -->
+				<p:outputPanel id="tbProveedores" style="width:100%;overflow:auto;">
+				
+					<!-- Etiqueta que define la tabla con los datos de los Proveedores -->
+					<p:dataTable id="proveedores" value="#{serviciosVentanaProveedor.proveedorDataModel}" var="proveedor" style="width:129%" scrollable="false"
+				                emptyMessage="No se encontraron resultados" selectionMode="single"  scrollHeight="450" 
+								selection="#{serviciosVentanaProveedor.proveedorSeleccionado}" onRowSelectUpdate=":formModificar:dataMod"
+	                  			paginator="true" paginatorPosition="top" rows="#{serviciosVentanaProveedor.rows}"
+                 				paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+				                rowsPerPageTemplate="5,10,15">
+						
+						<!-- Etiqueta que define el contenido de la primera columna de la tabla, en la que iran los nombres de los Proveedores-->
+						<p:column filterBy="#{proveedor.rif}" filterMatchMode="contains">
+							
+							<!-- Etiqueta que define el titulo de la culumna -->
+							<f:facet name="header">
+						        <h:outputText value="Rif" />
+						    </f:facet>
+						    
+						    <!-- Etiqueta que carga los datos del campo nombre -->
+							<h:outputText value="#{proveedor.rif}" />
+						</p:column>
+						
+						<p:column filterBy="#{proveedor.nombre}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Nombre" />
+						    </f:facet>
+							<h:outputText value="#{proveedor.nombre}" />
+						</p:column>
+						
+						<p:column filterBy="#{proveedor.direccion}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Dirección" />
+						    </f:facet>
+							<h:outputText value="#{proveedor.direccion}" />
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Teléfono" />
+						    </f:facet>
+							<h:outputText value="#{proveedor.telefono}" />
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Celular" />
+						    </f:facet>
+							<h:outputText value="#{proveedor.celular}" />
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Correo" />
+						    </f:facet>
+							<h:outputText value="#{proveedor.correo}" />
+						</p:column>
+					</p:dataTable>
+				</p:outputPanel> 
+			</h:form>
+
+<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+
+	<!-- Esta ventana permitirá al usuario agregar un nuevo Proveedor a la base de datos, 
+	una vez llenados y validados todos los campos -->
+			
+	<!-- Etiqueta que habilita los mensajes FacesMessage, de informacion -->
+	<p:growl id="mensajes" showDetail="true" life="4000"/>
+	
+	
+		<script type="text/javascript">
+		
+				//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+				function refrescarNuevoProveedor(xhr, status, args) {
+					if(args.limpiar){
+					document.getElementById("formTablaProveedor").reset();
+					document.getElementById("formNuevoProveedor").reset();
+					}
+				}
+		</script>
+		
+		<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+		<p:dialog widgetVar="ventanaRegistro" header="Registro de Proveedores" closeOnEscape="false" modal="true" appendToBody="true"
+				  showEffect="fade" hideEffect="fade" closable="false" width="370">
+			
+			<!-- Etiqueta que define el formulario que contendra los campos de los a llenar del Proveedor nuevo -->
+			<h:form id="formNuevoProveedor">
+				  
+			   <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+		       <h:panelGrid id="grid" columns="2">
+			   		
+			   		<h:outputLabel value="Rif: *" for="rif"/>
+			   		<h:inputText id="rif" value="#{serviciosVentanaProveedor.proveedor.rif}" label="Rif" required="true" >
+			   			<f:validateLength maximum="15"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Nombre: *" for="nombre"/>
+			   		<h:inputText id="nombre" value="#{serviciosVentanaProveedor.proveedor.nombre}" label="Nombre" required="true">
+			   			<f:validateLength maximum="60"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Direccion: *" for="direccion"/>
+			   		<h:inputTextarea id="direccion" value="#{serviciosVentanaProveedor.proveedor.direccion}" label="Direccion" required="true">
+			   			<f:validateLength maximum="255"/>
+			   		</h:inputTextarea>
+			   		
+			   		<h:outputLabel value="Teléfono: *" for="telefono"/>
+			   		<p:inputMask  id="telefono" value="#{serviciosVentanaProveedor.proveedor.telefono}" mask="(999) 999-9999" label="Teléfono" required="true" ></p:inputMask>
+			   		
+			   		<h:outputLabel value="Celular:" for="celular"/>
+			   		<p:inputMask  id="celular" value="#{serviciosVentanaProveedor.proveedor.celular}" mask="(999) 999-9999" label="Celular"></p:inputMask>
+			   		
+			   		<h:outputLabel value="Email:" for="email"/>
+			   		<h:inputText id="email" value="#{serviciosVentanaProveedor.proveedor.correo}" label="Email" >
+			   			<f:validateLength maximum="30"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Empresa: *" for="empresa"/>
+					<h:inputText id="empresa" label="Empresa" value="#{serviciosVentanaProveedor.proveedor.empresa.nombre}" disabled="true"/>
+					
+				</h:panelGrid>
+				
+				<!-- Etiqueta que dibuja un separador en el panel -->
+				<p:separator/>
+				
+				<!-- Los siguientes botones, permiten al usuario decidir entre: 
+				Guardar la información ingresada en los campos(Aceptar)
+				Salirse de la ventana sin guardar ninguna información(Cancelar)
+				Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->
+	       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+	       						 actionListener="#{serviciosVentanaProveedor.guardarOModificar}" 
+	       						 image="ui-icon-disk" oncomplete="refrescarNuevoProveedor(xhr, status, args);" update=":mensajes,:formTablaProveedor:tbProveedores">
+		        </p:commandButton> 
+				<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+								 actionListener="#{serviciosVentanaProveedor.cancelar}" oncomplete="refrescarNuevoProveedor(xhr, status, args); ventanaRegistro.hide();"
+								 image="ui-icon-closethick" update=":formTablaProveedor:tbEmpleado,grid">
+		        </p:commandButton> 
+	   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset" update="grid"
+	   							 style="margin-left:5px" image="ui-icon-refresh"/>
+   			</h:form>
+		</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº MODIFICAR ººººººººººººººººººººººººººººº -->
+
+	<!-- Esta ventana permitirá realizar cambios sobre los Proveedores ingresados en la base de datos 
+		 un vez que haya sido seleccionado de la tabla -->
+
+	
+		<script type="text/javascript">
+		
+				//Funcion que llama a los formularios "Modificar" y los vuelve a cargar
+				function refrescarMod(xhr, status, args) {
+					if(args.limpiar){
+					document.getElementById("formTablaProveedor").reset();
+					document.getElementById("formModificar").reset();
+					ventanaModificar.hide();
+					}
+				}
+		</script>
+		
+		<p:dialog widgetVar="ventanaModificar" header="Modificar Datos del Proveedor" closeOnEscape="false" modal="false"
+					showEffect="fade" hideEffect="fade" closable="false" width="350" appendToBody="false">
+			<h:form id="formModificar">
+				<h:panelGrid id="dataMod" columns="2">
+			   		
+			   		<h:outputLabel value="Rif: *" for="rif"/>
+			   		<h:inputText id="rif" value="#{serviciosVentanaProveedor.proveedorSeleccionado.rif}" label="Rif" required="true" >
+			   			<f:validateLength maximum="15"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Nombre: *" for="nombre"/>
+			   		<h:inputText id="nombre" value="#{serviciosVentanaProveedor.proveedorSeleccionado.nombre}" label="Nombre" required="true">
+			   			<f:validateLength maximum="60"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Direccion: *" for="direccion"/>
+			   		<h:inputTextarea id="direccion" value="#{serviciosVentanaProveedor.proveedorSeleccionado.direccion}" label="Direccion" required="true">
+			   			<f:validateLength maximum="255"/>
+			   		</h:inputTextarea>
+			   		
+			   		<h:outputLabel value="Teléfono: *" for="telefono"/>
+			   		<p:inputMask  id="telefono" value="#{serviciosVentanaProveedor.proveedorSeleccionado.telefono}" mask="(999) 999-9999" label="Teléfono" required="true" ></p:inputMask>
+			   		
+			   		<h:outputLabel value="Celular:" for="celular"/>
+			   		<p:inputMask  id="celular" value="#{serviciosVentanaProveedor.proveedorSeleccionado.celular}" mask="(999) 999-9999" label="Celular"></p:inputMask>
+			   		
+			   		<h:outputLabel value="Email:" for="email"/>
+			   		<h:inputText id="email" value="#{serviciosVentanaProveedor.proveedorSeleccionado.correo}" label="Email" >
+			   			<f:validateLength maximum="30"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Empresa: *" for="empresa"/>
+					<h:inputText id="empresa" label="Empresa" value="#{serviciosVentanaProveedor.proveedorSeleccionado.empresa.nombre}" disabled="true"/>
+					
+		       </h:panelGrid>  
+		 
+		       <p:separator />
+	       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+	       						 actionListener="#{serviciosVentanaProveedor.guardarOModificar}" 
+	       						 image="ui-icon-disk" oncomplete="refrescarMod(xhr, status, args);" update=":mensajes,dataMod,:formTablaProveedor:tbProveedores">
+		        </p:commandButton>
+				<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+								 actionListener="#{serviciosVentanaProveedor.cancelar}" oncomplete="refrescarMod(xhr, status, args); ventanaModificar.hide();"
+								 image="ui-icon-closethick" update=":formTablaProveedor:tbProveedores,dataMod">
+		        </p:commandButton>
+	        </h:form>
+		</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº ELIMINAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá eliminar un Proveedor seleccionado previamente en la tabla
+				 esta ventana pide confirmación antes de procesar la operación -->
+			
+			<p:dialog id="ventanaEliminar" widgetVar="confirmacion" header="Confirme la operación" 
+					  showEffect="fade" hideEffect="blind" closeOnEscape="false" modal="true" appendToBody="true" closable="false">
+				<h:form id="formEliminar">
+					<script type="text/javascript">
+							
+							//Funcion que llama a los formularios eliminar y los vuelve a cargar
+							function refrescarEliminar() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formEliminar").reset();
+							}
+					</script>
+					<h:panelGrid>
+						<f:facet name="header">
+							<br/>
+								Está seguro que desea eliminar este proveedor?
+							<br/>
+						</f:facet>
+					</h:panelGrid>
+					<p:separator/>
+					 <p:commandButton id="confirmar" styleClass="botonVentana" title="Aceptar" actionListener="#{serviciosVentanaProveedor.eliminar}"
+				        				 image="ui-icon-check" oncomplete="confirmacion.hide(); refrescarEliminar() " update=":formTablaProveedor:tbProveedores,:mensajes"/>  
+				     <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" title="Cancelar" update=":formTablaProveedor:tbProveedores"
+				        				 actionListener="#{serviciosVentanaProveedor.cancelar}" oncomplete="confirmacion.hide()"/>  
+				</h:form>
+			</p:dialog>
+		   	
+<!-- ººººººººººººººººººººººººººººººººººººººº CONSULTA ººººººººººººººººººººººººººººº -->
+			
+	<!-- Esta ventana se encarga de mostrar toda la información referente al Proveedor seleccionado -->
+	
+	
+		<p:dialog widgetVar="ventanaConsulta" header="Consultar Proveedor"
+			showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" modal="true" appendToBody="true" width="350">
+      		   <h:form id="formConsulta">
+		       <h:panelGrid id="dataConsulta" columns="2">
+			   		<h:outputLabel value="rif: " for="rifConsulta"/>
+			   		<h:outputText id="rifConsulta" value="#{serviciosVentanaProveedor.proveedorSeleccionado.rif}"/>
+			   		
+			   		<h:outputLabel value="Nombre: " for="nombreConsulta"/>
+			   		<h:outputText id="nombreConsulta" value="#{serviciosVentanaProveedor.proveedorSeleccionado.nombre}"/>
+			   		
+			   		<h:outputLabel value="Direccion: " for="direccionConsulta"/>
+			   		<h:inputTextarea id="direccionConsulta" value="#{serviciosVentanaProveedor.proveedorSeleccionado.direccion}" label="Direccion:" disabled="true"/>
+			   		
+			   		<h:outputLabel value="Teléfono:" for="telefonoConsulta"/>
+			   		<h:outputText  id="telefonoConsulta" value="#{serviciosVentanaProveedor.proveedorSeleccionado.telefono}"></h:outputText>
+			   		
+			   		<h:outputLabel value="Celular: " for="celularConsulta"/>
+			   		<h:outputText  id="celularConsulta" value="#{serviciosVentanaProveedor.proveedorSeleccionado.celular}"></h:outputText>
+			   		
+			   		<h:outputLabel value="Email:" for="emailConsulta"/>
+			   		<h:outputText id="emailConsulta" value="#{serviciosVentanaProveedor.proveedorSeleccionado.correo}"/>
+			   		
+			   		<h:outputLabel value="Empresa: " for="empresaConsulta"/>
+					<h:outputText id="empresaConsulta" value="#{serviciosVentanaProveedor.proveedorSeleccionado.empresa.nombre}"/>
+		     		
+				</h:panelGrid>
+				<p:separator/>
+     			<p:commandButton styleClass="botonVentana" title="Aceptar" onclick="ventanaConsulta.hide();"
+								 image="ui-icon-check" update=":formTabla:tbEmpleado"/>
+			</h:form>
+		</p:dialog>
+
+	
+		</div>
+		
+	</ui:define>
+</ui:composition>

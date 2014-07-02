@@ -1,0 +1,428 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Modelos Vehiculo</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Modelos de Vehículos</h1>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+<!-- ······················································· BOTONERA ··············································· -->			
+			
+			<!-- Esta botonera hace una solicitud al servidor donde se activan las funciones que se van a ejecutar, esto se hace
+			a través de la clase ServiciosVentanaModeloVehiculo y javascript recibe los parámetros, los cuales se usarán
+			para abrir la ventana corresppondiente según la operación requerida -->
+			
+			<!-- Etiqueta que define un formulario -->
+			<h:form id="formBotonera">
+			
+			<!-- Etiquetas que definen una serie de botones los cuales ejecutan funciones al presionarse -->
+				<p:commandButton id="btnNuevo" image="ui-icon-plusthick" onclick="ventanaRegistro.show()" update=":formNuevo:data" value="Nuevo"/>
+				<p:commandButton id="btnModificar" image="ui-icon-wrench" action="#{serviciosVentanaModeloVehiculo.activarModificar}" update=":formModificar:dataMod" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Modificar" />
+				<p:commandButton id="btnEliminar" image="ui-icon-trash" action="#{serviciosVentanaModeloVehiculo.activarEliminar}" update=":formEliminar:eliminar" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Eliminar"/>
+				<p:commandButton id="btnConsultar" image="ui-icon-search" action="#{serviciosVentanaModeloVehiculo.activarConsultar}" update=":formConsulta:dataConsulta" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Consultar"/>
+			</h:form>
+			
+			<!-- Script que permite decidir que ventana de manipulacion de datos va a mostrar (M: Modificar, E: Eliminar, C: Consultar) -->
+			<script type="text/javascript">
+			
+				//Metodo que decide que funcion ejecutar dependiendo del contenido del atributo args.tarea
+		        function handleRequest(xhr, status, args) {
+		            if (args.ok) {
+		            	switch (args.tarea) {
+							case "M":
+								ventanaModificar.show();	//Se ejecuta la ventana modificar
+								break;
+							case "E":
+				                confirmacion.show();		//Se ejecuta la ventana eliminar
+								break;
+							case "C":
+								ventanaConsulta.show();		//Se ejecuta la ventana consultar
+								break;
+						}
+		            }else{
+		                errorSeleccion.show();
+		            }
+		        }
+		    </script>
+		    
+		    <!-- Etiqueta que define una ventana de mensaje en caso de que no se halla seleccionado ningun elemento de la tabla -->
+		   	<p:confirmDialog message="Debe seleccionar un elemento" header="Operación Negada" severity="alert" widgetVar="errorSeleccion"
+							showEffect="fade" hideEffect="blind" modal="false" closable="false" closeOnEscape="false">
+		   		
+		   		<!-- Etiqueta que define un formulario simple con un boton de aceptar para ocultar la ventana -->
+		   		<h:form>
+		   			<p:commandButton id="aceptar" image="ui-icon-check" onclick="errorSeleccion.hide();" styleClass="botonVentana" title="Aceptar" type="buttom"/>
+		   		</h:form>
+		   	</p:confirmDialog>
+
+<!-- ······················································· TABLA ··············································· -->	
+			
+				<!-- Esta es tabla contiene los registros de los Modelos de Vehículo introducidos en la base de datos. 
+			Esta tabla permite organizar los registros por páginas y ofrece la funición de filtrar los registros
+			según la propiedad indicada. Además, permite hace la selección de un registro para manipularlo(Consultarlo, Modificarlo y Eliminarlo) -->
+			
+			<!-- Etiqueta que define el formulario de la tabla con todos los datos de los Modelos de Vehículo -->
+			<h:form id="formTabla">
+			
+				<!-- Etiqueta que define un panel que contendra la tabla con los datos de los Modelos de Vehículo -->
+				<p:outputPanel id="tbModeloVehiculo" style="width:100%;overflow:auto;">
+					
+					<!-- Etiqueta que define la tabla con los datos de los Modelos de Vehículo -->
+					<p:dataTable id="modeloVehiculo" value="#{serviciosVentanaModeloVehiculo.modeloVehiculoDataModel}" var="modeloVehiculo" style="width:129%"
+				               
+				                 emptyMessage="No se encontraron resultados" selectionMode="single" 
+								 selection="#{serviciosVentanaModeloVehiculo.modeloVehiculoSeleccionado}" onRowSelectUpdate=":formModificar:dataMod">
+						
+						
+						<!--   paginator="true" rows="5" paginatorPosition="top" scrollHeight="450"
+                 				paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+					            rowsPerPageTemplate="5,10,15"-->
+					            
+					            
+						<!-- Etiqueta que define el contenido de la primera columna de la tabla, en la que iran los nombres de los Modelos de Vehículo-->
+						<p:column filterBy="#{modeloVehiculo.nombre}" filterMatchMode="contains" >
+							
+							<!-- Etiqueta que define el titulo de la culumna -->
+							<f:facet name="header">
+						        <h:outputText value="Nombre" />
+						    </f:facet>
+						    
+						    <!-- Etiqueta que carga los datos del campo nombre -->
+							<h:outputText value="#{modeloVehiculo.nombre}" />
+						</p:column>
+						<p:column >
+							<f:facet name="header">
+						        <h:outputText value="Descripción" />
+						    </f:facet>
+							<h:outputText value="#{modeloVehiculo.descripcion}" />
+						</p:column>
+						<p:column filterBy="#{modeloVehiculo.tipoVehiculo.nombre}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Tipo de Vehículo" />
+						    </f:facet>
+							<h:outputText value="#{modeloVehiculo.tipoVehiculo.nombre}" />
+						</p:column>
+						<p:column filterBy="#{modeloVehiculo.marcaVehiculo.nombre}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Marca" />
+						    </f:facet>
+							<h:outputText value="#{modeloVehiculo.marcaVehiculo.nombre}" />
+						</p:column>
+						
+					</p:dataTable>
+				</p:outputPanel>
+			</h:form>
+
+<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá al usuario agregar un Nuevo Modelo de Vehículo a la base de datos, 
+			una vez llenados y validados todos los campos -->
+			
+			<!-- Etiqueta que habilita los mensajes FacesMessage, de informacion -->
+			<p:growl id="mensajes" showDetail="true" life="4000"/>
+				<script type="text/javascript">
+				
+					//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+					function refrescarNuevo(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevo").reset();
+			            }
+					}
+				</script>
+				
+				<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+				<p:dialog widgetVar="ventanaRegistro" header="Registro de Modelos de Vehículos" appendToBody="true"
+						  showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" modal="true" height="300" width="410">
+			       <!-- Etiqueta que define el formulario que contendra los campos de los a llenar del Modelo de Vehículo nuevo -->
+					<h:form id="formNuevo">
+			       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+			       <h:panelGrid id="grid" columns="2">
+				   		
+				   		<h:outputLabel value="Nombre: *" for="nombre"/>
+				   		<h:inputText id="nombre" value="#{serviciosVentanaModeloVehiculo.modeloVehiculo.nombre}" label="Nombre">
+				   			<f:validateLength maximum="60"/>
+				   		</h:inputText>
+				   		
+				   		<h:outputLabel value="Descripción: " for="descripcion"/>
+				   		<h:inputTextarea id="descripcion" value="#{serviciosVentanaModeloVehiculo.modeloVehiculo.descripcion}" label="Descripcion">
+				   			<f:validateLength maximum="255"/>
+				   		</h:inputTextarea>
+				   		
+				       	<h:outputLabel value="Marca: *" for="marca"/>
+			     		<h:selectOneMenu  id="marca" label="Marca" value="#{serviciosVentanaModeloVehiculo.idMarcaVehiculo}">  
+			                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />  
+			                <f:selectItems value="#{serviciosVentanaMarcaVehiculo.listaMarca}" var="marcaVehiculo" itemLabel="#{marcaVehiculo.nombre}" itemValue="#{marcaVehiculo.idMarcaVehiculo}"/> 
+			            </h:selectOneMenu>
+				   		
+						<h:outputLabel value="Tipo de Vehículo: *" for="tipoVehiculo"/>
+			     		<h:selectOneMenu id="tipoVehiculo" label="Tipo Vehiculo" value="#{serviciosVentanaModeloVehiculo.idTipoVehiculo}">  
+			                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />  
+			                <f:selectItems value="#{serviciosVentanaTipoVehiculo.listaTipoVehiculo}" var="tipoVehiculo" itemLabel="#{tipoVehiculo.nombre}" itemValue="#{tipoVehiculo.idTipoVehiculo}"/> 
+			            </h:selectOneMenu>
+			            <h:panelGrid style="width:101%; text-align:left;">
+			            	<p:column>
+						       	<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nueva Marca" onclick="ventanaNuevaMarca.show();" image="ui-icon-plusthick"/>
+					     		
+						       	<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nuevo Tipo de Vehículo" onclick="ventanaNuevoTipoVehiculo.show();" image="ui-icon-plusthick"/>
+				       		</p:column>
+				       	</h:panelGrid>
+					</h:panelGrid>
+					
+					<!-- Etiqueta que dibuja un separador en el panel -->
+					<p:separator/>
+					
+					<!-- Los siguientes botones, permiten al usuario decidir entre: 
+					Guardar la información ingresada en los campos(Aceptar)
+					Salirse de la ventana sin guardar ninguna información(Cancelar)
+					Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->		
+		       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+		       						 actionListener="#{serviciosVentanaModeloVehiculo.guardarOModificar}" 
+		       						 image="ui-icon-disk" oncomplete="refrescarNuevo(xhr, status, args);" update=":mensajes,:formTabla:tbModeloVehiculo">
+			        </p:commandButton> 
+					<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+									 actionListener="#{serviciosVentanaModeloVehiculo.cancelar}" oncomplete="ventanaRegistro.hide(); refrescarNuevo(xhr, status, args)"
+									 image="ui-icon-closethick" update=":formTabla:tbModeloVehiculo">
+			        </p:commandButton> 
+		   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset"
+		   							 style="margin-left:5px" image="ui-icon-refresh"/>
+		   			</h:form>
+				</p:dialog>
+		
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº MODIFICAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá realizar cambios sobre los Modelos de Vehículo ingresados en la base de datos 
+				 un vez que haya sido seleccionado de la tabla -->
+				 
+			
+				<script type="text/javascript">
+				
+					//Funcion que llama a los formularios "Modificar" y los vuelve a cargar
+					function refrescarMod(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formModificar").reset();
+							ventanaModificar.hide();
+						}
+					}
+				</script>
+				
+				<p:dialog widgetVar="ventanaModificar" header="Modificar Datos del Modelo" closeOnEscape="false" modal="true" appendToBody="true"
+							showEffect="fade" hideEffect="fade" closable="false" height="300" width="370">
+					<h:form id="formModificar">
+						<h:panelGrid id="dataMod" columns="2">
+					   		<h:outputLabel value="Nombre: *" for="nombreMod"/>
+					   		<h:inputText id="nombreMod" value="#{serviciosVentanaModeloVehiculo.modeloVehiculoSeleccionado.nombre}" label="Nombre" required="true" />
+					   		
+					   		<h:outputLabel value="Descripción: *" for="descripcionMod"/>
+					   		<h:inputTextarea id="descripcionMod" value="#{serviciosVentanaModeloVehiculo.modeloVehiculoSeleccionado.descripcion}" label="Descripcion" required="true"/>
+					   		
+					       	<h:outputLabel value="Marca: *" for="marcaMod"/>
+				     		<h:selectOneMenu id="marcaMod" label="Marca" value="#{serviciosVentanaModeloVehiculo.idMarcaVehiculo}" required="true">  
+				                <f:selectItem itemLabel="- Seleccione -" itemValue="" />  
+				                <f:selectItems value="#{serviciosVentanaMarcaVehiculo.listaMarca}" var="marcaVehiculo" itemLabel="#{marcaVehiculo.nombre}" itemValue="#{marcaVehiculo.idMarcaVehiculo}"/> 
+				            </h:selectOneMenu>
+					   		
+							<h:outputLabel value="Tipo de Vehículo: *" for="tipoVehiculoMod"/>
+				     		<h:selectOneMenu id="tipoVehiculoMod" label="Tipo Vehiculo" value="#{serviciosVentanaModeloVehiculo.idTipoVehiculo}" required="true">  
+				                <f:selectItem itemLabel="- Seleccione -" itemValue="" />  
+				                <f:selectItems value="#{serviciosVentanaTipoVehiculo.listaTipoVehiculo}" var="tipoVehiculo" itemLabel="#{tipoVehiculo.nombre}" itemValue="#{tipoVehiculo.idTipoVehiculo}"/> 
+				            </h:selectOneMenu>
+				            
+					       	<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nueva Marca" onclick="ventanaNuevaMarca.show();" image="ui-icon-plusthick"/>
+				     		
+					       	<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nuevo Tipo de Vehículo" onclick="ventanaNuevoTipoVehiculo.show();" image="ui-icon-plusthick"/>
+					   		
+				       </h:panelGrid>  
+				 
+				       <p:separator />
+			       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaModeloVehiculo.guardarOModificar}" 
+			       						 image="ui-icon-disk" oncomplete="refrescarMod(xhr, status, args);" update=":mensajes,dataMod,:formTabla:tbModeloVehiculo">
+				        </p:commandButton>
+						<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+										 actionListener="#{serviciosVentanaModeloVehiculo.cancelar}" oncomplete="refrescarMod(xhr, status, args); ventanaModificar.hide();"
+										 image="ui-icon-closethick" update=":formTabla:tbModleoVehiculo,dataMod">
+				        </p:commandButton>
+			        </h:form>
+				</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº ELIMINAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá eliminar un Modelo de Vehículo seleccionado previamente en la tabla
+				 esta ventana pide confirmación antes de procesar la operación -->
+			
+			<p:dialog id="ventanaEliminar" message="Está seguro que desea eliminar este Modelo?"  
+		               		header="Confirme la operación" severity="alert" widgetVar="confirmacion"
+							showEffect="fade" hideEffect="blind" closeOnEscape="false" modal="true" appendToBody="true" closable="false">
+				<h:form  id="formEliminar">
+					<script type="text/javascript">
+							
+							//Funcion que llama a los formularios eliminar y los vuelve a cargar
+							function refrescarEliminar() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formEliminar").reset();
+							}
+					</script>
+					<h:panelGrid>
+						<f:facet name="header">
+							<br/>
+								Está seguro que desea eliminar este Tipo de Vehículo?
+							<br/>
+						</f:facet>
+					</h:panelGrid>
+					<p:separator/>
+					 <p:commandButton id="confirmar" styleClass="botonVentana" title="Aceptar" actionListener="#{serviciosVentanaModeloVehiculo.eliminar}"
+				        				 image="ui-icon-check" oncomplete="refrescarEliminar(); confirmacion.hide();" update=":formTabla:tbModeloVehiculo,:mensajes"/>  
+				     <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" title="Cancelar" update=":formTabla:tbModeloVehiculo"
+				        				 actionListener="#{serviciosVentanaModeloVehiculo.cancelar}" oncomplete="confirmacion.hide();"/>  
+				</h:form>
+			</p:dialog>
+		   	
+<!-- ººººººººººººººººººººººººººººººººººººººº CONSULTA ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana se encarga de mostrar toda la información referente al Modelo de Vehículo seleccionado -->
+			
+			
+				<p:dialog widgetVar="ventanaConsulta" header="Consultar Modelo" appendToBody="true"
+					showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" modal="true">
+	       			<h:form id="formConsulta">
+				       <h:panelGrid id="dataConsulta" columns="2">
+					   		<h:outputLabel value="Nombre: " for="nombreConsulta"/>
+					   		<h:outputText id="nombreConsulta" value="#{serviciosVentanaModeloVehiculo.modeloVehiculoSeleccionado.nombre}"/>
+					   		
+					   		<h:outputLabel value="Descripción: " for="descripcionConsulta"/>
+					   		<h:outputText id="descripcionConsulta" value="#{serviciosVentanaModeloVehiculo.modeloVehiculoSeleccionado.descripcion}" />
+					   		
+					   		<h:outputLabel value="Marca: " for="marcaConsulta"/>
+					   		<h:outputText id="marcaConsulta" value="#{serviciosVentanaModeloVehiculo.modeloVehiculoSeleccionado.marcaVehiculo.nombre}"/>
+					   		
+					   		<h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculoConsulta"/>
+					   		<h:outputText  id="tipoVehiculoConsulta" value="#{serviciosVentanaModeloVehiculo.modeloVehiculoSeleccionado.tipoVehiculo.nombre}"></h:outputText>
+					   		
+						</h:panelGrid>
+						<p:separator/>
+		     			<p:commandButton styleClass="botonVentana" title="Aceptar" onclick="ventanaConsulta.hide();"
+										 image="ui-icon-check" update=":formTabla:tbEmpleado"/>
+					</h:form>
+				</p:dialog>
+			
+			
+<!-- ºººººººººººººººººººººººººººººº REGISTRO EMERGENTE ººººººººººººººººººººººººººººº -->
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ NUEVA MARCA ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+
+			<!-- Esta ventana permite ingresar una nueva Marca de Vehículo 
+				en caso de que la Marca del vehículo no este registrada -->
+
+			
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a los formularios de "Nueva Marca de Vehículo" y los vuelve a cargar
+						function refrescarNuevaMarca() {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevaMarca").reset();
+						}
+				</script>
+								
+				<p:dialog widgetVar="ventanaNuevaMarca" header="Registro de Marcas de Vehículos" appendToBody="true"
+						  showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" modal="true" height="200" width="370">
+			      <h:form id="formNuevaMarca">
+			       	<h:panelGrid id="grid" columns="2">
+				   		
+				   		<h:outputLabel value="Nombre: *" for="nombre"/>
+				   		<h:inputText id="nombre" value="#{serviciosVentanaMarcaVehiculo.marcaVehiculo.nombre}" label="Nombre" required="true">
+				   			<f:validateLength maximum="60"/>
+				   		</h:inputText>
+				   		
+				   		<h:outputLabel value="Descripción: *" for="descripcion"/>
+				   		<h:inputTextarea id="descripcion" value="#{serviciosVentanaMarcaVehiculo.marcaVehiculo.descripcion}" label="Descripcion">
+				   			<f:validateLength maximum="255"/>
+				   		</h:inputTextarea>
+				   		
+				   		<h:outputLabel value="Empresa: *" for="empresa"/>
+						<h:inputText id="empresa" label="Empresa" value="#{serviciosVentanaMarcaVehiculo.marcaVehiculo.empresa.nombre}" disabled="true"/>
+						
+					</h:panelGrid>
+					<p:separator/>					
+		       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+		       						 actionListener="#{serviciosVentanaMarcaVehiculo.guardarOModificar}" 
+		       						 image="ui-icon-disk" oncomplete="refrescarNuevaMarca(); ventanaNuevaMarca.hide();" update=":mensajes,:formNuevo:marca, formModificar:marcaMod">
+			        </p:commandButton> 
+					<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+									 actionListener="#{serviciosVentanaMarcaVehiculo.cancelar}" oncomplete="refrescarNuevaMarca(); ventanaNuevaMarca.hide();"
+									 image="ui-icon-closethick" update=":formTabla:tbModeloVehiculo">
+			        </p:commandButton> 
+		   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset"
+		   							 style="margin-left:5px" image="ui-icon-refresh"/>
+		   			</h:form>
+				</p:dialog>
+			
+			
+			
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ NUEVO TIPO DE VEHÍCULO ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->			
+			
+			<!-- Esta ventana permite ingresar una nuevo Tipo de Vehículo 
+				en caso de que el Tipo de Vehículo no este registrado aún -->
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a los formularios de "Nuevo Tipo de Vehiculo" y los vuelve a cargar
+						function refrescarNuevoTipo() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formNuevoTipo").reset();
+						}
+				</script>
+								
+				<p:dialog widgetVar="ventanaNuevoTipoVehiculo" header="Registro de Tipos de Vehículos" appendToBody="true"
+						  showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" modal="true" width="370" height="210">
+			       <h:form id="formNuevoTipo">
+				       <h:panelGrid id="grid" columns="2">
+					   		
+					   		<h:outputLabel value="Nombre: *" for="nombre"/>
+					   		<h:inputText id="nombre" value="#{serviciosVentanaTipoVehiculo.tipoVehiculo.nombre}" label="Nombre" required="true">
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Descripción: *" for="descripcion"/>
+					   		<h:inputTextarea id="descripcion" value="#{serviciosVentanaTipoVehiculo.tipoVehiculo.descripcion}" label="Descripcion">
+					   			<f:validateLength maximum="150"/>
+					   		</h:inputTextarea>
+			            		 
+		            		<h:outputLabel value="Dentro de Carretera *" for="dentroCarretera"/>
+		            		<h:selectOneRadio id="dentroCarretera" value="#{serviciosVentanaTipoVehiculo.tipoVehiculo.dentroCarretera}" required="true">
+		            			<f:selectItem itemLabel="Si" itemValue="S"/>
+		            			<f:selectItem itemLabel="No" itemValue="N"/>
+		            		</h:selectOneRadio>
+			            		
+						</h:panelGrid>
+						<p:separator/>					
+			       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaTipoVehiculo.guardarOModificar}" 
+			       						 image="ui-icon-disk" oncomplete="refrescarNuevoTipo(); ventanaNuevoTipoVehiculo.hide();" 
+			       						 update=":mensajes,:formNuevo:tipoVehiculo, formModificar:tipoVehiculoMod">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+										 actionListener="#{serviciosVentanaTipoVehiculo.cancelar}" oncomplete="ventanaNuevoTipoVehiculo.hide(); refrescarNuevoTipo(); "
+										 image="ui-icon-closethick" update=":formTabla:tbModeloVehiculo">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset"
+			   							 style="margin-left:5px" image="ui-icon-refresh"/>
+		   			</h:form>
+				</p:dialog>
+			
+		</div>
+	</ui:define>
+</ui:composition>
