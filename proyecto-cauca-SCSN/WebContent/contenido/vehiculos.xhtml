@@ -1,0 +1,1495 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<ui:define name="head">::SCSN - Gestión de Vehículos</ui:define>
+	<ui:define name="content">
+	
+		<h1 class="title ui-widget-header ui-corner-all">Gestión de Vehículos</h1>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+<!-- ······················································· BOTONERA ··············································· -->			
+			<!-- Esta botonera hace una solicitud al servidor donde se activan las funciones que se van a ejecutar, esto se hace
+			a través de la clase ServiciosVentanaEsquemaEjes y javascript recibe los parámetros, los cuales se usarán
+			para abrir la ventana corresppondiente según la operación requerida -->
+			
+			<h:form id="formBotonera">
+				<p:commandButton id="btnNuevo" title="Nuevo" image="ui-icon-plusthick" actionListener="#{serviciosVentanaVehiculo.asignarUnConductor('source')}" update=":formNuevo:grid :formNuevo:origenConductores :formNuevo:panelBotones :formNuevo:panelConductoresNuevo :formNuevo:panelEjesReg :formNuevo:tab1 :formNuevo:tabVentanaRegistro :formNuevo:messages :formNuevo:messages2 :formNuevo:messages3" oncomplete="ventanaRegistro.show()" value="Nuevo"/>
+				<p:commandButton id="btnModificar" title="Modificar" image="ui-icon-wrench" action="#{serviciosVentanaVehiculo.activarModificar}" update=":formModificar:gridModificar :formModificar:panelEjesMod :formModificar:destinoConductoresMod :formModificar:origenConductoresMod :formModificar:panelBotonesMod :formModificar:panelRutaMod :formModificar:conductorPpalMod :formModificar:esquemaEjess :formModificar:mensajeMod :formModificar:mensajeMod2" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Modificar" />
+				<p:commandButton id="btnEliminar" title="Eliminar" image="ui-icon-trash" action="#{serviciosVentanaVehiculo.activarEliminar}" update=":formEliminar" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Eliminar"/>
+				<p:commandButton id="btnConsultar" title="Consultar" image="ui-icon-search" action="#{serviciosVentanaVehiculo.activarConsultar}" update=":formConsulta:gridConsulta :formConsulta:panelEjesConsulta :formConsulta:panelRutaCons :formConsulta:tabViewConsulta :formConsulta:destinoConductoresCons" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Consultar"/>
+				<p:commandButton id="btnConductorTemporal" title="Conductor Temporal" image="ui-icon-transferthick-e-w" action="#{serviciosVentanaVehiculo.activarConductorTemporal}" update=":mensajes :formConductorTemporal:origenConductoresTemporal :formConductorTemporal:destinoConductoresTemporal :formConductorTemporal:destinoConductoresAsignados :formConductorTemporal:panelBotonesTemporal :formConductorTemporal:vehiculoSeleccionado :formConductorTemporal:fechaInicial :formConductorTemporal:fechaFinal :formConductorTemporal:motivo :formConductorTemporal:conductorPpalTemporal" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Asignar Conductor Temporal"/>
+			</h:form>
+			
+			<script type="text/javascript">
+		        function handleRequest(xhr, status, args) {
+		            if (args.ok) {
+		            	switch (args.tarea) {
+							case "M":
+								ventanaModificar.show();
+								break;
+							case "E":
+				                confirmacion.show();
+								break;
+							case "C":
+								ventanaConsulta.show();
+								break;
+							case "T":
+								ventanaConductorTemporal.show();
+								break;
+						}
+		            }else{
+		                errorSeleccion.show();
+		            }
+		        }
+		        
+		        
+		    </script>
+		    
+		  <!-- Esta ventanita es un diálogo que le indica al usuario que no ha seleccionado ningún elemento para operar sobre él -->
+		    <p:dialog header="Operación Negada" widgetVar="errorSeleccion"
+		    		  showEffect="fade" hideEffect="blind" modal="true" appendToBody="true" closable="false" closeOnEscape="false">
+		    	<h:form>
+		    		<h:panelGrid>
+		    			<f:facet name="header">
+		    				<br/>
+		    					Debe seleccionar un elemento
+		    				<br/>
+		    			</f:facet>
+		    		</h:panelGrid>
+		    		<p:separator/>
+		    		<p:commandButton id="aceptar" title="Aceptar" image="ui-icon-check" onclick="errorSeleccion.hide();" styleClass="botonVentana" type="buttom"/>
+		    	</h:form>
+		    </p:dialog>
+		  
+<!-- ······················································· TABLA ··············································· -->
+			<!-- Esta es la tabla que contiene todos los registros de Vehículos en la base de datos para la empresa
+			en cuestión. Esta tabla permite organizar los registros por páginas y ofrece la funición de filtrar los registros
+			según la propiedad indicada. Además, permite hace la selección de un registro para operar sobre él -->
+			<h:form id="formTabla">
+			
+				<p:outputPanel id="tbVehiculos" style="height:300;">
+				<div style="overflow:auto; width:129%; height=100px;">	
+					<p:dataTable id="Vehiculos" value="#{serviciosVentanaVehiculo.vehiculoDataModel}" var="vehiculo"
+                    				paginator="true" paginatorPosition="top" scrollable="false" style="width:129%" scrollHeight="450"
+                 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+					                rowsPerPageTemplate="5,10,15" rows="#{serviciosVentanaVehiculo.rows}"
+					                emptyMessage="No se encontraron resultados" selectionMode="single"
+									selection="#{serviciosVentanaVehiculo.vehiculoSeleccionado}" onRowSelectUpdate=":formModificar:dataMod">
+						
+					
+						<p:column filterBy="#{vehiculo.placa}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Placa" />
+						    </f:facet>
+							<h:outputText value="#{vehiculo.placa}" />
+						</p:column>
+						<p:column filterBy="#{vehiculo.modeloVehiculo.marcaVehiculo.nombre}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Marca" />
+						    </f:facet>
+							<h:outputText value="#{vehiculo.modeloVehiculo.marcaVehiculo.nombre}" />
+						</p:column>
+						<p:column filterBy="#{vehiculo.modeloVehiculo.nombre}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Modelo" />
+						    </f:facet>
+							<h:outputText value="#{vehiculo.modeloVehiculo.nombre}" />
+						</p:column>
+						<p:column filterBy="#{vehiculo.modeloVehiculo.tipoVehiculo.nombre}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Tipo de Vehículo" />
+						    </f:facet>
+							<h:outputText value="#{vehiculo.modeloVehiculo.tipoVehiculo.nombre}" />
+						</p:column>
+						<p:column filterBy="#{vehiculo.modeloVehiculo.tipoVehiculo.dentroCarretera}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Dentro de Carretera" />
+						    </f:facet>
+							<h:outputText value="#{vehiculo.modeloVehiculo.tipoVehiculo.dentroCarretera}" />
+						</p:column>
+						<p:column filterBy="#{vehiculo.anoFabricacion}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Año de Fabricación" />
+						    </f:facet>
+							<h:outputText value="#{vehiculo.anoFabricacion}" />
+						</p:column>
+						<p:column >
+							<f:facet name="header">
+						        <h:outputText value="Kilometraje" />
+						    </f:facet>
+							<h:outputText value="#{vehiculo.kilometraje}" />
+						</p:column>
+						<p:column filterBy="#{vehiculo.esquemaEjes.nombreEsquema}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Esquema de Ejes" />
+						    </f:facet>
+							<h:outputText value="#{vehiculo.esquemaEjes.nombreEsquema}" />
+						</p:column>
+					
+					</p:dataTable>
+					</div>	
+				</p:outputPanel>
+			</h:form>
+
+<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+			
+			<p:growl id="mensajes" showDetail="true" life="4000"/> <!-- Este es un diálogo especial para mensajes, a través de
+																él se mostrarán todos los mensajes de esta sección -->
+			
+			<!-- Este será un diálogo para agregar un nuevo registro en la base de datos de Vehiculos. La presente cuenta con
+			20 botones destinados a seleccionar los neumáticos que el usuario desee activar para el esquema, de igual forma se presentan
+			5 botones para seleccionar los ejes del esquema; ambos tipos de botones cuentan con una variable en el lado del servidor
+			con la finalidad de cambiar el fondo de dicho botón y así mostrar de forma animada la interacción humano-computador,
+			también cuenta con funciones que le permiten registrar los cambios ocurridos en la selección para que posteriormente se puedan
+			registrar en la base de datos. Es importante resaltar que los botones deben efectuar la función de actualización sobre los
+			elementos que lo requieran para que se muestren los cambios.
+			
+			Este formulario también cuenta con los botones de Aceptar, Cancelar y Limpiar para efectuar las acciones correspondientes,
+			según lo requiera el usuario y así registrar los cambios necesarios en el lado del servidor -->
+			
+			
+				<script type="text/javascript">
+						function refrescarNuevo(xhr, status, args) {
+							if (args.limpiar) {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formNuevo").reset();
+				            }
+						}
+						
+						function refrescarMensajes(){
+							document.getElementById("mensajes").reset();
+						}
+						
+						function botonGuardar(xhr, status, args){
+							if(args.validar){
+								confirmacionCrearVehiculo.show();
+							}
+						}
+				</script>
+			
+				<p:dialog widgetVar="ventanaRegistro" header="Crear Vehículo" closeOnEscape="false" modal="true" appendToBody="true"
+						  showEffect="fade" hideEffect="fade" closable="false" height="550" width="800" >
+					<h:form id="formNuevo">
+						<p:wizard widgetVar="wiz" id="tabVentanaRegistro" effect="fold" flowListener="#{serviciosVentanaVehiculo.flujoPrimerIngreso}" nextLabel="Siguiente" backLabel="Atrás" >
+							<!--<p:tabView id="tabView" tabChangeListener="#{serviciosVentanaVehiculo.cambioTab}" onTabChangeUpdate="tabView mensajes" effect="fold" effectDuration="normal" activeIndex="#{serviciosVentanaVehiculo.tabIndex}" dynamic="true">
+	  						    -->
+								<p:tab id="tab1" title="Datos Básicos"> 
+							       	<p:panel header="Datos Básicos">
+							       		<h:panelGrid id="grid"  columns="3">
+									   		<h:outputLabel value="Placa: *" for="placa"/>
+									   		<h:inputText id="placa" value="#{serviciosVentanaVehiculo.vehiculo.placa}" label="Placa" >
+									   			<f:validateLength maximum="10"/>
+									   			<f:ajax event="blur" render="placa messages"/>
+									   		</h:inputText>
+									   		<h:outputLabel/>
+									   		
+									   		<h:outputLabel value="Modelo: *" for="modelo"/>
+									   		<h:selectOneMenu id="modelo" label="Modelo" value="#{serviciosVentanaVehiculo.idModeloVehiculo}" >
+								                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+							               		<f:selectItems value="#{serviciosVentanaVehiculo.listaModeloVehiculo}" var="modelo" itemValue="#{modelo.idModeloVehiculo}" itemLabel="#{modelo.nombre}"/>
+							               		<f:ajax event="blur" render="modelo messages"/>
+							               		<p:ajax action="#{serviciosVentanaVehiculo.actualizarMarcaTipoDentroCarretera}" update="tipoVehiculo, marcaVehiculo, dentroCarretera"/>
+								            </h:selectOneMenu>
+								            <p:commandButton onclick="ventanaNuevoModelo.show();" title="Nuevo Modelo" styleClass="botonVentana" image="ui-icon-plusthick" height="20" width="20"/>
+								  
+									   		<h:outputLabel value="Tipo Esquema de ejes: *" for="tipoEjes"/>
+									   		<h:selectOneMenu id="tipoEjes" value="#{serviciosVentanaVehiculo.tipoEsquemaEjes}" >
+									   			<f:selectItem itemLabel="-Seleccione-" itemValue="0"/>
+									   			<f:selectItem itemValue="chuto" itemLabel="Chuto"/>
+									   			<f:selectItem itemValue="remolque" itemLabel="Remolque"/>
+									   			<f:ajax event="blur" render="tipoEjes messages"/>
+									   		</h:selectOneMenu>
+									   		<h:outputLabel/>
+									   		
+									   		<h:outputLabel value="Marca:" for="marcaVehiculo"/>
+									   		<h:inputText id="marcaVehiculo" value="#{serviciosVentanaVehiculo.vehiculo.modeloVehiculo.marcaVehiculo.nombre}" label="Marca" disabled="true"/>
+									   		<h:outputLabel/>
+								             
+									   		<h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculo"/>
+									   		<h:inputText id="tipoVehiculo" value="#{serviciosVentanaVehiculo.vehiculo.modeloVehiculo.tipoVehiculo.nombre}" label="Tipo Vehículo" disabled="true"/>
+									   		<h:outputLabel value=""/>
+									   		
+									   		<h:outputLabel value="Dentro de Carretera: " for="dentroCarretera"/>
+									   		<h:inputText id="dentroCarretera" value="#{serviciosVentanaVehiculo.dentroCarretera}" disabled="true"/>
+									   		<h:outputLabel value="" />
+									   		
+									   		<h:outputLabel value="Año de Fabricación: *" for="anoFabrica"/>
+											<h:inputText id="anoFabrica" label="Año de Fabricación" value="#{serviciosVentanaVehiculo.vehiculo.anoFabricacion}" >
+									   			<f:validateLength maximum="5"/>
+									   			<f:ajax event="blur" render="anoFabrica messages"/>
+									   		</h:inputText>
+									   		<h:outputLabel value="" />
+									   		
+									   		<h:outputLabel value="Kilometraje: *" for="kilometraje"/>
+											<h:inputText id="kilometraje" label="Kilometraje" value="#{serviciosVentanaVehiculo.vehiculo.kilometraje}" >
+									   			<f:validateLength maximum="20"/>
+									   			<f:ajax event="blur" render="kilometraje messages"/>
+									   		</h:inputText>
+									   		<h:outputLabel value="" />
+									   		
+								   		</h:panelGrid>
+								   		<h:panelGrid>
+								   			<p:messages id="messages" showDetail="true" autoUpdate="true" closable="true" />
+								   		</h:panelGrid>
+								   		
+								   		<h:panelGrid style="width:101%; text-align:right;">
+											<p:column >
+												<p:commandButton styleClass="botonVentana" image="ui-icon-closethick"  style="margin-left:5px; " process="@this" title="Cancelar"
+														 oncomplete="cerrarCrearVehiculo.show();"/>
+							   					<p:commandButton process="@this" title="Limpiar"
+							   							 style="margin-left:5px" styleClass="botonVentana" image="ui-icon-refresh" actionListener="#{serviciosVentanaVehiculo.cancelar}" onComplete="refrescarNuevo(xhr, status, args);"
+							   							 update=":mensajes,:formTabla:tbVehiculos, grid, panelEjesReg, destinoConductores, origenConductores, panelBotones, tabView,
+							   							 panelConductoresNuevo"/>
+											</p:column>
+										
+							   			</h:panelGrid>
+								   	</p:panel>
+								</p:tab>
+									
+								<p:tab id="esquemaEjes" title="Esquema Ejes" >	
+									<p:panel header="Esquema de Ejes" >
+								   		
+								   		<h:panelGrid id="panelEjesReg"  columns="3" >
+								   									   			
+									   		<p:commandButton id="atras" title="Anterior" image="ui-icon-seek-prev" action="#{serviciosVentanaVehiculo.retrocederEsquema}" process="atras" update="esquemaEje nombreEje mensajes">
+									   			<f:ajax event="blur" render="atras messages2 "></f:ajax>
+									   		</p:commandButton>
+									   		<h:inputText id="nombreEje" value="#{serviciosVentanaVehiculo.vehiculo.esquemaEjes.nombreEsquema}" disabled="true"/>
+									   		<p:commandButton id="adelante" title="Siguiente" image="ui-icon-seek-next" action="#{serviciosVentanaVehiculo.adelantarEsquema}" process="adelante" update="esquemaEje nombreEje mensajes">
+									   			<f:ajax event="blur" render="adelante messages2"></f:ajax>
+									   		</p:commandButton>
+									   		</h:panelGrid>
+									   		<h:outputLabel value="" />
+									   		<h:panelGrid id="esquemaEje" columns="7" >
+									   			<p:commandButton id="neumatico11" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico1}" disabled="true"/> 
+												<p:commandButton id="neumatico12" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico2}" disabled="true"/> 
+												<p:commandButton id="eje1" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje1}"  disabled="true"/>
+												<p:commandButton id="neumatico13" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico3}" disabled="true"/>
+												<p:commandButton id="neumatico14" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico4}" disabled="true"/> 
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Selecciona si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check1}" 
+																			valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje1T" 
+																			value="#{serviciosVentanaVehiculo.traccion1}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+													<f:ajax event="click" render="eje1"/>
+												</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel/>
+												
+												<p:commandButton id="neumatico21" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico5}" disabled="true"/>
+												<p:commandButton id="neumatico22" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico6}" disabled="true"/>
+												<p:commandButton id="eje2" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje2}" disabled="true"/>
+												<p:commandButton id="neumatico23" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico7}" disabled="true"/>
+												<p:commandButton id="neumatico24" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico8}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Selecciona si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check2}" 
+																				valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje2T" 
+																				value="#{serviciosVentanaVehiculo.traccion2}" rendered="#{serviciosVentanaVehiculo.renderedCheck}" >
+														<f:ajax event="click" render="eje2"/>
+													</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel />
+												
+												
+												<p:commandButton id="neumatico31" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico9}" disabled="true"/>
+												<p:commandButton id="neumatico32" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico10}" disabled="true"/>
+												<p:commandButton id="eje3" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje3}" disabled="true"/>
+												<p:commandButton id="neumatico33" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico11}" disabled="true"/>
+												<p:commandButton id="neumatico34" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico12}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Selecciona si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check3}" 
+																			valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje3T" 
+																			value="#{serviciosVentanaVehiculo.traccion3}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+													<f:ajax event="click" render="eje3"/>
+												</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel />
+												
+												<p:commandButton id="neumatico41" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico13}" disabled="true"/>
+												<p:commandButton id="neumatico42" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico14}" disabled="true"/>
+												<p:commandButton id="eje4" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje4}" disabled="true"/>
+												<p:commandButton id="neumatico43" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico15}" disabled="true"/>
+												<p:commandButton id="neumatico44" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico16}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Selecciona si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check4}" 
+																			valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje4T" 
+																			value="#{serviciosVentanaVehiculo.traccion4}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+													<f:ajax event="click" render="eje4"/>
+												</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel />												
+											
+												<p:commandButton id="neumatico51" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico17}" disabled="true"/>
+												<p:commandButton id="neumatico52" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico18}" disabled="true"/>
+												<p:commandButton id="eje5" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje5}" disabled="true"/>
+												<p:commandButton id="neumatico53" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico19}" disabled="true"/>
+												<p:commandButton id="neumatico54" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico20}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Seleccionar si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check5}" 
+																			valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje5T" 
+																			value="#{serviciosVentanaVehiculo.traccion5}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+													<f:ajax event="click" render="eje5"/>
+												</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel />
+												
+												<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+												<h:panelGrid>
+													<h:outputLabel value="Nota: Seleccione si el eje tiene tracción" rendered="#{serviciosVentanaVehiculo.renderedCheck}" style="color:red;"/>
+												</h:panelGrid>
+												
+												<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<p:messages id="messages2" showDetail="true" autoUpdate="true" closable="true" />
+									   			
+											</h:panelGrid> 
+									   		<h:panelGrid style="width:101%; text-align:right;">
+											<p:column >
+												<p:commandButton styleClass="botonVentana" image="ui-icon-closethick"  style="margin-left:5px; " process="@this" title="Cancelar"
+														 oncomplete="cerrarCrearVehiculo.show();"/>
+							   					<p:commandButton process="@this" title="Limpiar"
+							   							 style="margin-left:5px" styleClass="botonVentana" image="ui-icon-refresh" actionListener="#{serviciosVentanaVehiculo.cancelar}" onComplete="refrescarNuevo(xhr, status, args);"
+							   							 update=":mensajes,:formTabla:tbVehiculos, grid, panelEjesReg, destinoConductores, origenConductores, panelBotones, tabView,
+							   							 panelConductoresNuevo"/>
+											</p:column>
+										
+							   			</h:panelGrid>
+								   		
+								   		
+								   	</p:panel>
+								</p:tab>
+								
+								<p:tab id="conductoresRutas" title="Conductores y Rutas">
+									<p:panel header="Conductores y Rutas">
+										<h:panelGrid cellpadding="1" cellspacing="2">
+											<h:panelGrid id="panelConductoresNuevo" columns="3" cellpadding="1" cellspacing="30">
+												<p:outputPanel id="origenConductores" style="height:150; width:100%;overflow:auto;">
+													<p:dataTable id="tablaOrigen" var="conductor" value="#{serviciosVentanaVehiculo.empleadosOrigenDataModel}" emptyMessage="No existen conductores disponibles" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+																 selection="#{serviciosVentanaVehiculo.empleadoSeleccionado}" selectionMode="single" onRowSelectUpdate="tablaDestino"
+																 height="150" style="width:100%">  
+												        <p:column headerText="Disponibles">  
+												            <h:outputText value="#{conductor.cedulaEmpleado} - #{conductor.nombre} #{conductor.apellido}" style="text-align:right;"/>  
+												        </p:column>
+												    </p:dataTable>
+											    </p:outputPanel>
+											    <h:panelGrid id="panelBotones" columns="1" height="100" width="20">
+												    <p:commandButton process="@this" styleClass="botonVentana" title="Asignar Uno" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+									       						 	 actionListener="#{serviciosVentanaVehiculo.asignarUnConductor('source')}" ajax="true" async="true" 
+									       						 	 image="ui-icon-arrow-1-e" update="tablaDestino, tablaOrigen, panelBotones" data-tooltip="Asignar un Conductor" disabled="#{serviciosVentanaVehiculo.botonAsignarVisible}">
+										        	</p:commandButton> 
+												    <p:commandButton process="@this" styleClass="botonVentana" title="Asignar Todos" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+									       						 	 actionListener="#{serviciosVentanaVehiculo.asignarTodosConductoresOrigenDestino}"
+									       						 	 image="ui-icon-arrowstop-1-e" update="tablaDestino, tablaOrigen, panelBotones" disabled="#{serviciosVentanaVehiculo.botonAsignarVisible}">
+										        	</p:commandButton>
+												    <p:commandButton process="@this" styleClass="botonVentana" title="Retirar Uno" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+									       						 	 actionListener="#{serviciosVentanaVehiculo.asignarUnConductor('target')}" ajax="true" async="true" 
+									       						 	 image="ui-icon-arrow-1-w" update="tablaDestino, tablaOrigen, panelBotones" disabled="#{serviciosVentanaVehiculo.botonRegresarVisible}">
+										        	</p:commandButton>
+												    <p:commandButton process="@this" styleClass="botonVentana" title="Retirar Todos" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+									       						 	 actionListener="#{serviciosVentanaVehiculo.asignarTodosConductoresDestinoOrigen}"
+									       						 	 image="ui-icon-arrowstop-1-w" update="tablaDestino, tablaOrigen, panelBotones" disabled="#{serviciosVentanaVehiculo.botonRegresarVisible}">
+										        	</p:commandButton>
+										        </h:panelGrid>
+												<p:outputPanel id="destinoConductores"  style="height:150; width:100%;overflow:auto;">
+													<p:dataTable id="tablaDestino" var="conductorDestino" value="#{serviciosVentanaVehiculo.empleadosDestinoDataModel}" emptyMessage="No hay conductores asignados"
+																 selection="#{serviciosVentanaVehiculo.empleadoSeleccionadoDestino}" selectionMode="single" onRowSelectUpdate="conductorPpal" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+																 height="150" style="width:100%">
+												        <p:column headerText="Asignados">
+												            <h:outputText value="#{conductorDestino.cedulaEmpleado} - #{conductorDestino.nombre} #{conductorDestino.apellido}" style="text-align:right;"/>  
+												        </p:column>
+												    </p:dataTable>
+												 </p:outputPanel>
+											 </h:panelGrid>
+										    <h:panelGrid columns="2" border="1" cellpadding="1" cellspacing="30">
+											    <h:panelGrid id="panelRuta" columns="3">	 
+												    <h:outputLabel value="Ruta: *" for="ruta"/>
+											   		<h:selectOneMenu id="ruta" label="Ruta" value="#{serviciosVentanaVehiculo.idRuta}" require="true" height="10" scrollable="true" scrollHeight="100">
+										                <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+									               		<f:selectItems value="#{serviciosVentanaRuta.rutaDataModel}" var="ruta" itemValue="#{ruta.idRuta}" itemLabel="#{ruta.nombre}"/>
+									               		
+									               		<p:ajax action="#{serviciosVentanaVehiculo.actualizarTipoCarretera}" update="tipoCarretera"/>
+										            </h:selectOneMenu>
+										            <p:commandButton onclick="ventanaRegistroRutas.show();" styleClass="botonVentana" image="ui-icon-plusthick" title="Nueva Ruta"/>
+										            
+										            <h:outputLabel value="Tipo de Carretera" for="tipoCarretera"/>
+										            <h:inputText id="tipoCarretera" value="#{serviciosVentanaVehiculo.ruta.tipoCarretera.nombre}" disabled="true"/>
+											    </h:panelGrid>
+											    
+											    <h:panelGrid id="panelConductorPpal" columns="2" rendered="#{serviciosVentanaVehiculo.renderConductor}"> 
+										            <p:commandButton process="@this" styleClass="botonVentana" image="ui-icon-gear"  title="Asignar Conductor Principal"
+										       						 actionListener="#{serviciosVentanaVehiculo.establecerConductorPrincipal}"
+										       						 update="conductorPpal" />
+									    			<h:inputText id="conductorPpal" value="#{serviciosVentanaVehiculo.conductorPrincipal.nombre} #{serviciosVentanaVehiculo.conductorPrincipal.apellido}"
+									    						 label="Conductor_Ppal" disabled="true" required="true"/>
+									    			<h:outputLabel value=""/>
+									    			<h:outputLabel value=""/>
+											    </h:panelGrid>
+											   
+										    </h:panelGrid>
+												<p:messages id="messages3" showDetail="true" autoUpdate="true" closable="true" />
+								            
+									    </h:panelGrid>
+									    <h:panelGrid style="width:101%; text-align:right;">
+									    	<p:column >
+											    <p:commandButton styleClass="botonVentana" image="ui-icon-disk" title="Aceptar" process="@this" update="messages3"
+											    				 oncomplete="botonGuardar(xhr, status, args);" actionListener="#{serviciosVentanaVehiculo.validarConductor}"/>
+					       						<p:commandButton styleClass="botonVentana" image="ui-icon-closethick"  style="margin-left:5px" process="@this" title="Cancelar"
+																 oncomplete="cerrarCrearVehiculo.show();"/>
+									   			<p:commandButton process="@this" title="Limpiar"
+									   							 style="margin-left:5px" styleClass="botonVentana" image="ui-icon-refresh" actionListener="#{serviciosVentanaVehiculo.cancelar}" onComplete="refrescarNuevo(xhr, status, args);"
+									   							 update=":mensajes,:formTabla:tbVehiculos, grid, panelEjesReg, destinoConductores, origenConductores, panelBotones, tabView,
+									   							 panelConductoresNuevo"/>
+								   			</p:column>
+								  		</h:panelGrid>
+								    </p:panel>
+								</p:tab>
+						<!--</p:tabView>  --> 
+						</p:wizard>
+					</h:form>
+				</p:dialog>
+				
+				<p:dialog   header="Mensaje" widgetVar="confirmacionCrearVehiculo" 
+							hideEffect="fade" showEffect="fade" closable="falde" closeOnEscape="false" modal="true" appendToBody="true">
+					<h:form>
+						<h:panelGrid>
+							<f:facet name="header">
+								<br/>
+									¿Está seguro que desea guardar los datos?
+								<br/>
+							</f:facet>
+						</h:panelGrid>
+						<p:separator/>
+						<p:commandButton styleClass="botonVentana" image="ui-icon-check" style="margin-left:5px" process="@this" title="Aceptar"
+										 actionListener="#{serviciosVentanaVehiculo.guardarOModificar}" 
+					       				 oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);refrescarNuevo(xhr, status, args); confirmacionCrearVehiculo.hide();" 
+					       				 update=":mensajes,:formTabla:tbVehiculos,grid, :formNuevo:tabVentanaRegistro, :formNuevo:destinoConductores, :formNuevo:origenConductores, panelBotones, :formNuevo:messages2, :formNuevo:messages3"/>
+	    				<p:commandButton styleClass="botonVentana" image="ui-icon-closethick"  style="margin-left:5px" process="@this" 
+	    								 title="Cancelar" oncomplete="confirmacionCrearVehiculo.hide()">
+	    					
+	    				</p:commandButton>
+					</h:form>
+				</p:dialog>	
+				
+				<p:dialog   header="Mensaje" widgetVar="cerrarCrearVehiculo" 
+							hideEffect="fade" showEffect="fade" closable="falde" closeOnEscape="false" modal="true" appendToBody="true">
+					<h:form>
+						<h:panelGrid>
+							<f:facet name="header">
+								<br/>
+									¿Está seguro que desea cerrar?
+								<br/>
+							</f:facet>
+						</h:panelGrid>
+						<p:separator/>
+						<p:commandButton styleClass="botonVentana" image="ui-icon-check" style="margin-left:5px" process="@this" title="Aceptar"
+										 actionListener="#{serviciosVentanaVehiculo.cancelar}" 
+										 oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);refrescarNuevo(xhr, status, args);cerrarCrearVehiculo.hide();ventanaRegistro.hide(); "
+										 update=":mensajes,:formTabla:tbVehiculos, grid, panelEjesReg, destinoConductores, origenConductores, panelBotones, tabView"/>
+	    				<p:commandButton styleClass="botonVentana" image="ui-icon-closethick"  style="margin-left:5px" process="@this" 
+	    								 title="Cancelar" oncomplete="cerrarCrearVehiculo.hide()">
+	    					
+	    				</p:commandButton>
+					</h:form>
+				</p:dialog>	
+						
+<!-- ººººººººººººººººººººººººººººººººººººººº MODIFICAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana emergente se abre cuando se tiene la necesidad de realizar un cambio sobre un esquema de ejes ya
+			registrado, pero para ello se debe seleccionar previamente en la tabla para que se actualicen los elementos de esta
+			ventana con los datos del registro. Es importante acotar que del lado del servidor existe una variable de tipo EsquemaEje
+			llamada esquemaEjeSeleccionado que se usa para recibir el registro seleccionado de la tabla y realizar los cambios
+			deseados sobre él, los cuales serán guardados en la base de datos.
+			
+			De forma análoga a la venta de agregar nuevo, esta ventana cuenta con botones para seleccionar ejes, neumáticos, botones para aceptar y cancelar. También,
+			cuenta con los método para realizar las operaciones del lado del servidor  -->
+			
+			
+				<script type="text/javascript">
+						function refrescarModificar(xhr, status, args) {
+							if (args.limpiar) {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formModificar").reset();
+								ventanaModificar.hide();
+				            }
+						}
+						
+						function guardarBotonModificar(xhr, status, args){
+							if(args.validar){
+								confirmacionVentanaModificar.show();
+							}
+						}
+						
+				</script>
+				
+				<p:dialog widgetVar="ventanaModificar" header="Modificar Vehículo Seleccionado" closeOnEscape="false"
+							showEffect="fade" hideEffect="fade" closable="false" height="500" width="800" modal="true" appendToBody="true">
+						<h:form id="formModificar">	
+						<p:wizard widgetVar="wizMod" id="tabVentanaModificar" effect="fold" flowListener="#{serviciosVentanaVehiculo.flujoPrimerIngresoMod}" nextLabel="Siguiente" backLabel="Atrás" >
+						<!--<p:tabView id="tabViewMod" effect="fold" effectDuration="normal" activeIndex="#{serviciosVentanaVehiculo.tabIndex}" dynamic="true">-->
+								<p:tab title="Datos Básicos" id="datosBasicos"> 
+									<p:panel header="Datos Básicos">
+							       		<h:panelGrid id="gridModificar"  columns="3">
+									   		<h:outputLabel value="Placa: *" for="placaMod"/>
+									   		<h:inputText id="placaMod" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.placa}" label="Placa" >
+									   			<f:validateLength maximum="10"/>
+									   			<f:ajax event="blur" render="placaMod mensajeMod"/>
+									   		</h:inputText>
+									   		<h:outputLabel value=""/>
+									   		
+									   		<h:outputLabel value="Modelo Actual: *" for="modeloActual"/>
+									   		<h:inputText id="modeloActual" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.nombre}" label="Modelo_Actual" disabled="true" />
+									   		<h:outputLabel value=""/>
+									   		
+									   		<h:outputLabel value="Cambiar Modelo:" for="modeloMod"/>
+									   		<h:selectOneMenu id="modeloMod" label="Modelo" value="#{serviciosVentanaVehiculo.idModeloVehiculo}" height="10">
+								                <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+							               		<f:selectItems value="#{serviciosVentanaVehiculo.listaModeloVehiculo}" var="modelo" itemValue="#{modelo.idModeloVehiculo}" itemLabel="#{modelo.nombre}"/>
+							               		
+							               		<p:ajax action="#{serviciosVentanaVehiculo.actualizarMarcaTipoDentroCarretera}" update="tipoVehiculoMod, marcaVehiculoMod, dentroCarreteraMod, modeloActual"/>
+								            </h:selectOneMenu>
+								            <p:commandButton onclick="ventanaNuevoModelo.show();" styleClass="botonVentana" image="ui-icon-plusthick" height="20" width="20" title="Registrar Nuevo Modelo"/>
+								             
+								           <h:outputLabel value="Tipo Esquema de ejes: *" for="tipoEjesMod"/>
+								           <h:inputText id="tipoEjesMod" value="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.tipo}" disabled="true"/>
+								           <h:outputLabel/>
+								           
+								            <h:outputLabel value="Cambio Esquema de ejes: " for="tipoEjesCambioMod"/>
+									   		<h:selectOneMenu id="tipoEjesCambioMod" value="#{serviciosVentanaVehiculo.tipoEsquemaEjesMod}" >
+									   			<f:selectItem itemLabel="-Seleccione-" itemValue="0"/>
+									   			<f:selectItem itemValue="chuto" itemLabel="Chuto"/>
+									   			<f:selectItem itemValue="remolque" itemLabel="Remolque"/>
+									   		</h:selectOneMenu>
+									   		<h:outputLabel/> 
+									   		
+									   		<h:outputLabel value="Marca:" for="marcaVehiculoMod"/>
+									   		<h:inputText id="marcaVehiculoMod" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.marcaVehiculo.nombre}" label="Marca" disabled="true"/>
+									   		<h:outputLabel value=""/>
+								             
+									   		<h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculoMod"/>
+									   		<h:inputText id="tipoVehiculoMod" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.nombre}" label="Tipo Vehículo" disabled="true"/>
+									   		<h:outputLabel value=""/>
+									   		
+									   		<h:outputLabel value="Dentro de Carretera: " for="dentroCarreteraMod"/>
+									   		<h:inputText id="dentroCarreteraMod" value="#{serviciosVentanaVehiculo.dentroCarretera}" disabled="true"/>
+									   		<h:outputLabel value="" />
+									   		
+									   		<h:outputLabel value="Año de Fabricación: *" for="anoFabricaMod"/>
+											<h:inputText id="anoFabricaMod" label="Año de Fabricación" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.anoFabricacion}" >
+									   			<f:validateLength maximum="5"/>
+									   			<f:ajax event="blur" render="anoFabricaMod mensajeMod"/>
+									   		</h:inputText>
+									   		<h:outputLabel value="" />
+									   		
+									   		<h:outputLabel value="Kilometraje: *" for="kilometrajeMod"/>
+											<h:inputText id="kilometrajeMod" label="Kilometraje" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.kilometraje}" >
+									   			<f:validateLength maximum="20"/>
+									   			<f:ajax event="blur" render="kilometrajeMod mensajeMod"/>
+									   		</h:inputText>
+									   		<h:outputLabel value="" />
+								   		</h:panelGrid>
+								   		<h:panelGrid>
+								   			<p:messages id="mensajeMod" showDetail="true" autoUpdate="true" closable="true" />
+								   		</h:panelGrid>
+								   		
+										<h:panelGrid style="width:101%; text-align:right;">	
+											<p:column>
+												<p:commandButton id="cancelarModi" styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px" process="@this cancelarMod" title="Cancelar"
+																  oncomplete="cerrarVentanaModificar.show()">
+										        </p:commandButton>
+										    </p:column>	
+								        </h:panelGrid>
+								   	</p:panel>
+							   	</p:tab>
+							   	
+							   	<p:tab title="Esquema Ejes" id="esquemaEjess">
+								   	<p:panel header="Esquema Ejes" >
+								   		<h:panelGrid id="panelEjesMod" columns="3">
+									   		<p:commandButton id="atrasMod" title="Anterior" styleClass="botonVentana" image="ui-icon-seek-prev" action="#{serviciosVentanaVehiculo.retrocederEsquema}" process="atrasMod" update="esquemaEjeMod nombreEjeMod mensajes">
+									   			<f:ajax event="blur" render="atrasMod mensajeMod2"></f:ajax>
+									   		</p:commandButton>
+									   		<h:inputText id="nombreEjeMod" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.esquemaEjes.nombreEsquema}" disabled="true"/>
+									   		<p:commandButton id="adelanteMod" title="Siguiente" styleClass="botonVentana" image="ui-icon-seek-next" action="#{serviciosVentanaVehiculo.adelantarEsquema}" process="adelanteMod" update="esquemaEjeMod nombreEjeMod mensajes">
+									   			<f:ajax event="blur" render="adelanteMod mensajeMod2"></f:ajax>
+									   		</p:commandButton>
+									   	</h:panelGrid>
+									   		<h:outputLabel value="" />
+									   		<h:panelGrid id="esquemaEjeMod" columns="7">
+												<p:commandButton id="neumatico11Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico1}" disabled="true"/>
+												<p:commandButton id="neumatico12Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico2}" disabled="true"/>
+												<p:commandButton id="eje1Mod" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje1}" disabled="true"/>
+												<p:commandButton id="neumatico13Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico3}" disabled="true"/>
+												<p:commandButton id="neumatico14Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico4}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Selecciona si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check1}" 
+																				valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje1TMod" 
+																				value="#{serviciosVentanaVehiculo.traccion1}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+														<f:ajax event="click" render="eje1Mod"/>
+													</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel/>
+												
+												<p:commandButton id="neumatico21Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico5}" disabled="true"/>
+												<p:commandButton id="neumatico22Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico6}" disabled="true"/>
+												<p:commandButton id="eje2Mod" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje2}" disabled="true"/>
+												<p:commandButton id="neumatico23Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico7}" disabled="true"/>
+												<p:commandButton id="neumatico24Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico8}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Selecciona si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check2}" 
+																				valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje2TMod" 
+																				value="#{serviciosVentanaVehiculo.traccion2}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+														<f:ajax event="click" render="eje2Mod"/>
+													</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel/>
+												
+												<p:commandButton id="neumatico31Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico9}" disabled="true"/>
+												<p:commandButton id="neumatico32Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico10}" disabled="true"/>
+												<p:commandButton id="eje3Mod" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje3}" disabled="true"/>
+												<p:commandButton id="neumatico33Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico11}" disabled="true"/>
+												<p:commandButton id="neumatico34Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico12}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Selecciona si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check3}" 
+																				valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje3TMod" 
+																				value="#{serviciosVentanaVehiculo.traccion3}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+														<f:ajax event="click" render="eje3Mod"/>
+													</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel/>
+												
+												<p:commandButton id="neumatico41Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico13}" disabled="true"/>
+												<p:commandButton id="neumatico42Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico14}" disabled="true"/>
+												<p:commandButton id="eje4Mod" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje4}" disabled="true"/>
+												<p:commandButton id="neumatico43Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico15}" disabled="true"/>
+												<p:commandButton id="neumatico44Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico16}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Selecciona si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check4}" 
+																				valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje4TMod" 
+																				value="#{serviciosVentanaVehiculo.traccion4}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+														<f:ajax event="click" render="eje4Mod"/>
+													</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel/>
+												
+												<p:commandButton id="neumatico51Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico17}" disabled="true"/>
+												<p:commandButton id="neumatico52Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico18}" disabled="true"/>
+												<p:commandButton id="eje5Mod" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje5}" disabled="true"/>
+												<p:commandButton id="neumatico53Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico19}" disabled="true"/>
+												<p:commandButton id="neumatico54Mod" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico20}" disabled="true"/>
+												<h:panelGrid>
+													<h:selectBooleanCheckbox title="Seleccionar si el eje tiene tracción" disabled="#{serviciosVentanaVehiculo.check5}" 
+																				valueChangeListener="#{serviciosVentanaVehiculo.validarTransmision}" id="eje5TMod" 
+																				value="#{serviciosVentanaVehiculo.traccion5}" rendered="#{serviciosVentanaVehiculo.renderedCheck}">
+														<f:ajax event="click" render="eje5Mod"/>
+													</h:selectBooleanCheckbox>
+												</h:panelGrid>
+												<h:outputLabel/>
+												
+												<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+									   			<h:outputLabel />
+												<h:panelGrid>
+													<h:outputLabel value="Nota: Seleccione si el eje tiene tracción" rendered="#{serviciosVentanaVehiculo.renderedCheck}" style="color:red;"/>
+												</h:panelGrid>
+												
+												<h:outputLabel/>
+												<h:outputLabel/>
+												<h:outputLabel/>
+												<h:outputLabel/>
+												<h:outputLabel/>
+												<h:outputLabel/>
+												<p:messages id="mensajeMod2" showDetail="true" autoUpdate="true" closable="true" />
+												
+											</h:panelGrid>
+											<h:panelGrid style="width:101%; text-align:right;">	
+												<p:column>
+													<p:commandButton  styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px" process="@this cancelarMod" title="Cancelar"
+																	  oncomplete="cerrarVentanaModificar.show()">
+											        </p:commandButton>
+											    </p:column>	
+								            </h:panelGrid> 
+									   		<h:outputLabel value="" />
+								   		
+								   	</p:panel>
+							   	</p:tab>
+							   
+							   	<p:tab title="Conductores y Rutas">
+								   	<p:panel header="Conductores y Rutas">
+								   	<h:panelGrid cellpadding="1" cellspacing="2">
+										<h:panelGrid id="panelConductoresMod" columns="3" cellpadding="1" cellspacing="30">
+											<p:outputPanel id="origenConductoresMod" style="height:150; width:100%;overflow:auto;">
+												<p:dataTable id="tablaOrigenMod" var="conductor" value="#{serviciosVentanaVehiculo.empleadosOrigenDataModel}" emptyMessage="No existen conductores disponibles"
+															 selection="#{serviciosVentanaVehiculo.empleadoSeleccionado}" selectionMode="single" onRowSelectUpdate="tablaDestino" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+															 height="150" style="width:100%">  
+											        <p:column headerText="Disponibles">  
+											            <h:outputText value="#{conductor.cedulaEmpleado} - #{conductor.nombre} #{conductor.apellido}" style="text-align:right;"/>  
+											        </p:column>
+											    </p:dataTable>
+										    </p:outputPanel>
+										    <h:panelGrid id="panelBotonesMod" columns="1" height="100" width="20">
+											    <p:commandButton process="@this" styleClass="botonVentana" title="Asignar Uno" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+								       						 	 actionListener="#{serviciosVentanaVehiculo.asignarUnConductor('source')}" ajax="true" async="true" 
+								       						 	 image="ui-icon-arrow-1-e" update="tablaDestinoMod, tablaOrigenMod, panelBotonesMod" data-tooltip="Asignar un Conductor" disabled="#{serviciosVentanaVehiculo.botonAsignarVisible}">
+									        	</p:commandButton> 
+											    <p:commandButton process="@this" styleClass="botonVentana" title="Asignar Todos" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+								       						 	 actionListener="#{serviciosVentanaVehiculo.asignarTodosConductoresOrigenDestino}"
+								       						 	 image="ui-icon-arrowstop-1-e" update="tablaDestinoMod, tablaOrigenMod, panelBotonesMod" disabled="#{serviciosVentanaVehiculo.botonAsignarVisible}">
+									        	</p:commandButton>
+											    <p:commandButton process="@this" styleClass="botonVentana" title="Retirar Uno" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+								       						 	 actionListener="#{serviciosVentanaVehiculo.asignarUnConductor('target')}" ajax="true" async="true" 
+								       						 	 image="ui-icon-arrow-1-w" update="tablaDestinoMod, tablaOrigenMod, panelBotonesMod conductorPpalMod" disabled="#{serviciosVentanaVehiculo.botonRegresarVisible}">
+									        	</p:commandButton>
+											    <p:commandButton process="@this" styleClass="botonVentana" title="Retirar Todos" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+								       						 	 actionListener="#{serviciosVentanaVehiculo.asignarTodosConductoresDestinoOrigen}"
+								       						 	 image="ui-icon-arrowstop-1-w" update="tablaDestinoMod, tablaOrigenMod, panelBotonesMod conductorPpalMod" disabled="#{serviciosVentanaVehiculo.botonRegresarVisible}">
+									        	</p:commandButton>
+									        </h:panelGrid>
+											<p:outputPanel id="destinoConductoresMod"  style="height:150; width:100%;overflow:auto;">
+												<p:dataTable id="tablaDestinoMod" var="conductorDestino" value="#{serviciosVentanaVehiculo.empleadosDestinoDataModel}" emptyMessage="No hay conductores asignados"
+															 selection="#{serviciosVentanaVehiculo.empleadoSeleccionadoDestino}" selectionMode="single" onRowSelectUpdate="conductorPpalMod" rendered="#{serviciosVentanaVehiculo.renderConductor}"
+															 height="150" style="width:100%">
+											        <p:column headerText="Asignados">
+											            <h:outputText value="#{conductorDestino.cedulaEmpleado} - #{conductorDestino.nombre} #{conductorDestino.apellido}" style="text-align:right;"/>  
+											        </p:column>
+											    </p:dataTable>
+											 </p:outputPanel>
+									    </h:panelGrid>
+									    <h:panelGrid columns="2" border="1" cellpadding="1" cellspacing="30">
+										    <h:panelGrid id="panelRutaMod" columns="3">	 
+											    <h:outputLabel value="Ruta Actual: *" for="rutaActual"/>
+											    <h:inputText id="rutaActual" value="#{serviciosVentanaVehiculo.ruta.nombre}" disabled="true"/>
+											    <h:outputLabel />
+											    
+											    <h:outputLabel value="Tipo de Carretera" for="tipoCarreteraMod"/>
+									            <h:inputText id="tipoCarreteraMod" value="#{serviciosVentanaVehiculo.ruta.tipoCarretera.nombre}" disabled="true"/>
+											    <h:outputLabel />
+											    
+											    <h:outputLabel value="Cambiar Ruta: " for="rutaMod" />
+										   		<h:selectOneMenu id="rutaMod" label="Ruta" value="#{serviciosVentanaVehiculo.idRuta}" require="true" height="10" scrollable="true" scrollHeight="100">
+									                <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+								               		<f:selectItems value="#{serviciosVentanaRuta.rutaDataModel}" var="ruta" itemValue="#{ruta.idRuta}" itemLabel="#{ruta.nombre}"/>
+								               		
+								               		<p:ajax action="#{serviciosVentanaVehiculo.actualizarTipoCarretera}" update="tipoCarreteraMod rutaActual"/>
+									            </h:selectOneMenu>
+									            <p:commandButton onclick="ventanaRegistroRutas.show();" styleClass="botonVentana" image="ui-icon-plusthick" title="Nueva Ruta"/>
+										    </h:panelGrid>
+										    
+										    <h:panelGrid id="panelConductorPpalMod" columns="2" rendered="#{serviciosVentanaVehiculo.renderConductor}"> 
+									            <p:commandButton process="@this" styleClass="botonVentana" image="ui-icon-gear" title="Establecer Conductor Principal"
+						       						 actionListener="#{serviciosVentanaVehiculo.establecerConductorPrincipal}"
+						       						 update="conductorPpalMod"/>
+								    			<h:inputText id="conductorPpalMod" value="#{serviciosVentanaVehiculo.conductorPrincipal.nombre} #{serviciosVentanaVehiculo.conductorPrincipal.apellido}"
+								    						 label="Conductor_Ppal" disabled="true" required="true">
+								    				<f:ajax event="blur" render="conductorPpalMod mensajeMod3"/>
+								    			</h:inputText>
+								    			<h:outputLabel value=""/>
+								    			<h:outputLabel value=""/>
+										    </h:panelGrid>
+								    	</h:panelGrid>
+								    		<p:messages id="mensajeMod3" showDetail="true" autoUpdate="true" closable="true" />
+									</h:panelGrid>	
+									
+									<h:panelGrid style="width:101%; text-align:right;">	
+										<p:column>
+								       		<p:commandButton styleClass="botonVentana" image="ui-icon-disk" title="Aceptar" update="mensajeMod3" process="@this"
+								       						 oncomplete="guardarBotonModificar(xhr, status, args);" actionListener="#{serviciosVentanaVehiculo.validarConductorMod}">
+									        </p:commandButton> 
+											<p:commandButton id="cancelarMod" styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px" 
+															 process="@this cancelarMod" title="Cancelar"
+															 oncomplete="cerrarVentanaModificar.show()">
+									        </p:commandButton>
+									    </p:column>	
+							        </h:panelGrid>
+								</p:panel> 
+						   	</p:tab>
+						<!--</p:tabView>-->
+						</p:wizard>
+						
+						
+			        </h:form>
+				</p:dialog>
+				
+				<p:dialog   header="Mensaje" widgetVar="confirmacionVentanaModificar" 
+							hideEffect="fade" showEffect="fade" closable="falde" closeOnEscape="false" modal="true" appendToBody="true">
+					<h:form>
+						<h:panelGrid>
+							<f:facet name="header">
+								<br/>
+									¿Está seguro que desea guardar los datos?
+								<br/>
+							</f:facet>
+						</h:panelGrid>
+						<p:separator/>
+						<p:commandButton styleClass="botonVentana" image="ui-icon-check" style="margin-left:5px" process="@this" title="Aceptar"
+										  actionListener="#{serviciosVentanaVehiculo.guardarOModificar}" 
+			       						  oncomplete="refrescarModificar(xhr, status, args);confirmacionVentanaModificar.hide();wizMod.loadStep(wizMod.cfg.steps[0], true);" 
+			       						  update=":mensajes,:formTabla:tbVehiculos,:formModificar:gridModificar, :formModificar:destinoConductoresMod, :formModificar:origenConductoresMod, :formModificar:panelBotonesMod, :formModificar:panelEjesMod, 
+			       						  :formModificar:mensajeMod,:formModificar:mensajeMod3, :formModificar:kilometrajeMod"/>
+	    				<p:commandButton styleClass="botonVentana" image="ui-icon-closethick"  style="margin-left:5px" process="@this" 
+	    								 title="Cancelar" oncomplete="confirmacionVentanaModificar.hide()">
+	    					
+	    				</p:commandButton>
+					</h:form>
+				</p:dialog>	
+				
+				<p:dialog   header="Mensaje" widgetVar="cerrarVentanaModificar" 
+							hideEffect="fade" showEffect="fade" closable="falde" closeOnEscape="false" modal="true" appendToBody="true">
+					<h:form>
+						<h:panelGrid>
+							<f:facet name="header">
+								<br/>
+									¿Está seguro que desea cerrar?
+								<br/>
+							</f:facet>
+						</h:panelGrid>
+						<p:separator/>
+						<p:commandButton styleClass="botonVentana" image="ui-icon-check" style="margin-left:5px" process="@this" title="Aceptar"
+										actionListener="#{serviciosVentanaVehiculo.cancelar}" 
+									    oncomplete="refrescarModificar(xhr, status, args); ventanaModificar.hide(); cerrarVentanaModificar.hide();wizMod.loadStep(wizMod.cfg.steps[0], true);"
+									    update=":mensajes, :formTabla:tbVehiculos, gridModificar, origenConductoresMod, panelBotonesMod, panelEjesMod tabViewMod"/>
+	    				<p:commandButton styleClass="botonVentana" image="ui-icon-closethick"  style="margin-left:5px" process="@this" 
+	    								 title="Cancelar" oncomplete="cerrarVentanaModificar.hide()">
+	    					
+	    				</p:commandButton>
+					</h:form>
+				</p:dialog>	
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº ELIMINAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta es una simple ventana de diálogo para aceptar o rechazar la operación de eliminación de unn registro,
+			pero dicho registro debe haber sido seleccionado en la tabla previamente para que en el lado del servidor se pueda
+			recibir este registro y escribirlo en la variable esquemaEjeSeleccionado, el cual servirá para realizar la operación
+			de eliminación. Como en todos los botones, se debe efectuar la operación de actualización pero esta vez para
+			que se aprecie la eliminación en la tabla -->
+			
+			<p:dialog id="ventanaEliminar" header="Confirme la operación" widgetVar="confirmacion"
+					  showEffect="fade" hideEffect="blind" modal="true" appendToBody="true" closable="false">
+				<h:form id="formEliminar">
+					<script type="text/javascript">
+							function refrescarEliminar() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formEliminar").reset();
+							}
+					</script>
+					<h:panelGrid>
+						<f:facet name="header">
+							<br/>
+								Está seguro que desea eliminar este vehículo?
+							<br/>
+						</f:facet>
+					</h:panelGrid>
+					<p:separator/>
+					 <p:commandButton id="confirmar" styleClass="botonVentana" actionListener="#{serviciosVentanaVehiculo.eliminar}" title="Aceptar"
+				        				 image="ui-icon-check" oncomplete="refrescarEliminar(); confirmacion.hide();" update=":formTabla:tbVehiculos,:mensajes"/>  
+				     <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" update=":formTabla:tbVehiculos" title="Cancelar"
+				        				 actionListener="#{serviciosVentanaVehiculo.cancelar}" oncomplete="confirmacion.hide();"/>  
+				</h:form>
+			</p:dialog>
+		   	
+<!-- ººººººººººººººººººººººººººººººººººººººº CONSULTA ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana se asemeja a la ventana de modificación, ya que utiliza la misma variable en el lado del servidor
+			y con la misma dinámica para operarla, con la pequeña diferencia de que los botones y cajas de texto estan
+			inhabilitadas para que solo puedan mostrar los datos de la variable antes mencionada -->
+			
+			
+			
+				<p:dialog widgetVar="ventanaConsulta" header="Consultar Vehículo Seleccionado" closeOnEscape="false"
+							showEffect="fade" hideEffect="fade" closable="false" height="420" width="600" modal="true" appendToBody="true">
+						<h:form id="formConsulta">
+							<p:tabView id="tabViewConsulta" effect="fold" effectDuration="normal" activeIndex="#{serviciosVentanaVehiculo.tabIndex}" dynamic="true">
+								<p:tab title="Datos Básicos"> 
+						       		<h:panelGrid id="gridConsulta"  columns="3">
+								   		<h:outputLabel value="Placa:" for="placaCons"/>
+								   		<h:inputText id="placaCons" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.placa}" label="Placa" disabled="true">
+								   			<f:validateLength maximum="10"/>
+								   		</h:inputText>
+								   		<h:outputLabel value=""/>
+								   		
+								   		<h:outputLabel value="Modelo:" for="modeloCons"/>
+								   		<h:inputText id="modeloCons" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.nombre}" label="Modelo_Actual" disabled="true"/>
+								   		<h:outputLabel value=""/>
+							             
+								   		<h:outputLabel value="Marca:" for="marcaVehiculoCons"/>
+								   		<h:inputText id="marcaVehiculoCons" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.marcaVehiculo.nombre}" label="Marca" disabled="true"/>
+								   		<h:outputLabel value=""/>
+							             
+								   		<h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculoCons"/>
+								   		<h:inputText id="tipoVehiculoCons" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.nombre}" label="Tipo Vehículo" disabled="true"/>
+								   		<h:outputLabel value=""/>
+								   		
+								   		<h:outputLabel value="Dentro de Carretera: " for="dentroCarreteraCons"/>
+								   		<h:inputText id="dentroCarreteraCons" value="#{serviciosVentanaVehiculo.dentroCarretera}" disabled="true"/>
+								   		<h:outputLabel value="" />
+								   		
+								   		<h:outputLabel value="Año de Fabricación" for="anoFabricaCons"/>
+										<h:inputText id="anoFabricaCons" label="Año de Fabricación" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.anoFabricacion}" disabled="true">
+								   			<f:validateLength maximum="5"/>
+								   		</h:inputText>
+								   		<h:outputLabel value="" />
+								   		
+								   		<h:outputLabel value="Kilometraje" for="kilometrajeCons"/>
+										<h:inputText id="kilometrajeCons" label="Kilometraje" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.kilometraje}" disabled="true">
+								   			<f:validateLength maximum="20"/>
+								   		</h:inputText>
+								   		<h:outputLabel value="" />
+							   		</h:panelGrid>
+							   	</p:tab>
+							   	<p:tab title="Esquema Ejes">
+							   		<h:panelGrid id="panelEjesConsulta" columns="1">
+							   		
+							   			<h:outputLabel value="Esquema de Ejes"/>
+							   			
+								   		<h:inputText id="nombreEjeCons" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.esquemaEjes.nombreEsquema}" disabled="true"/>
+								   		
+								   		<h:panelGrid id="esquemaEjeCons" columns="5">
+											<p:commandButton id="neumatico11Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico1}" disabled="true"/>
+											<p:commandButton id="neumatico12Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico2}" disabled="true"/>
+											<p:commandButton id="eje1Cons" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje1}" disabled="true"/>
+											<p:commandButton id="neumatico13Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico3}" disabled="true"/>
+											<p:commandButton id="neumatico14Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico4}" disabled="true"/>
+											<p:commandButton id="neumatico21Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico5}" disabled="true"/>
+											<p:commandButton id="neumatico22Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico6}" disabled="true"/>
+											<p:commandButton id="eje2Cons" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje2}" disabled="true"/>
+											<p:commandButton id="neumatico23Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico7}" disabled="true"/>
+											<p:commandButton id="neumatico24Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico8}" disabled="true"/>
+											<p:commandButton id="neumatico31Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico9}" disabled="true"/>
+											<p:commandButton id="neumatico32Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico10}" disabled="true"/>
+											<p:commandButton id="eje3Cons" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje3}" disabled="true"/>
+											<p:commandButton id="neumatico33Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico11}" disabled="true"/>
+											<p:commandButton id="neumatico34Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico12}" disabled="true"/>
+											<p:commandButton id="neumatico41Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico13}" disabled="true"/>
+											<p:commandButton id="neumatico42Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico14}" disabled="true"/>
+											<p:commandButton id="eje4Cons" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje4}" disabled="true"/>
+											<p:commandButton id="neumatico43Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico15}" disabled="true"/>
+											<p:commandButton id="neumatico44Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico16}" disabled="true"/>
+											<p:commandButton id="neumatico51Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico17}" disabled="true"/>
+											<p:commandButton id="neumatico52Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico18}" disabled="true"/>
+											<p:commandButton id="eje5Cons" styleClass="eje" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoEje5}" disabled="true"/>
+											<p:commandButton id="neumatico53Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico19}" disabled="true"/>
+											<p:commandButton id="neumatico54Cons" styleClass="neumatico" style="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.fondoNeumatico20}" disabled="true"/>
+										</h:panelGrid> 
+							   		</h:panelGrid>
+							   	</p:tab>
+							   	<p:tab title="Conductores y Rutas">
+							   		<h:panelGrid id="panelConductoresCons" columns="3">
+										<p:outputPanel id="destinoConductoresCons" style="height:150; width:100%;overflow:auto;" rendered="#{serviciosVentanaVehiculo.renderdConsultar}">
+											<p:dataTable id="tablaDestinoCons" var="conductorDestino" value="#{serviciosVentanaVehiculo.empleadosDestinoDataModel}" emptyMessage="No hay conductores asignados"
+														 selection="#{serviciosVentanaVehiculo.empleadoSeleccionadoDestino}" selectionMode="single" onRowSelectUpdate="conductorPpalMod"
+														 height="150" style="width:100%">
+										        <p:column headerText="Asignados">
+										            <h:outputText value="#{conductorDestino.cedulaEmpleado} - #{conductorDestino.nombre} #{conductorDestino.apellido}" style="text-align:right;"/>  
+										        </p:column>
+										    </p:dataTable>
+										 </p:outputPanel>
+									    
+									    <h:panelGrid id="panelRutaCons" columns="2">	 
+										    <h:outputLabel value="Ruta Actual: *" for="rutaActual"/>
+										    <h:inputText id="rutaActual" value="#{serviciosVentanaVehiculo.ruta.nombre}" disabled="true"/>
+										    
+										    <h:outputLabel value="Tipo de Carretera" for="tipoCarreteraCons"/>
+								            <h:inputText id="tipoCarreteraCons" value="#{serviciosVentanaVehiculo.ruta.tipoCarretera.nombre}" disabled="true"/>
+								              
+								            <h:outputLabel value="Conductor Principal" for="conductorPpalCons" rendered="#{serviciosVentanaVehiculo.renderdConsultar}"/>
+							    			<h:inputText id="conductorPpalCons" value="#{serviciosVentanaVehiculo.conductorPrincipal.nombre} #{serviciosVentanaVehiculo.conductorPrincipal.apellido}"
+							    						 label="Conductor_Ppal" disabled="true" required="true" rendered="#{serviciosVentanaVehiculo.renderdConsultar}"/>
+									    </h:panelGrid>
+							            
+								    </h:panelGrid>
+							   	</p:tab>
+						</p:tabView>
+						<p:separator/>	
+						<h:panelGrid columns="1" >
+							<p:commandButton id="aceptarConsu" styleClass="botonVentana" image="ui-icon-check" process="@this aceptarConsu" title="Aceptar"
+										 actionListener="#{serviciosVentanaVehiculo.cancelar}" 
+										 oncomplete="ventanaConsulta.hide();"
+										 update="gridConsultar, panelBotonesCons, panelEjesConsulta tabViewConsulta destinoConductoresCons conductorPpalCons">
+				        	</p:commandButton>
+				        </h:panelGrid>
+			        </h:form>
+				</p:dialog>
+			
+			
+
+<!-- ººººººººººººººººººººººººººººº CONDUCTOR TEMPORAL ººººººººººººººººººººººººººººº -->
+			
+			
+				<script type="text/javascript">
+						function refrescarConductorTemporal(xhr, status, args) {
+							if (args.limpiar) {
+								document.getElementById("formConductorTemporal").reset();
+								quitarTemporal.hide();
+								ventanaConductorTemporal.hide();
+				            } else if(args.confirmar) {
+				            	quitarTemporal.show();
+				            }
+						}
+				</script>
+				<p:dialog  header="Confirme la operación" widgetVar="quitarTemporal"
+						   showEffect="fade" hideEffect="blind" modal="true" appendToBody="true" closable="false" >
+					<h:form>
+						<h:panelGrid>
+							<f:facet name="header">
+								<br/>
+									Está seguro de quitar los conductores temporales?
+								<br/>
+							</f:facet>
+						</h:panelGrid>
+						<p:separator/>
+						<p:commandButton id="sinTemporal" image="ui-icon-check" styleClass="botonVentana" title="Aceptar (Dejará el vehículo sin conductor temporal)"
+		   							 actionListener="#{serviciosVentanaVehiculo.activarConfirmar}"
+		   							 oncomplete="refrescarConductorTemporal(xhr, status, args);" 
+		   							 update=":mensajes, tablaOrigenTemporal, tablaDestinoTemporal, fechaInicial, fechaFinal, motivo, panelBotonesTemporal, conductorPpalTemporal"/>
+			   			<p:commandButton image="ui-icon-closethick" styleClass="botonVentana" title="Cancelar"
+				        			 oncomplete="quitarTemporal.hide();"/>
+					</h:form>
+				</p:dialog>				
+				
+				<p:dialog widgetVar="ventanaConductorTemporal" header="Asignar Conductor Temporal" closeOnEscape="false" modal="true"
+						  showEffect="fade" hideEffect="fade" closable="false" height="500" width="900" appendToBody="true">
+					<h:form id="formConductorTemporal">	  
+						<h:outputLabel value="Vehiculo Seleccionado: " for="vehiculoSeleccionado" style="font-size:x-large;"/>
+						<h:outputLabel value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.placa}" id="vehiculoSeleccionado" style="text-align:center;font-weight:bold;font-size:x-large;"/>
+						<h:panelGrid id="gridTemporal" columns="1">
+							<h:panelGrid id="tablasTemporal" columns="4">
+								<p:outputPanel id="origenConductoresTemporal" style="height:150; width:100%;overflow:auto;">
+									<p:dataTable id="tablaOrigenTemporal" var="conductor" value="#{serviciosVentanaVehiculo.empleadosOrigenDataModel}" emptyMessage="No existen conductores disponibles"
+												 selection="#{serviciosVentanaVehiculo.empleadoSeleccionado}" selectionMode="single" onRowSelectUpdate="tablaDestinoTemporal"
+												 height="150" style="width:100%">  
+								        <p:column headerText="Disponibles">  
+								            <h:outputText value="#{conductor.cedulaEmpleado} - #{conductor.nombre} #{conductor.apellido}" style="text-align:right;"/>  
+								        </p:column>
+								    </p:dataTable>
+							    </p:outputPanel>
+							    <h:panelGrid id="panelBotonesTemporal" columns="1" >
+								    <p:commandButton process="@this" styleClass="botonVentana" title="Asignar"
+					       						 	 actionListener="#{serviciosVentanaVehiculo.asignarUnConductor('source')}" ajax="true" async="true" cache="false"
+					       						 	 image="ui-icon-arrow-1-e" update="tablaDestinoTemporal, tablaOrigenTemporal, panelBotonesTemporal, tablaTemporal" data-tooltip="Asignar un Conductor" disabled="#{serviciosVentanaVehiculo.botonAsignarVisible}">
+						        	</p:commandButton> 
+						        	
+								    <p:commandButton process="@this" styleClass="botonVentana" title="Retirar"
+					       						 	 actionListener="#{serviciosVentanaVehiculo.asignarUnConductor('target')}" ajax="true" async="true" cache="false"
+					       						 	 image="ui-icon-arrow-1-w" update="tablaTemporal tablaOrigenTemporal, panelBotonesTemporal" disabled="#{serviciosVentanaVehiculo.botonRegresarVisible}">
+						        	</p:commandButton>
+						        	
+						        	
+						       		<p:commandButton onclick="ventanaRegistroNuevoConductor.show();" styleClass="botonVentana" image="ui-icon-plusthick" title="Nuevo Conductor"/>
+						       		
+						        </h:panelGrid>
+								<p:outputPanel id="destinoConductoresTemporal" style="height:150; width:100%;overflow:auto;">
+									<p:dataTable id="tablaTemporal" var="conductorDestinoTemporal" value="#{serviciosVentanaVehiculo.empleadoTemporalDataModel}" emptyMessage="No hay conductores temporales asignados"
+												 selection="#{serviciosVentanaVehiculo.empleadoSeleccionadoDestino}" selectionMode="single" onRowSelectUpdate="conductorPpal"
+												 height="150" style="width:100%">  
+								        <p:column headerText="Temporales">
+								            <h:outputText value="#{conductorDestinoTemporal.cedulaEmpleado} - #{conductorDestinoTemporal.nombre} #{conductorDestinoTemporal.apellido}" style="text-align:right;"/>  
+								        </p:column>
+								    </p:dataTable>
+								 </p:outputPanel>
+								<p:outputPanel id="destinoConductoresAsignados" style="height:150; width:100%;overflow:auto;">
+									<p:dataTable id="tablaDestinoTemporal" var="conductorDestino" value="#{serviciosVentanaVehiculo.empleadosDestinoDataModel}" emptyMessage="No hay conductores asignados"
+												 height="150" style="width:100%">  
+								        <p:column headerText="Regulares">
+								            <h:outputText value="#{conductorDestino.cedulaEmpleado} - #{conductorDestino.nombre} #{conductorDestino.apellido}" style="text-align:right;"/>  
+								        </p:column>
+								    </p:dataTable>
+								 </p:outputPanel>
+							</h:panelGrid>
+							<h:panelGrid id="datosTemporal" columns="2">
+								 
+								<h:outputText value="Conductor Principal: *" for="conductorPpalTemporal"/>  
+						        <h:selectOneRadio id="conductorPpalTemporal" value="#{serviciosVentanaVehiculo.vehiculoEmpleado.conductorPrincipal}" styleClass="ui-widget ui-inputfield ui-widget-content ui-corner-all" >  
+						            <f:selectItem itemLabel="Si" itemValue="S" />  
+						            <f:selectItem itemLabel="No" itemValue="N" />  
+						        </h:selectOneRadio>
+						        
+							    <h:outputLabel value="Fecha Inicio: *" for="fechaInicial" />
+							    <p:calendar value="#{serviciosVentanaVehiculo.vehiculoEmpleado.fechaInicial}" id="fechaInicial" title="La fecha inicial debe ser anterior a la fecha final"/>
+						        
+							    <h:outputLabel value="Fecha Final: *" for="fechaFinal" />
+							    <p:calendar value="#{serviciosVentanaVehiculo.vehiculoEmpleado.fechaFinal}" id="fechaFinal" title="La fecha inicial debe ser anterior a la fecha final"/>
+						        
+							    <h:outputLabel value="Motivo: *" for="motivo" />
+							    <h:inputTextarea value="#{serviciosVentanaVehiculo.vehiculoEmpleado.motivo}" id="motivo"/>
+						    </h:panelGrid>
+						</h:panelGrid>
+						<p:separator/>			
+			       		<p:commandButton styleClass="botonVentana" image="ui-icon-disk" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaVehiculo.asignarConductorTemporalVehiculo}"
+			       						 oncomplete="refrescarConductorTemporal(xhr, status, args);" update=":mensajes, tablaOrigenTemporal, tablaDestinoTemporal, fechaInicial, fechaFinal, motivo, panelBotonesTemporal, conductorPpalTemporal">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px" process="@this" title="Cancelar"
+										 actionListener="#{serviciosVentanaVehiculo.cancelar}" oncomplete="refrescarConductorTemporal(xhr, status, args); ventanaConductorTemporal.hide();"
+										 update="tablaOrigenTemporal, tablaDestinoTemporal, fechaInicial, fechaFinal, motivo, panelBotonesTemporal, conductorPpalTemporal">
+				        </p:commandButton> 
+			        </h:form>
+				</p:dialog>
+			
+			
+<!-- ##################################################### REGISTROS EMERGENTES ##################################################################### -->
+<!-- ================================ Nuevo Modelo ====================================== -->
+
+				
+					<script type="text/javascript">
+					
+							//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+							function refrescarModelo() {
+								document.getElementById("formNuevoModelo").reset();
+							}
+					</script>
+					
+					<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+					<p:dialog widgetVar="ventanaNuevoModelo" header="Registro de Modelos de Vehículos" 
+							  showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true" closeOnEscape="false" height="280" width="500">
+				       <h:form id="formNuevoModelo">
+					       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+					       <h:panelGrid id="gridModelo" columns="3">
+						   		
+						   		<h:outputLabel value="Nombre: *" for="nombreModelo"/>
+						   		<h:inputText id="nombreModelo" value="#{serviciosVentanaModeloVehiculo.modeloVehiculo.nombre}" label="Nombre" required="true" >
+						   			<f:validateLength maximum="60"/>
+						   		</h:inputText>
+						   		<h:outputLabel />
+						   		
+						   		<h:outputLabel value="Descripción:" for="descripcionModelo"/>
+						   		<h:inputTextarea id="descripcionModelo" value="#{serviciosVentanaModeloVehiculo.modeloVehiculo.descripcion}" label="Descripcion">
+						   			<f:validateLength maximum="255"/>
+						   		</h:inputTextarea>
+						   		<h:outputLabel />
+						   		
+						       	<h:outputLabel value="Marca: *" for="marcaModelo"/>
+					     		<h:selectOneMenu id="marcaModelo" label="Marca" value="#{serviciosVentanaModeloVehiculo.idMarcaVehiculo}" required="true">  
+					                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />  
+					                <f:selectItems value="#{serviciosVentanaMarcaVehiculo.listaMarca}" var="marcaVehiculo" itemLabel="#{marcaVehiculo.nombre}" itemValue="#{marcaVehiculo.idMarcaVehiculo}"/> 
+					            </h:selectOneMenu>
+						       	<p:commandButton onclick="ventanaNuevaMarca.show();" styleClass="botonVentana" image="ui-icon-plusthick" title="Nueva Marca"/>
+						   		
+								<h:outputLabel value="Tipo de Vehículo: *" for="tipoVehiculoModelo"/>
+					     		<h:selectOneMenu id="tipoVehiculoModelo" label="Tipo Vehiculo" value="#{serviciosVentanaModeloVehiculo.idTipoVehiculo}" required="true">  
+					                <f:selectItem itemLabel="-Seleccione-" itemValue="" />  
+					                <f:selectItems value="#{serviciosVentanaTipoVehiculo.listaTipoVehiculo}" var="tipoVehiculo" itemLabel="#{tipoVehiculo.nombre}" itemValue="#{tipoVehiculo.idTipoVehiculo}"/> 
+					            </h:selectOneMenu>
+						       	<p:commandButton onclick="ventanaNuevoTipoVehiculo.show();" styleClass="botonVentana" image="ui-icon-plusthick" title="Nuevo Tipo de Vehículo"/>
+						       	
+							</h:panelGrid>
+							
+							<!-- Etiqueta que dibuja un separador en el panel -->
+							<p:separator/>
+							
+							<!-- Los siguientes botones, permiten al usuario decidir entre: 
+							Guardar la información ingresada en los campos(Aceptar)
+							Salirse de la ventana sin guardar ninguna información(Cancelar)
+							Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->		
+				       		<p:commandButton styleClass="botonVentana" image="ui-icon-disk" title="Aceptar" 
+				       						 actionListener="#{serviciosVentanaModeloVehiculo.guardarOModificar}"
+				       						 oncomplete="refrescarModelo(); ventanaNuevoModelo.hide();" update=":mensajes, gridModelo, :formNuevo:modelo, :formModificar:modeloMod marcaModelo tipoVehiculoModelo">
+					        </p:commandButton>
+							<p:commandButton styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px" title="Cancelar"
+											 actionListener="#{serviciosVentanaModeloVehiculo.cancelar}" oncomplete="refrescarModelo(); ventanaNuevoModelo.hide();"
+											 update="gridModelo marcaModelo tipoVehiculoModelo">
+					        </p:commandButton> 
+				   			<p:commandButton styleClass="botonVentana" image="ui-icon-refresh" type="reset" title="Limpiar"
+				   							 style="margin-left:5px"/>
+			   			</h:form>	
+					</p:dialog>
+						
+			
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ NUEVA MARCA ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+
+			<!-- Esta ventana permite ingresar una nueva Marca de Vehículo 
+				en caso de que la Marca del vehículo no este registrada -->
+
+			
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a los formularios de "Nueva Marca de Vehículo" y los vuelve a cargar
+						function refrescarNuevaMarca() {
+							document.getElementById("formNuevaMarca").reset();
+						}
+				</script>
+								
+				<p:dialog widgetVar="ventanaNuevaMarca" header="Registro de Marcas de Vehículos"
+						  showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true" closeOnEscape="false" height="190" width="350">
+			       <h:form id="formNuevaMarca">
+				       <h:panelGrid id="gridMarca" columns="2">
+					   		
+					   		<h:outputLabel value="Nombre: *" for="nombre"/>
+					   		<h:inputText id="nombre" value="#{serviciosVentanaMarcaVehiculo.marcaVehiculo.nombre}" label="Nombre" required="true">
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Descripción: *" for="descripcion"/>
+					   		<h:inputTextarea id="descripcion" value="#{serviciosVentanaMarcaVehiculo.marcaVehiculo.descripcion}" label="Descripcion">
+					   			<f:validateLength maximum="255"/>
+					   		</h:inputTextarea>
+							
+						</h:panelGrid>
+						<p:separator/>					
+			       		<p:commandButton styleClass="botonVentana" image="ui-icon-disk" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaMarcaVehiculo.guardarOModificar}" 
+			       						 oncomplete="refrescarNuevaMarca();" update=":mensajes, :formNuevoModelo:marcaModelo">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px" title="Cancelar"
+										 actionListener="#{serviciosVentanaMarcaVehiculo.cancelar}" oncomplete="refrescarNuevaMarca(); ventanaNuevaMarca.hide();"
+										 update=":formNuevoModelo:marcaModelo, gridMarca">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" image="ui-icon-refresh" type="reset" title="Limpiar"
+			   							 style="margin-left:5px"/>
+		   			</h:form>				 
+				</p:dialog>
+			
+			
+			
+<!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ NUEVO TIPO DE VEHÍCULO ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->			
+			
+			<!-- Esta ventana permite ingresar una nuevo Tipo de Vehículo 
+				en caso de que el Tipo de Vehículo no este registrado aún -->
+			
+			
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a los formularios de "Nuevo Tipo de Vehiculo" y los vuelve a cargar
+						function refrescarNuevoTipo() {
+							document.getElementById("formNuevoTipo").reset();
+						}
+				</script>
+								
+				<p:dialog widgetVar="ventanaNuevoTipoVehiculo" header="Registro de Tipos de Vehículos"
+						  showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true" closeOnEscape="false"  height="210" width="380">
+			       <h:form id="formNuevoTipo">
+				       <h:panelGrid id="gridTipo" columns="2">
+					   		
+					   		<h:outputLabel value="Nombre: *" for="nombre"/>
+					   		<h:inputText id="nombre" value="#{serviciosVentanaTipoVehiculo.tipoVehiculo.nombre}" label="Nombre" required="true">
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Descripción: *" for="descripcion"/>
+					   		<h:inputTextarea id="descripcion" value="#{serviciosVentanaTipoVehiculo.tipoVehiculo.descripcion}" label="Descripcion">
+					   			<f:validateLength maximum="150"/>
+					   		</h:inputTextarea>
+			            		 
+		            		<h:outputLabel value="Dentro de Carretera *" for="dentroCarretera"/>
+		            		<h:selectOneRadio id="dentroCarretera" value="#{serviciosVentanaTipoVehiculo.tipoVehiculo.dentroCarretera}" required="true">
+		            			<f:selectItem itemLabel="Si" itemValue="S"/>
+		            			<f:selectItem itemLabel="No" itemValue="N"/>
+		            		</h:selectOneRadio>
+			            		
+						</h:panelGrid>
+						<p:separator/>					
+			       		<p:commandButton styleClass="botonVentana" image="ui-icon-disk" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaTipoVehiculo.guardarOModificar}" 
+			       						 oncomplete="refrescarNuevoTipo();" 
+			       						 update=":mensajes,:formNuevoModelo:tipoVehiculoModelo">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px" title="Cancelar"
+										 actionListener="#{serviciosVentanaTipoVehiculo.cancelar}" oncomplete="refrescarNuevoTipo(); ventanaNuevoTipoVehiculo.hide();"
+										 update=":formNuevoModelo:tipoVehiculoModelo, gridTipo">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" image="ui-icon-refresh" type="reset" title="Limpiar"
+			   							 style="margin-left:5px"/>
+		   			</h:form>
+				</p:dialog>
+			
+			
+<!-- +++++++++++++++++++++++++++++++++++++++ NUEVA RUTA ++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+						function refrescarNuevaRuta() {
+							document.getElementById("formNuevaRuta").reset();
+						}
+				</script>
+				
+				<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+				<p:dialog widgetVar="ventanaRegistroRutas" header="Registro de una Nueva Ruta"
+						  showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true" closeOnEscape="false" height="220" width="400">
+			       <h:form id="formNuevaRuta">
+				       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+				       <h:panelGrid id="gridRuta" columns="3">
+					   		
+					   		<h:outputLabel value="Nombre: *" for="nombreRuta"/>
+					   		<h:inputText id="nombreRuta" value="#{serviciosVentanaRuta.ruta.nombre}" label="Nombre" required="true" >
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		<h:outputLabel />
+					   		
+					   		<h:outputLabel value="Descripción: " for="descripcionRuta"/>
+					   		<h:inputTextarea id="descripcionRuta" value="#{serviciosVentanaRuta.ruta.descripcion}" label="Descripcion">
+					   			<f:validateLength maximum="150"/>
+					   		</h:inputTextarea>
+					   		<h:outputLabel />
+							
+							<h:outputLabel value="Tipo de Carretera: *" for="tipoCarreteraRuta"/>
+				     		<h:selectOneMenu id="tipoCarreteraRuta" label="Tipo de Carretera" value="#{serviciosVentanaRuta.idTipoCarretera}" required="true">
+				                <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+				                <f:selectItems value="#{serviciosVentanaTipoCarretera.listaTipoCarreteras}" var="tipoCarretera" itemLabel="#{tipoCarretera.nombre}" itemValue="#{tipoCarretera.idTipoCarretera}"/> 
+				            </h:selectOneMenu>
+					       	<p:commandButton onclick="ventanaRegistroCarretera.show();" styleClass="botonVentana" image="ui-icon-plusthick" title="Nuevo Tipo de Carretera"/>
+					   		
+						</h:panelGrid>
+						
+						<!-- Etiqueta que dibuja un separador en el panel -->
+						<p:separator/>
+						
+						<!-- Los siguientes botones, permiten al usuario decidir entre: 
+						Guardar la información ingresada en los campos(Aceptar)
+						Salirse de la ventana sin guardar ninguna información(Cancelar)
+						Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->		
+			       		<p:commandButton styleClass="botonVentana" image="ui-icon-disk" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaRuta.guardarOModificar}"
+			       						 oncomplete="refrescarNuevaRuta(); ventanaRegistroRutas.hide();" update=":mensajes :formNuevo:ruta gridRuta :formModificar:rutaMod">
+				        </p:commandButton>
+						<p:commandButton styleClass="botonVentana" style="margin-left:5px" image="ui-icon-closethick" title="Cancelar"
+										 actionListener="#{serviciosVentanaRuta.cancelar}" oncomplete="refrescarNuevaRuta(); ventanaRegistroRutas.hide();"
+										 update=":formNuevo:panelRuta, gridRuta, :formModificar:rutaMod">
+				        </p:commandButton>
+			   			<p:commandButton styleClass="botonVentana" type="reset" title="Limpiar"
+			   							 style="margin-left:5px" image="ui-icon-refresh"/>
+			   			</h:form>
+				</p:dialog>
+			
+			
+<!-- **************************************************** NUEVO TIPO DE CARRETERA ********************************************* -->
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+						function refrescarNuevaCarretera() {
+							document.getElementById("formNuevaCarretera").reset();
+						}
+				</script>
+				
+				
+				<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+				<p:dialog widgetVar="ventanaRegistroCarretera" header="Registro de Tipos de Carreteras"
+						  showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true" closeOnEscape="false" height="180" width="350">
+			       <h:form id="formNuevaCarretera">
+				       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+				       <h:panelGrid id="gridCarretera" columns="2">
+					   		
+					   		<h:outputLabel value="Nombre: *" for="nombreCarretera"/>
+					   		<h:inputText id="nombreCarretera" value="#{serviciosVentanaTipoCarretera.tipoCarretera.nombre}" label="Nombre" required="true" >
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Descripción: *" for="descripcionCarretera"/>
+					   		<h:inputTextarea id="descripcionCarretera" value="#{serviciosVentanaTipoCarretera.tipoCarretera.descripcion}" label="Descripcion">
+					   			<f:validateLength maximum="150"/>
+					   		</h:inputTextarea>
+					   					
+						</h:panelGrid>
+						
+						<!-- Etiqueta que dibuja un separador en el panel -->
+						<p:separator/>
+						
+						<!-- Los siguientes botones, permiten al usuario decidir entre: 
+						Guardar la información ingresada en los campos(Aceptar)
+						Salirse de la ventana sin guardar ninguna información(Cancelar)
+						Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->
+			       		<p:commandButton styleClass="botonVentana" image="ui-icon-disk" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaTipoCarretera.guardarOModificar}" 
+			       						 oncomplete="refrescarNuevaCarretera(); ventanaRegistroCarretera.hide();" update=":mensajes,:formNuevaRuta:tipoCarreteraRuta">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px" title="Cancelar"
+										 actionListener="#{serviciosVentanaTipoCarretera.cancelar}" oncomplete="refrescarNuevaCarretera(); ventanaRegistroCarretera.hide();"
+										 update=":formNuevaRuta:tipoCarretera">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" image="ui-icon-refresh" type="reset" title="Limpiar"
+			   							 style="margin-left:5px" />
+		   			</h:form>	
+				</p:dialog>
+						
+
+<!-- ******************************************** Nuevo Conductor ******************************************************+ -->
+
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+						function refrescarNuevoConductor() {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevoConductor").reset();
+						}
+				</script>
+				
+				
+				<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+				<p:dialog widgetVar="ventanaRegistroNuevoConductor" header="Registrar Conductor" modal="true" appendToBody="true"
+						  showEffect="fade" hideEffect="fade" closable="false"  height="320" width="350">
+			       <h:form id="formNuevoConductor">
+				       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+				       <h:panelGrid id="gridConductor" columns="2">
+				       
+				       		
+					   		<h:outputLabel value="Cédula: *" for="cedulaConductor"/>
+					   		<h:inputText id="cedulaConductor" value="#{serviciosVentanaVehiculo.serviciosVentanaEmpleado.empleado.cedulaEmpleado}" label="Cedula" required="true" >
+					   			<f:validateLength minimum="6" maximum="10"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Nombre: *" for="nombreConductor"/>
+					   		<h:inputText id="nombreConductor" value="#{serviciosVentanaVehiculo.serviciosVentanaEmpleado.empleado.nombre}" label="Nombre" required="true" >
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Apellido: *" for="apellidoConductor"/>
+					   		<h:inputText id="apellidoConductor" value="#{serviciosVentanaVehiculo.serviciosVentanaEmpleado.empleado.apellido}" label="Apellido" required="true" >
+					   			<f:validateLength maximum="60"/>
+					   		</h:inputText>
+					   		
+					   		<h:outputLabel value="Dirección:*" for="direccionConductor"/>
+					   		<h:inputTextarea id="direccionConductor" value="#{serviciosVentanaVehiculo.serviciosVentanaEmpleado.empleado.direccion}" label="Direccion" required="true">
+					   			<f:validateLength maximum="150"/>
+					   		</h:inputTextarea>
+					   		
+					   		<h:outputLabel value="Teléfono:" for="telefonoConductor"/>
+					   		<p:inputMask  id="telefonoConductor" value="#{serviciosVentanaVehiculo.serviciosVentanaEmpleado.empleado.telefono}" mask="(999) 999-9999" label="Teléfono"></p:inputMask>
+					   		
+					   		<h:outputLabel value="Celular: *" for="celularConductor"/>
+					   		<p:inputMask  id="celularConductor" value="#{serviciosVentanaVehiculo.serviciosVentanaEmpleado.empleado.celular}" mask="(999) 999-9999" required="true" label="Celular"></p:inputMask>
+					   		
+					   		<h:outputLabel value="Email:" for="emailConductor"/>
+					   		<h:inputText id="emailConductor" value="#{serviciosVentanaVehiculo.serviciosVentanaEmpleado.empleado.correo}" label="Email" >
+					   			<f:validateLength maximum="30"/>
+					   		</h:inputText>
+						</h:panelGrid>
+						
+						<!-- Etiqueta que dibuja un separador en el panel -->
+						<p:separator/>					
+			       		<p:commandButton styleClass="botonVentana" image="ui-icon-disk" actionListener="#{serviciosVentanaVehiculo.guardarConductor}" 
+			       						 oncomplete="refrescarNuevoConductor(); ventanaRegistroNuevoConductor.hide();" update=":mensajes gridConductor :formConductorTemporal:origenConductoresTemporal" title="Aceptar">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" image="ui-icon-closethick" style="margin-left:5px"
+										 actionListener="#{serviciosVentanaVehiculo.serviciosVentanaEmpleado.cancelar}" oncomplete="refrescarNuevoConductor(); ventanaRegistroNuevoConductor.hide();"
+										 update="gridConductor :formConductorTemporal:origenConductoresTemporal" title="Cancelar">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" image="ui-icon-refresh" type="reset" style="margin-left:5px" title="Limpiar"/>
+					</h:form>
+				</p:dialog>
+			
+			
+		</div>
+		
+	</ui:define>
+</ui:composition>

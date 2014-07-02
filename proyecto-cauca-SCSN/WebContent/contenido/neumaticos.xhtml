@@ -1,0 +1,1136 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Neumáticos</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Gestión de Neumáticos</h1>
+		<br/>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+<!-- ······················································· BOTONERA ··············································· -->			
+			
+			<!-- Esta botonera hace una solicitud al servidor donde se activan las funciones que se van a ejecutar, esto se hace
+			a través de la clase ServiciosVentanaNeumatico y javascript recibe los parámetros, los cuales se usarán
+			para abrir la ventana corresppondiente según la operación requerida -->
+			
+			<!-- Etiqueta que define un formulario -->
+			<h:form id="formBotonera">
+
+			<!-- Etiquetas que definen una serie de botones los cuales ejecutan funciones al presionarse -->
+				<p:commandButton id="btnNuevo" image="ui-icon-plusthick" action="#{serviciosVentanaNeumatico.limpiarDatos}" actionListener="#{serviciosVentanaNeumatico.cancelar}" oncomplete="ventanaRegistro.show()" update=":formNuevo:data :formNuevo:graficImageNuevo" value="Nuevo"/>
+				<p:commandButton id="btnModificar" image="ui-icon-wrench" action="#{serviciosVentanaNeumatico.activarModificar}" update=":formModificar:dataMod" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Modificar"/>
+				<p:commandButton id="btnEliminar" image="ui-icon-trash" action="#{serviciosVentanaNeumatico.activarEliminar}" update=":formEliminar" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Eliminar"/>
+				<p:commandButton id="btnConsultar" image="ui-icon-search" action="#{serviciosVentanaNeumatico.activarConsultar}" update=":formConsulta:tabConsultaGral :formConsulta:tabConsultaDatosTecnicos :formConsulta:tabConsultaMovimientos :formConsulta:costoKm :formConsulta:costoMm :formConsulta:rendimientoMm :formConsulta:recorridoProy :formConsulta:tabConsultaNeumatico" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Consultar"/>
+			</h:form>
+			
+			<!-- Script que permite decidir que ventana de manipulacion de datos va a mostrar (M: Modificar, E: Eliminar, C: Consultar) -->
+			<script type="text/javascript">
+			
+				//Metodo que decide que funcion ejecutar dependiendo del contenido del atributo args.tarea
+		        function handleRequest(xhr, status, args) {
+		            if (args.ok) {
+		            	switch (args.tarea) {
+							case "M":
+								ventanaModificar.show();	//Se ejecuta la ventana modificar
+								break;
+							case "E":
+				                confirmacion.show();		//Se ejecuta la ventana eliminar
+								break;
+							case "C":
+								ventanaConsulta.show();		//Se ejecuta la ventana consultar
+								break;
+							case "D":
+								ventanaDetalleMovimiento.show(); 	//Se ejecuta la ventana consultar detalle movimiento
+								break;
+						}
+		            }else{
+		                errorSeleccion.show();
+		            }
+		        }
+		    </script>
+		    
+		    <!-- Etiqueta que define una ventana de mensaje en caso de que no se halla seleccionado ningun elemento de la tabla -->
+		   	<p:dialog header="Operación Negada" widgetVar="errorSeleccion"
+		   				showEffect="fade" hideEffect="blind" modal="true" appendToBody="true" closable="false">
+		   		
+		   		<!-- Etiqueta que define un formulario simple con un boton de aceptar para ocultar la ventana -->
+		   		<h:form>
+		   			<h:panelGrid>
+		   				<f:facet name="header">
+		   					<br/>
+		   						Debe seleccionar un elemento
+		   					<br/>
+		   				</f:facet>
+		   			</h:panelGrid>
+		   			<p:separator/>
+		   			<p:commandButton id="aceptar" image="ui-icon-check" onclick="errorSeleccion.hide();" styleClass="botonVentana" title="Aceptar" type="buttom"/>
+		   		</h:form>
+		   	</p:dialog>
+		   
+<!-- ······················································· TABLA ··············································· -->	
+
+			<!-- Esta es tabla contiene los registros de los Neumaticos introducidos en la base de datos. 
+			Esta tabla permite organizar los registros por páginas y ofrece la funición de filtrar los registros
+			según la propiedad indicada. Además, permite hace la selección de un registro para manipularlo(Consultarlo, Modificarlo y Eliminarlo) -->
+
+			<!-- Etiqueta que define el formulario de la tabla con todos los datos de los Neumaticos -->
+			<h:form id="formTabla">
+			
+				<!-- Etiqueta que define un panel que contendra la tabla con los datos de los Neumaticos -->
+				<p:outputPanel id="tbNeumatico" style="width:100%;overflow:auto;">
+				
+					<div style="overflow:auto; width:129%; height=100px;">
+					<!-- Etiqueta que define la tabla con los datos de los Neumaticos -->
+					<p:dataTable id="neumaticos" value="#{serviciosVentanaNeumatico.neumaticoDataModel}" var="neumatico" style="width:221%;align:right;" scrollable="false"
+                    				paginator="true" paginatorPosition="top"  
+                 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+					                rowsPerPageTemplate="5,10,15" rows="#{serviciosVentanaNeumatico.rows}"
+					                emptyMessage="No se encontraron resultados" selectionMode="single" 
+									selection="#{serviciosVentanaNeumatico.neumaticoSeleccionado}" onRowSelectUpdate=":formModificar:dataMod">
+						
+						<!-- Etiqueta que define el contenido de la primera columna de la tabla, en la que iran los nombres de los Neumaticos-->
+						<p:column filterBy="#{neumatico.codInterno}" filterMatchMode="contains" >
+						
+							<!-- Etiqueta que define el titulo de la culumna -->
+							<f:facet name="header">
+						        <h:outputText value="Codigo Interno" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.codInterno}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.unidireccional}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Unidireccional" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.unidireccional}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.condicion}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Condición" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.condicion}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.tipoNeumatico}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Tipo Neumatico" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.tipoNeumatico}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.remanenteIngreso}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Remanente Ingreso" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.remanenteIngreso}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.remanenteActual}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Remanente Actual" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.remanenteActual}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.disenoMedida.diseno.nombre}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Diseño Original" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.disenoMedida.diseno.nombre}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.disenoMedida.diseno.nombre}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Diseño Actual" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.disenoMedida.diseno.nombre}" />
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Recorrido Acumulado" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.recorridoAcumulado}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.presionActual}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Presion Actual" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.presionActual}" />
+						</p:column>
+						<p:column filterBy="#{neumatico.estado}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Estado" />
+						    </f:facet>
+							<h:outputText value="#{neumatico.estado}" />
+						</p:column>
+						
+					</p:dataTable>
+					</div>
+				</p:outputPanel>
+			</h:form>
+
+<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+
+			<!-- Esta ventana permitirá al usuario agregar un nuevo Neumatico a la base de datos, 
+			una vez llenados y validados todos los campos -->
+			
+			<!-- Etiqueta que habilita los mensajes FacesMessage, de informacion -->
+			<p:growl id="mensajes" showDetail="true" life="4000"/>
+			
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+						function refrescarNuevo(xhr, status, args) {
+							if(args.limpiar) {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formNuevo").reset();
+							}
+						}
+						
+				</script>
+				
+		
+		<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+		<p:dialog widgetVar="ventanaRegistro" header="Registro de Neumáticos" closeOnEscape="false" modal="true" appendToBody="true"
+				  showEffect="fade" hideEffect="fade" closable="false"  height="510" width="750">
+	       
+	    	<!-- Etiqueta que define el formulario que contendra los campos de los a llenar del Neumatico nuevo -->
+			<h:form id="formNuevo" width="800">
+	     
+				       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+				       <h:panelGrid id="grid" columns="2">
+						<!--<p:tabView id="tabNeumatico" dynamic="true" cache="true" scrollable="true" effect="Drop" effectDuration="normal" >  
+	  				-->	<p:wizard widgetVar="wiz" id="tabVentanaRegistro"  flowListener="#{serviciosVentanaNeumatico.flujoPrimerIngreso}" nextLabel="Siguiente" backLabel="Atrás">
+	        				<p:tab id="tab1" title="Datos Técnicos">  
+	        					<p:panel header="Datos Técnicos">
+	            					<h:panelGrid id="grid1" columns="3" cellpadding="10">  
+	                	 				<h:outputLabel value="Codigo Interno: *" for="codInterno"/>
+					   					<h:inputText id="codInterno" value="#{serviciosVentanaNeumatico.neumatico.codInterno}" label="Código Interno" required="true" requiredMessage="* Campo requerido: Codigo Interno">
+					   						<f:validateLength maximum="60"/>
+					   					</h:inputText>
+					   					<p:message for="codInterno"/>
+					   		
+					   					<h:outputLabel value="Unidireccional: " for="unidireccional"/>
+	            						<h:selectBooleanCheckbox id="unidireccional" label="Unidireccional" value="#{serviciosVentanaNeumatico.unidireccional}" >
+	            							<p:ajax event="click" listener="#{serviciosVentanaNeumatico.seleccionarUnidireccional}" />
+	            						</h:selectBooleanCheckbox>
+	            						<h:outputLabel/>
+							
+										<h:outputLabel value="Condición: *" for="condicion"/>
+										<h:selectOneMenu id="condicion" label="Condición del Neumático" value="#{serviciosVentanaNeumatico.neumatico.condicion}" required="true" requiredMessage="* Campo requerido, seleccione una Condición" >
+					            			<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+					            			<f:selectItem itemValue="N" itemLabel="Original" />
+	   										<f:selectItem itemValue="1" itemLabel="1er Renovado" />
+	   										<f:selectItem itemValue="2" itemLabel="2do Renovado" />
+	   										<f:selectItem itemValue="3" itemLabel="3er Renovado" />
+	   										<f:selectItem itemValue="4" itemLabel="4to Renovado" />
+	   										<f:selectItem itemValue="5" itemLabel="5to Renovado" />
+					        			</h:selectOneMenu>
+					        			<p:message for="condicion"/>
+							
+										<h:outputLabel value="Tipo de Neumático: *" for="tipoNeumatico"/>
+										<h:selectOneMenu id="tipoNeumatico" label="Tipo de Neumático" value="#{serviciosVentanaNeumatico.neumatico.tipoNeumatico}" required="true" requiredMessage="* Campo requerido, seleccione un Tipo de neumático">
+					            			<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+					            			<f:selectItem itemValue="D" itemLabel="Direccional" />
+	   										<f:selectItem itemValue="M" itemLabel="Mixto" />
+	   										<f:selectItem itemValue="T" itemLabel="Tracción" />
+					        			</h:selectOneMenu>
+					        			<p:message for="tipoNeumatico"/>
+					        			
+	            				 </h:panelGrid>
+	            				 <p:separator/>
+	            				 <h:panelGrid style="width:101%; text-align:right;">
+		            				 <p:column>
+			            				 <p:commandButton styleClass="botonVentana"  style="margin-left:5px" title="Cancelar"
+													      actionListener="#{serviciosVentanaNeumatico.cancelar}" oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);refrescarNuevo(xhr, status, args); ventanaRegistro.hide();"
+										                  image="ui-icon-closethick" update=":formTabla:tbNeumatico,grid,graficImageNuevo">
+				       					 </p:commandButton> 
+			   							 <p:commandButton styleClass="botonVentana" type="reset" update="grid,graficImageNuevo" title="Limpiar"
+			   								    		  style="margin-left:5px" image="ui-icon-refresh"/>
+					      			  </p:column>
+				      			  </h:panelGrid>
+	            				</p:panel>
+	        				</p:tab>  
+	  
+	        				<p:tab id="tab2" title="Remanente y Presión">  
+		        				<p:panel header="Remanente y Presión">
+		            				<h:panelGrid id="grid2" columns="3" cellpadding="10">  
+		                	  			<h:outputLabel value="Remanente Ingreso: *" for="remIngreso"/>
+										<h:inputText id="remIngreso" value="#{serviciosVentanaNeumatico.neumatico.remanenteIngreso}" label="Remanente Ingreso " required="true" requiredMessage="* Campo requerido: Remanente y Presión" >
+											<f:validateLength maximum="5"/>
+										</h:inputText>
+										<p:message for="remIngreso"/>
+		
+										<h:outputLabel value="Presión Actual: *" for="presionActual" />
+										<h:inputText id="presionActual" value="#{serviciosVentanaNeumatico.neumatico.presionActual}" label="Presión Actual " required="true" requiredMessage="* Campo requerido: Presión Actual">
+											<f:validateLength maximum="20"/>
+										</h:inputText>
+										<p:message for="presionActual"/>
+		            				</h:panelGrid> 
+		            				  <p:separator/>
+	            				 	<h:panelGrid style="width:101%; text-align:right;">
+		            					 <p:column>
+			            					 <p:commandButton styleClass="botonVentana"  style="margin-left:5px" title="Cancelar"
+													      actionListener="#{serviciosVentanaNeumatico.cancelar}" oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);refrescarNuevo(xhr, status, args); ventanaRegistro.hide();"
+										                  image="ui-icon-closethick" update=":formTabla:tbNeumatico,grid,graficImageNuevo">
+				       						 </p:commandButton> 
+			   								 <p:commandButton styleClass="botonVentana" type="reset" update="grid,graficImageNuevo" title="Limpiar"
+			   								    		  style="margin-left:5px" image="ui-icon-refresh"/>
+					      				  </p:column>
+				      			  	</h:panelGrid>
+		            			</p:panel>
+	        				</p:tab>  
+	  
+	        				<p:tab id="tab3" title="Diseño"> 
+		        				<p:panel header="Diseño">
+		        				<h:panelGrid columns="2">
+		            				<h:panelGrid columns="4" cellpadding="1">
+		            					<h:outputLabel value="Marca: *" for="marcaNeumatico"/>
+										<h:selectOneMenu id="marcaNeumatico" label="Marca " value="#{serviciosVentanaNeumatico.idMarca}" required="true" requiredMessage="* Campo requerido, seleccione una Marca">
+						            		<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+						            		<f:selectItems value="#{serviciosVentanaMarcaNeumatico.listaMarca}" var="marca" itemLabel="#{marca.nombre}" itemValue="#{marca.idMarcaNeumatico}"/>
+						            		<p:ajax update="disenoOriginal" listener="#{serviciosVentanaNeumatico.disenosMarca}" />
+						        		</h:selectOneMenu>
+						        		<p:commandButton styleClass="botonVentana" id="nuevaMarca"  onclick="ventanaNuevaMarca.show();" image="ui-icon-plusthick" height="20" width="20" title="Nueva Marca" />
+		            				 	<p:message for="marcaNeumatico"/>
+		            		
+		            					<h:outputLabel value="Diseño Original: *" for="disenoOriginal"/>
+										<h:selectOneMenu id="disenoOriginal" label="Diseño Original" value="#{serviciosVentanaNeumatico.idDisenoOriginal}" required="true" requiredMessage="* Campo requerido, seleccione un Diseño">
+						            		<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+						            		<f:selectItems value="#{serviciosVentanaNeumatico.listaDisenos}" var="diseno" itemLabel="#{diseno.nombre}" itemValue="#{diseno.idDiseno}"/>
+						            		<p:ajax update="medida graficImageNuevo" listener="#{serviciosVentanaNeumatico.medidasDiseno}" />
+						        		</h:selectOneMenu>
+						        		<p:commandButton styleClass="botonVentana" height="20" width="20" id="nuevoDiseno" onclick="ventanaNuevoDiseno.show();" image="ui-icon-plusthick" title="Nuevo Diseño" update=":formNuevoDiseno:marcaNeumatico"/>
+										<p:message for="disenoOriginal" />
+				
+						        		<h:outputLabel value="Medida: *" for="medida"/>
+						        		<h:selectOneMenu id="medida" label="Medida" value="#{serviciosVentanaNeumatico.idMedida}" required="true" requiredMessage="* Campo requerido, seleccione una Medida">
+						            		<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+						            		<f:selectItems value="#{serviciosVentanaNeumatico.listaMedida}" var="medida" itemLabel="#{medida.nombre}" itemValue="#{medida.idMedida}"/>
+						        		</h:selectOneMenu>
+						        		<p:commandButton styleClass="botonVentana" height="20" width="20" id="nuevaMedida" onclick="ventanaNuevaMedida.show();" image="ui-icon-plusthick" title="Nueva Medida" update=":formNuevaMedida:marcaNeumatico, :formNuevaMedida:disenoMedida, medida"/>
+						        		<p:message for="medida"/>
+						        		
+		            				</h:panelGrid>  
+		            				<h:panelGrid>
+		            					<h:panelGrid id="panelImagenNuevo" columns="1">
+											<p:graphicImage id="graficImageNuevo" styleClass="muestraImagenDiseno" value="#{serviciosVentanaNeumatico.streamedContentImagen}" ajax="true" cache="false"/>
+										</h:panelGrid>
+		            				</h:panelGrid>
+		            			</h:panelGrid>
+		            			 <p:separator/>
+	            				 <h:panelGrid style="width:101%; text-align:right;">
+		            				 <p:column>
+			            				 <p:commandButton styleClass="botonVentana"  style="margin-left:5px" title="Cancelar"
+													      actionListener="#{serviciosVentanaNeumatico.cancelar}" oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);refrescarNuevo(xhr, status, args); ventanaRegistro.hide();"
+										                  image="ui-icon-closethick" update=":formTabla:tbNeumatico,grid,graficImageNuevo">
+				       					 </p:commandButton> 
+			   							 <p:commandButton styleClass="botonVentana" type="reset" update="grid,graficImageNuevo" title="Limpiar"
+			   								    		  style="margin-left:5px" image="ui-icon-refresh"/>
+					      			  </p:column>
+				      			  </h:panelGrid>
+		            			</p:panel> 
+	        				</p:tab>
+	        	
+	        				<p:tab id="tab4" title="Factura">  
+		        				<p:panel header="Factura">
+		            				<h:panelGrid columns="4" cellpadding="5"> 
+		            					<h:outputLabel value="Proveedor: *" for="proveedor"/>
+										<h:selectOneMenu id="proveedor" label="Proveedor" value="#{serviciosVentanaNeumatico.idProveedor}" required="true" requiredMessage="* Campo requerido, seleccione un Proveedor">
+						            		<f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+						            		<f:selectItems value="#{serviciosVentanaProveedor.listaProveedores}" var="proveedor" itemLabel="#{proveedor.nombre}" itemValue="#{proveedor.idProveedor}"/>
+						        		</h:selectOneMenu>
+						        		<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nuevo Proveedor" id="nuevoProveedor" onclick="ventanaNuevoProveedor.show();" image="ui-icon-plusthick"/>
+						        		<p:message for="proveedor"/>
+						        
+						        	</h:panelGrid> 
+						        	<h:panelGrid columns="3" cellpadding="1">
+						        		<h:outputLabel value="Factura: *" for="factura"/>
+										<h:inputText id="factura" value="#{serviciosVentanaNeumatico.neumatico.nroFactura}" label="Número de Factura " required="true" >
+											<f:validateLength maximum="10"/>
+										</h:inputText>
+										
+										<br/>
+										<h:outputLabel value="Costo: *" for="costo"/>
+										<h:inputText id="costo" value="#{serviciosVentanaNeumatico.neumatico.costo}" label="Costo Neumático " required="true" >
+											<f:validateLength maximum="15"/>
+										</h:inputText>
+										
+										<br/>
+										<h:outputText for="fecha" value="Fecha de Ingreso: *" />
+										<p:calendar value="#{serviciosVentanaNeumatico.neumatico.fechaIngreso}" id="fechaIngreso" pattern="dd-MM-yyyy" maxdate="#{serviciosVentanaNeumatico.fechaActual}">
+											<f:convertDateTime type="date" pattern="dd-MM-yyyy" />  
+		    							</p:calendar>
+									</h:panelGrid>
+									<p:separator/>
+									<h:panelGrid style="width:101%; text-align:right;">
+										<p:column>
+											<p:commandButton styleClass="botonVentana" title="Aceptar"
+								       						 actionListener="#{serviciosVentanaNeumatico.guardarOModificar}" process="@this costo proveedor factura fechaIngreso"
+								       						 image="ui-icon-disk" oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);refrescarNuevo(xhr, status, args);" update=":mensajes,:formTabla:tbNeumatico, graficImageNuevo">
+									        </p:commandButton> 
+											<p:commandButton styleClass="botonVentana"  style="margin-left:5px" title="Cancelar"
+															 actionListener="#{serviciosVentanaNeumatico.cancelar}" oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);refrescarNuevo(xhr, status, args); ventanaRegistro.hide();"
+															 image="ui-icon-closethick" update=":formTabla:tbNeumatico,grid,graficImageNuevo">
+									        </p:commandButton> 
+								   			<p:commandButton styleClass="botonVentana" type="reset" update="grid,graficImageNuevo" title="Limpiar"
+								   							 style="margin-left:5px" image="ui-icon-refresh"/>
+										</p:column>
+									</h:panelGrid>
+								</p:panel>		
+	        				</p:tab>
+	        			</p:wizard>	
+	    			<!--  </p:tabView>-->
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº MODIFICAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá realizar cambios sobre los Neumaticos ingresados en la base de datos 
+				 un vez que haya sido seleccionado de la tabla -->
+
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a los formularios "Modificar" y los vuelve a cargar
+						function refrescarMod(xhr, status, args) {
+							if(args.limpiar){
+							document.getElementById("formTabla").reset();
+							document.getElementById("formModificar").reset();
+							ventanaModificar.hide();
+							}
+						}
+				</script>
+				
+		<p:dialog widgetVar="ventanaModificar" header="Modificar Datos del Neumático" closeOnEscape="false"
+					showEffect="fade" hideEffect="fade" closable="false" width="630" modal="true" appendToBody="true">
+			<h:form id="formModificar">
+				<h:panelGrid id="dataMod" columns="2">
+					<p:tabView id="tabNeumatico" dynamic="true" cache="true" scrollable="true" effect="Drop" effectDuration="normal" >  
+ 
+       					<p:tab id="tab1" title="Datos Técnicos">  
+           					<h:panelGrid id="grid1" columns="2" cellpadding="10">  
+               	 				<h:outputLabel value="Codigo Interno: *" for="codInterno"/>
+			   					<h:inputText id="codInterno" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.codInterno}" label="Código Interno"  >
+			   						<f:validateLength maximum="60"/>
+			   					</h:inputText>
+			   		
+			   					<h:outputLabel value="Unidireccional: *" for="unidireccional"/>
+           						<h:selectBooleanCheckbox id="unidireccional" label="Unidireccional" value="#{serviciosVentanaNeumatico.unidireccional}" >
+           							<p:ajax event="click" listener="#{serviciosVentanaNeumatico.seleccionarUnidireccional}" />
+           						</h:selectBooleanCheckbox>
+								
+								<h:outputLabel value="Condicion Actual: " for="condicionActual"/>
+								<h:inputText id="condicionActual" disabled="true" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.condicion}*" />
+								<h:outputLabel value="Condición: " for="condicion"/>
+								<h:selectOneMenu id="condicion" label="Condición del Neumático" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.condicion}" >
+			            			<f:selectItem itemLabel="-Seleccione-" itemValue="#{serviciosVentanaNeumatico.neumaticoSeleccionado.condicion}" />
+			            			<f:selectItem itemValue="N" itemLabel="Nuevo" />
+  										<f:selectItem itemValue="1" itemLabel="1er Renovado" />
+  										<f:selectItem itemValue="2" itemLabel="2do Renovado" />
+  										<f:selectItem itemValue="3" itemLabel="3er Renovado" />
+  										<f:selectItem itemValue="4" itemLabel="4to Renovado" />
+  										<f:selectItem itemValue="5" itemLabel="5to Renovado" />
+  										<p:ajax update="condicionActual" event="onclick"/>
+			        			</h:selectOneMenu>
+					
+								<h:outputLabel value="Tipo Actual: " for="tipoActual" />
+								<h:inputText id="tipoActual" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.tipoNeumatico}*" disabled="true" />
+								<h:outputLabel value="Tipo de Neumático: " for="tipoNeumatico"/>
+								<h:selectOneMenu id="tipoNeumatico" label="Tipo de Neumático" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.tipoNeumatico}" required="true">
+			            			<f:selectItem itemLabel="-Seleccione-" itemValue="#{serviciosVentanaNeumatico.neumaticoSeleccionado.tipoNeumatico}" />
+			            			<f:selectItem itemValue="D" itemLabel="Direccional" />
+  										<f:selectItem itemValue="M" itemLabel="Mixto" />
+  										<f:selectItem itemValue="T" itemLabel="Tracción" />
+  										<p:ajax update="tipoActual" event="onclick"/>
+			        			</h:selectOneMenu>
+			        			
+           				 </h:panelGrid>
+       				</p:tab>  
+ 
+       				<p:tab id="tab2" title="Remanente y Presión">  
+           				<h:panelGrid id="grid2" columns="2" cellpadding="10">  
+               	  			<h:outputLabel value="Remanente Ingreso: *" for="remIngreso"/>
+							<h:inputText id="remIngreso" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.remanenteIngreso}" label="Remanente Ingreso" >
+								<f:validateLength maximum="5"/>
+							</h:inputText>
+					
+							<h:outputLabel value="Presión Actual: *" for="presionActual"/>
+							<h:inputText id="presionActual" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.presionActual}" label="Presión Actual" >
+								<f:validateLength maximum="20"/>
+							</h:inputText>
+           				</h:panelGrid>  
+       				</p:tab>  
+
+       				<p:tab id="tab3" title="Diseño">
+           				<h:panelGrid columns="3">
+           					<h:outputLabel value="Marca Actual: " for="marcaActual"/>
+           					<h:inputText id="marcaActual" value="#{serviciosVentanaNeumatico.marcaSeleccionada.nombre}*" disabled="true"/>
+           					<h:outputLabel value=""/>
+           					
+           					<h:outputLabel value="Marca: *" for="marcaNeumatico"/>
+							<h:selectOneMenu id="marcaNeumatico" label="Marca " value="#{serviciosVentanaNeumatico.idMarca}" >
+			            		<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+			            		<f:selectItems value="#{serviciosVentanaMarcaNeumatico.listaMarca}" var="marca" itemLabel="#{marca.nombre}" itemValue="#{marca.idMarcaNeumatico}"/>
+			            		<p:ajax update="marcaActual" event="onclick"/>
+			            		<p:ajax update="disenoOriginal" listener="#{serviciosVentanaNeumatico.disenosMarca}" />
+			        		</h:selectOneMenu>
+			        		<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nueva Marca" id="nuevaMarca" onclick="ventanaNuevaMarca.show();" image="ui-icon-plusthick"/>
+           				 
+           				 	<h:outputLabel value="Diseño Original Actual: " for="disenoOriginalActual"/>
+           				 	<h:inputText id="disenoOriginalActual" disabled="true" value="#{serviciosVentanaNeumatico.disenoSeleccionado.nombre}*" />
+           				 	<h:panelGrid id="panelImagenModificar" columns="1">
+								<p:graphicImage id="graficImageModificar" styleClass="muestraImagenDiseno" value="#{serviciosVentanaNeumatico.streamedContentImagen}" ajax="true" cache="false"/>
+							</h:panelGrid>
+							
+           					<h:outputLabel value="Diseño Original: *" for="disenoOriginal"/>
+							<h:selectOneMenu id="disenoOriginal" label="Diseño Original" value="#{serviciosVentanaNeumatico.idDisenoOriginal}" >
+			            		<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+			            		<f:selectItems value="#{serviciosVentanaNeumatico.listaDisenos}" var="diseno" itemLabel="#{diseno.nombre}" itemValue="#{diseno.idDiseno}"/>
+			            		<p:ajax update="disenoOriginalActual" event="onclick"/>
+			            		<p:ajax update="medidaMod" listener="#{serviciosVentanaNeumatico.medidasDiseno}" />
+			        		</h:selectOneMenu>
+			        		<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nuevo Proveedor" id="nuevoDiseno" onclick="ventanaNuevoDiseno.show();" image="ui-icon-plusthick"/>
+					
+							<h:outputLabel value="Medida Actual: " for="medidaActual"/>
+							<h:inputText id="medidaActual" disabled="true" value="#{serviciosVentanaNeumatico.medidaSeleccionada.nombre}*" />
+							<h:outputLabel value=""/>
+							
+			        		<h:outputLabel value="Medida: *" for="medidaMod"/>
+			        		<h:selectOneMenu id="medidaMod" label="Medida" value="#{serviciosVentanaNeumatico.idMedida}" >
+			            		<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+			            		<f:selectItems value="#{serviciosVentanaNeumatico.listaMedida}" var="medida" itemLabel="#{medida.nombre}" itemValue="#{medida.idMedida}"/>
+			        		</h:selectOneMenu>
+   							<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nuevo Proveedor" id="nuevaMedida" onclick="ventanaNuevaMedida.show();" image="ui-icon-plusthick"/>
+			        		
+           				</h:panelGrid>
+       				</p:tab>
+
+       				<p:tab id="tab4" title="Factura">  
+           				<h:panelGrid columns="3" cellpadding="5">
+           					<h:outputLabel value="Proveedor Actual: " for="proveedorActual"/>
+           					<h:inputText id="proveedorActual" disabled="true" value="#{serviciosVentanaNeumatico.proveedorSeleccionado.nombre}*" />
+           					
+           					<br/>
+           					<h:outputLabel value="Proveedor: *" for="proveedor"/>
+			        		<h:selectOneMenu id="proveedorMod" label="Proveedor" value="#{serviciosVentanaNeumatico.idProveedor}" >
+			            		<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+			            		<f:selectItems value="#{serviciosVentanaProveedor.listaProveedores}" var="proveedor" itemLabel="#{proveedor.nombre}" itemValue="#{proveedor.idProveedor}"/>
+			            		<p:ajax update="proveedorActual" event="onclick"/>
+			        		</h:selectOneMenu>
+			        		<p:commandButton styleClass="botonVentana" height="20" width="20" title="Nuevo Proveedor" id="nuevoProveedor" onclick="ventanaNuevoProveedor.show();" image="ui-icon-plusthick"/>
+			        	</h:panelGrid>
+			        	
+			        	<h:panelGrid columns="2" cellpadding="1">
+			        		<h:outputLabel value="Factura: *" for="factura"/>
+							<h:inputText id="facturaMod" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.nroFactura}" label="Número de Factura "  >
+								<f:validateLength maximum="10"/>
+							</h:inputText>
+							
+							<h:outputLabel value="Costo: *" for="costo"/>
+							<h:inputText id="costoMod" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.costo}" label="Costo Neumático "  >
+								<f:validateLength maximum="15"/>
+							</h:inputText>
+							
+							<h:outputText value="Fecha Actual: " for="fechaActual" />
+							<h:inputText id="fechaActual" disabled="true" value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.fechaIngreso}*" >
+								<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+							</h:inputText>
+							<h:outputText for="fecha" value="Fecha de Ingreso: *" />
+							<p:calendar value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.fechaIngreso}" id="fechaIngresoMod" pattern="dd-MM-yyyy" maxdate="#{serviciosVentanaNeumatico.fechaActual}"/>
+							
+           				</h:panelGrid>  
+   						  
+						</p:tab>
+					</p:tabView>
+		  </h:panelGrid>  
+		 
+		       <p:separator />
+	       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+	       						 actionListener="#{serviciosVentanaNeumatico.guardarOModificar}" process="@this proveedorMod facturaMod costoMod fechaIngresoMod"
+	       						 image="ui-icon-disk" oncomplete="refrescarMod(xhr, status, args);" update=":mensajes,dataMod,:formTabla:tbNeumatico">
+		        </p:commandButton>
+				<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+								 actionListener="#{serviciosVentanaNeumatico.cancelar}" oncomplete="refrescarMod(xhr, status, args); ventanaModificar.hide();"
+								 image="ui-icon-closethick" update=":formTabla:tbNeumatico,dataMod">
+		        </p:commandButton>
+		        <h:outputLabel value="* Valores actuales" disable="false" />
+	        </h:form>
+		</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº ELIMINAR ººººººººººººººººººººººººººººº -->
+
+			<!-- Esta ventana permitirá eliminar un Neumático seleccionado previamente en la tabla
+				 esta ventana pide confirmación antes de procesar la operación -->
+			
+			<p:dialog id="ventanaEliminar" header="Confirme la operación" widgetVar="confirmacion" 
+						closeOnEscape="false" appendToBody="true"
+						showEffect="fade" hideEffect="blind" modal="true" closable="false">
+				<h:form id="formEliminar">
+					<script type="text/javascript">
+					
+							//Funcion que llama a los formularios eliminar y los vuelve a cargar
+							function refrescarEliminar() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formEliminar").reset();
+							}
+					</script>
+					<h:panelGrid>
+						<f:facet name="header">
+							<br/>
+								Está seguro que desea eliminar este Neumatico?
+							<br/>
+						</f:facet>
+					</h:panelGrid>
+					<p:separator/>
+					 <p:commandButton id="confirmar" styleClass="botonVentana" title="Aceptar" actionListener="#{serviciosVentanaNeumatico.eliminar}"
+				        				 image="ui-icon-check" oncomplete="refrescarEliminar(); confirmacion.hide();" update=":formTabla:tbNeumatico,:mensajes"/>  
+				     <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" title="Cancelar" update=":formTabla:tbNeumatico"
+				        				 actionListener="#{serviciosVentanaNeumatico.cancelar}" oncomplete="confirmacion.hide();"/>  
+				</h:form>
+			</p:dialog>
+		   	
+<!-- ººººººººººººººººººººººººººººººººººººººº CONSULTA ººººººººººººººººººººººººººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana se encarga de mostrar toda la información referente al Neumático seleccionado -->
+
+			
+			<p:dialog widgetVar="ventanaConsulta" header="Consultar Neumático" 
+				closeOnEscape="false" showEffect="fade" hideEffect="fade" modal="true" appendToBody="true"
+				closable="false" width="700" height="500">
+				<h:form id="formConsulta">
+					<p:tabView id="tabConsultaNeumatico" effect="Drop" activeIndex="#{serviciosVentanaNeumatico.tabIndex}" effectDuration="normal" dynamic="true">
+						<p:tab id="tab1Consulta" title="Datos Generales">
+							<h:panelGrid id="tabConsultaGral" columns="2" style="width:90%; text-align:right;">
+								<h:panelGrid columns="2">
+									<h:outputLabel value="Código Interno: "
+										for="codigoInternoConsulta" />
+									<h:outputText id="codigoInternoConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.codInterno}" />
+	
+									<h:outputLabel value="Unidireccional: "
+										for="unidireccionalConsulta" />
+									<h:outputText id="unidireccionalConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.unidireccional}" />
+	
+									<h:outputLabel value="Condición: " for="condicionConsulta" />
+									<h:outputText id="condicionConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.condicion}" />
+	
+									<h:outputLabel value="Tipo Neumático:"
+										for="tipoNeumaticoConsulta" />
+									<h:outputText id="tipoNeumaticoConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.tipoNeumatico}" />
+	
+									<h:outputLabel value="Marca: " for="marcaConsulta" />
+									<h:outputText id="marcaConsulta"
+										value="#{serviciosVentanaNeumatico.marcaSeleccionada.nombre}" />
+	
+									<h:outputLabel value="Diseño Original: "
+										for="disenoOriginalConsulta" />
+									<h:outputText id="disenoOriginalConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.disenoMedida.diseno.nombre}" />
+	
+									<h:outputLabel value="Diseño Actual: "
+										for="disenoActualConsulta" />
+									<h:outputText id="disenoActualConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.disenoMedida.diseno.nombre}" />
+	
+									<h:outputLabel value="Medida: " for="medidaConsulta" />
+									<h:outputText id="medidaConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.disenoMedida.medida.nombre}" />
+	
+									<h:outputLabel value="Estado: " for="estadoConsulta" />
+									<h:outputText id="estadoConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.estado}" />
+	
+									<h:outputLabel value="Fecha de Ingreso: " for="fechaConsulta" />
+									<h:outputText id="fechaConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.fechaIngreso}">
+										<f:convertDateTime type="date" pattern="dd-MM-yyyy" />
+									</h:outputText>
+								</h:panelGrid>
+								<h:panelGrid id="panelImagenConsulta" columns="1">
+									<p:graphicImage id="graficImageConsul" styleClass="muestraImagenDiseno" value="#{serviciosVentanaNeumatico.streamedContentImagen}" ajax="true" cache="false"/>
+								</h:panelGrid>
+							</h:panelGrid>
+						</p:tab>
+
+						<p:tab id="tab2Consulta" title="Datos Técnicos y Financiero">
+							<p:separator/>
+							<p:panel header="Datos Técnicos">
+								<h:panelGrid id="tabConsultaDatosTecnicos" columns="2"
+									cellpadding="2" >
+									
+									<h:outputLabel value="Recorrido Acumulado: "
+										for="recorridoAcumuladoConsulta" />
+									<h:outputText id="recorridoAcumuladoConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.recorridoAcumulado}" />
+	
+									<h:outputLabel value="Remanente Ingreso: "
+										for="remanenteIngresoConsulta" />
+									<h:outputText id="remanenteIngresoConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.remanenteIngreso}" />
+	
+									<h:outputLabel value="Remanente Actual: "
+										for="remanenteActualConsulta" />
+									<h:outputText id="remanenteActualConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.remanenteActual}" />
+	
+									<h:outputLabel value="Presión Actual: "
+										for="presionActualConsulta" />
+									<h:outputText id="presionActualConsulta"
+										value="#{serviciosVentanaNeumatico.neumaticoSeleccionado.presionActual}" />
+								</h:panelGrid>
+							</p:panel>
+							<p:separator/>
+							<p:panel header="Finanzas" >
+								<h:panelGrid columns="3">
+									<h:outputLabel value="Costo x Km: " for="costoKm" style="font-weight: bold;"/>
+									<h:outputText id="costoKm" value="#{serviciosVentanaNeumatico.costoKilometro}">
+										<f:convertNumber pattern="#0.00" />
+									</h:outputText>
+									<h:outputLabel value=" Km/Bsf" for="costoKm"/>
+									
+									<h:outputLabel value="Costo x mm: " for="costoMm" style="font-weight: bold;"/>
+									<h:outputText id="costoMm" value="#{serviciosVentanaNeumatico.costoMm}" >
+										<f:convertNumber pattern="#0.00" />
+									</h:outputText>
+									<h:outputLabel value=" mm/Bsf" for="costoMm"/>
+									
+									<h:outputLabel value="Rendimiento x mm: " for="rendimientoMm" style="font-weight: bold;"/>
+									<h:outputText id="rendimientoMm" value="#{serviciosVentanaNeumatico.rendimientoMm}">
+										<f:convertNumber pattern="#0.00" />
+									</h:outputText>
+									<h:outputLabel value=" Km/mm" for="rendimientoMm"/>
+									
+									<h:outputLabel value="Recorrido Proyectado: " for="recorridoProy" style="font-weight: bold;"/>
+									<h:outputText id="recorridoProy" value="#{serviciosVentanaNeumatico.recorridoProyectado}">
+										<f:convertNumber pattern="#0.00" />
+									</h:outputText>
+									<h:outputLabel value=" Km/mm" for="recorridoProy"/>
+									
+								</h:panelGrid>
+								
+							</p:panel>
+						</p:tab>
+
+						<p:tab id="tab3Consulta" title="Movimientos">
+						
+						<p:outputPanel id="tabConsultaMovimientos" style="width:100%;overflow:auto;">
+							<p:dataTable id="tbConsultaMovimientos" var="movimiento" 
+							value="#{serviciosVentanaNeumatico.movimientoDataModel}" rowKey="#{movimiento.id.idNeumatico}"  
+                 			selection="#{serviciosVentanaNeumatico.movimientoSeleccionado}" selectionMode="single"
+                 			emptyMessage="No se encontraron resultados">
+								
+								<f:facet name="header"> Movimientos del Neumático  </f:facet>
+								<p:column headerText="Fecha del Movimiento" >
+									<h:outputLabel value="#{movimiento.id.fecha}">
+										<f:convertDateTime pattern="dd-MM-yyyy" />
+									</h:outputLabel>
+								</p:column>
+
+								<p:column headerText="Placa Vehiculo" >
+									<h:outputText value="#{movimiento.id.idVehiculo}" />
+								</p:column>
+
+								<p:column headerText="Cod Neumatico" >
+									<h:outputText value="#{movimiento.id.idNeumatico}" />
+								</p:column>
+
+								<p:column headerText="Tipo Movimiento" >
+									<h:outputText value="#{movimiento.id.tipoMovimiento}" />
+								</p:column>
+
+								<p:column headerText="Observaciones" >
+									<h:outputText value="#{movimiento.observaciones}" />
+								</p:column>
+								<f:facet name="footer">
+									<p:commandButton
+										action="#{serviciosVentanaNeumatico.activarConsultarMovimientos}"
+										styleClass="botonVentana"
+										update=":formConsultaMovimiento:detalle :formConsultaMovimiento:tablaDetalle"
+										title="Detalle Movimiento" id="detMovimiento"
+										style="width:20px;" oncomplete="handleRequest(xhr, status, args);"
+										image="ui-icon-search">
+										</p:commandButton>
+								</f:facet>
+							</p:dataTable>
+							</p:outputPanel>
+							
+						</p:tab>
+					</p:tabView>
+
+					<h:panelGrid>
+						<p:commandButton styleClass="botonVentana" title="Aceptar" process="@this"
+							oncomplete="ventanaConsulta.hide();" image="ui-icon-check"
+							actionListener="#{serviciosVentanaVehiculo.reiniciarTabIndex}"
+							update=":formTabla:tbNeumatico :formConsulta:tabConsultaNeumatico" />
+					</h:panelGrid>
+				</h:form>	
+			</p:dialog>
+			
+<!-- ºººººººººººººººººººººººººººººº CONSULTA DETALLE MOVIMIENTOS ººººººººººººººººººººººººººººº -->
+			
+		<p:dialog id="detalleMovimiento" header="Detalle Movimiento" closeOnEscape="false" modal="true" appendToBody="true"
+			widgetVar="ventanaDetalleMovimiento" width="400" style="height:100%">
+			<h:form id="formConsultaMovimiento">
+				<h:panelGrid id="detalle" columns="2" cellpadding="4">
+
+					<h:outputText value="Tipo de Desgaste:" />
+					<h:outputText
+						value="#{serviciosVentanaNeumatico.movimientoSeleccionado.tipoDesgaste.nombre}" />
+
+					<h:outputText value="Presión:" />
+					<h:outputText
+						value="#{serviciosVentanaNeumatico.movimientoSeleccionado.presion}" />
+
+					<h:outputText
+						value="#{serviciosVentanaNeumatico.posicionMovimiento}" />
+					<h:outputText value="" />
+
+					<p:outputPanel id="tablaDetalle" style="width:100%;overflow:auto;">
+					<p:dataTable id="tablaDetalleMovimiento"
+						value="#{serviciosVentanaNeumatico.movimientoSeleccionado}"
+						var="movimientoActual"
+						width="200" emptyMessage="No se encontraron resultados">
+
+						<f:facet name="header"> Remanentes del Neumático  </f:facet>
+						<p:column headerText="Remanentes">
+							<h:outputLabel value="Superior A: " />
+							<br />
+							<h:outputLabel value="Superior B: " />
+							<br />
+							<h:outputLabel value="Superior C: " />
+							<br />
+							<h:outputLabel value="Superior D: " />
+							<br />
+							<h:outputLabel value="Izquierdo A: " />
+							<br />
+							<h:outputLabel value="Izquierdo B: " />
+							<br />
+							<h:outputLabel value="Izquierdo C: " />
+							<br />
+							<h:outputLabel value="Izquierdo D: " />
+							<br />
+							<h:outputLabel value="Derecho A: " />
+							<br />
+							<h:outputLabel value="Derecho B: " />
+							<br />
+							<h:outputLabel value="Derecho C: " />
+							<br />
+							<h:outputLabel value="Derecho D: " />
+							<br />
+							<h:outputLabel value="Diagonal A: " />
+							<br />
+							<h:outputLabel value="Diagonal B: " />
+							<br />
+							<h:outputLabel value="Diagonal C: " />
+							<br />
+							<h:outputLabel value="Diagonal D: " />
+						</p:column>
+
+						<p:column headerText="Valores">
+							<h:outputLabel value="#{movimientoActual.remanenteSuperiorA}"
+								style="width:10px" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteSuperiorB}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteSuperiorC}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteSuperiorD}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteIzquierdoA}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteIzquierdoB}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteIzquierdoC}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteIzquierdoD}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteDerechoA}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteDerechoB}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteDerechoC}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteDerechoD}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteDiagonalA}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteDiagonalB}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteDiagonalC}" />
+							<br />
+							<h:outputLabel value="#{movimientoActual.remanenteDiagonalD}" />
+						</p:column>
+						
+					</p:dataTable>
+					</p:outputPanel>
+					<p:commandButton styleClass="botonVentana" title="Aceptar"
+						onclick="ventanaDetalleMovimiento.hide();" image="ui-icon-check" />
+
+				</h:panelGrid>
+			</h:form>
+		</p:dialog>
+			
+			<!-- ºººººººººººººººººººººººººººººº REGISTRO EMERGENTE MARCAººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permite ingresar una nueva Medida en caso de que la medida del neumático no este registrada aún -->
+			
+			
+			
+				<script type="text/javascript">
+					//Funcion que llama a los formularios de "Nueva Medida" y los vuelve a cargar
+					function refrescarNuevaMarca(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevaMarca").reset();
+						}
+					}
+				</script>
+								
+			<p:dialog widgetVar="ventanaNuevaMarca" header="Registrar Nueva Marca" modal="true" appendToBody="true" closeOnEscape="false"
+         			showEffect="fade" hideEffect="fade" closable="false" width="400">
+         		<h:form id="formNuevaMarca">
+	         		<h:panelGrid columns="2">
+		         		<h:outputLabel value="Nombre: *" for="nombreMarca"/>
+		         		<h:inputText id="nombreMarca" value="#{serviciosVentanaMarcaNeumatico.marcaNeumatico.nombre}" required="true" label="Nombre" />
+		         		
+		         		<h:outputLabel value="Descripción: " for="descripcionMarca"/>
+		         		<h:inputTextarea id="descripcionMarca" value="#{serviciosVentanaMarcaNeumatico.marcaNeumatico.descripcion}" label="Descripción"/>
+	         		</h:panelGrid>
+	         		
+	         		<p:separator />
+	         		
+	         		 <h:panelGrid columns="3" cellpadding="1">
+		         		 <p:commandButton styleClass="botonVentana" title="Aceptar" 
+			       						 actionListener="#{serviciosVentanaMarcaNeumatico.guardarOModificar}" 
+			       						 image="ui-icon-disk" oncomplete="refrescarNuevaMarca(xhr, status, args); ventanaNuevaMarca.hide();"
+			       						 update=":mensajes, :formNuevo:marcaNeumatico, :formModificar:marcaNeumatico, :formNuevoDiseno:marcaNeumatico">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+										 actionListener="#{serviciosVentanaMarcaNeumatico.cancelar}" oncomplete="refrescarNuevaMarca(xhr, status, args); ventanaNuevaMarca.hide();"
+										 image="ui-icon-closethick" update=":formTabla:tbNeumatico,gridDiseno">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset" update="gridDiseno"
+			   							 style="margin-left:5px" image="ui-icon-refresh"/>
+	         		 </h:panelGrid>
+         		</h:form>
+	         </p:dialog>
+			
+		
+		
+			
+<!-- ºººººººººººººººººººººººººººººº REGISTRO EMERGENTE DISEÑOººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permite ingresar una nueva Medida en caso de que la medida del neumático no este registrada aún -->
+			
+			
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a los formularios de "Nueva Medida" y los vuelve a cargar
+						function refrescarNuevoDiseno(xhr, status, args) {
+							if(args.limpiar){
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevoDiseno").reset();
+							}
+						}
+				</script>
+								
+			<p:dialog widgetVar="ventanaNuevoDiseno" header="Registrar Nuevo Diseño" modal="true" appendToBody="true" closeOnEscape="false"
+         			showEffect="fade" hideEffect="fade" closable="false" width="400">
+         		<h:form id="formNuevoDiseno">
+	         		<h:panelGrid columns="2">
+	         			<h:outputLabel value="Marca: *" for="marcaNeumatico"/>
+								<h:selectOneMenu id="marcaNeumatico" label="Marca " value="#{serviciosVentanaDiseno.idMarca}" required="true">
+				            		<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+				            		<f:selectItems value="#{serviciosVentanaMarcaNeumatico.listaMarca}" var="marca" itemLabel="#{marca.nombre}" itemValue="#{marca.idMarcaNeumatico}"/>
+				        		</h:selectOneMenu>
+		         		<h:outputLabel value="Nombre: *" for="nombreDiseno"/>
+		         		<h:inputText id="nombreDiseno" value="#{serviciosVentanaDiseno.diseno.nombre}" required="true" label="Nombre" />
+		         		
+		         		<h:outputLabel value="Descripción: " for="descripcionDiseno"/>
+		         		<h:inputTextarea id="descripcionDiseno" value="#{serviciosVentanaDiseno.diseno.descripcion}" label="Descripción"/>
+	         		</h:panelGrid>
+	         		
+	         		<h:panelGrid id="panelImagenMod" columns="1">
+					       <h:panelGrid id="panelCargaImagenMod" columns="2">
+					       		<h:outputLabel value="Diseño Neumatico: *" /> 
+					       		<p:fileUpload fileUploadListener="#{serviciosVentanaDiseno.manejarUploadedFile}" mode="advanced"
+		                               auto="true" sizeLimit="1073741824" allowTypes="/(\.|\/)(gif|jpg|jpeg|bmp|png|raw|tiff|dng|wmp|eps|jp2)$/" update="mensajes graficImageMod" label="Cargar Imagen"/> 
+					       </h:panelGrid>
+					       <h:panelGrid id="panelMostrarImagenMod">
+					   	   		<p:graphicImage id="graficImageMod" styleClass="disenoNeumatico" value="#{serviciosVentanaDiseno.streamedContentImagen}" ajax="true" cache="false"/>
+					       </h:panelGrid>
+				    </h:panelGrid>
+	         		
+	         		<p:separator />
+	         		
+	         		 <h:panelGrid columns="3" cellpadding="1">
+		         		 <p:commandButton styleClass="botonVentana" title="Aceptar" 
+			       						 actionListener="#{serviciosVentanaDiseno.guardarOModificar}" 
+			       						 image="ui-icon-disk" oncomplete="refrescarNuevoDiseno(xhr, status, args); ventanaNuevoDiseno.hide();"
+			       						 update=":mensajes, :formNuevo:disenoOriginal, :formModificar:disenoOriginal, :formNuevaMedida:disenoMedida">	       				
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+										 actionListener="#{serviciosVentanaDiseno.cancelar}" oncomplete="refrescarNuevoDiseno(xhr, status, args); ventanaNuevoDiseno.hide();"
+										 image="ui-icon-closethick" update=":formTabla:tbNeumatico,gridDiseno">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset" update="gridDiseno"
+			   							 style="margin-left:5px" image="ui-icon-refresh"/>
+	         		 </h:panelGrid>
+         		 </h:form>
+	         </p:dialog>
+		
+<!-- ºººººººººººººººººººººººººººººº REGISTRO EMERGENTE MEDIDAººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permite ingresar una nueva Medida en caso de que la medida del neumático no este registrada aún -->
+			
+			
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a los formularios de "Nueva Medida" y los vuelve a cargar
+						function refrescarNuevaMedida(xhr, status, args) {
+							if(args.limpiar){
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevaMedida").reset();
+							}
+						}
+				</script>
+								
+		<p:dialog widgetVar="ventanaNuevaMedida" header="Registrar Nueva Medida" modal="true" appendToBody="true" closeOnEscape="false"
+	       			showEffect="fade" hideEffect="fade" closable="false" width="400">
+	       		<h:form id="formNuevaMedida">
+	        		<h:panelGrid columns="2">
+	        		
+	        			<h:outputLabel value="Marca: *" for="marcaNeumatico"/>
+					<h:selectOneMenu id="marcaNeumatico" label="Marca " value="#{serviciosVentanaNeumatico.idMarca}" required="true">
+			            <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+			            <f:selectItems value="#{serviciosVentanaMarcaNeumatico.listaMarca}" var="marca" itemLabel="#{marca.nombre}" itemValue="#{marca.idMarcaNeumatico}"/>
+			            <p:ajax update="disenoMedida" listener="#{serviciosVentanaNeumatico.disenosMarca}" />
+			        </h:selectOneMenu>
+	          				 
+	        			<h:outputLabel value="Diseño: *" for="disenoMedida"/>
+	        			<h:selectOneMenu id="disenoMedida" label="Diseño" value="#{serviciosVentanaNeumatico.serviciosVentanaMedida.idDiseno}" required="true">
+			            <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+			            <f:selectItems value="#{serviciosVentanaNeumatico.listaDisenos}" var="diseno" itemLabel="#{diseno.nombre}" itemValue="#{diseno.idDiseno}"/>
+			        </h:selectOneMenu>
+			        		
+	         		<h:outputLabel value="Nombre: *" for="nombreMedida"/>
+	         		<h:inputText id="nombreMedida" value="#{serviciosVentanaNeumatico.serviciosVentanaMedida.medida.nombre}" required="true" label="Nombre" />
+	         		
+	         		<h:outputLabel value="Descripción: " for="descripcionMedida"/>
+	         		<h:inputTextarea id="descripcionMedida" value="#{serviciosVentanaNeumatico.serviciosVentanaMedida.medida.descripcion}" label="Descripción"/>
+	         		
+	         		<h:outputLabel value="Presión Recomendada: " for="presionMedida"/>
+	         		<h:inputTextarea id="presionMedida" value="#{serviciosVentanaNeumatico.serviciosVentanaMedida.medida.presionRecomendada}" label="Presión"/>
+	        		</h:panelGrid>
+	        		
+	        		<p:separator />
+	        		
+	        		 <h:panelGrid columns="3" cellpadding="1">
+	         		 <p:commandButton styleClass="botonVentana" title="Aceptar"
+		       						 actionListener="#{serviciosVentanaNeumatico.guardarMedida}" 
+		       						 image="ui-icon-disk" oncomplete="refrescarNuevaMedida(xhr, status, args); ventanaNuevaMedida.hide();"
+		       						 update=":mensajes, :formNuevo:tbMedidasMod, :formModificar:tbMedidasMod, :formNuevo:medida" >
+		       						
+			        </p:commandButton> 
+					<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+									 actionListener="#{serviciosVentanaMedida.cancelar}" oncomplete="refrescarNuevaMedida(xhr, status, args); ventanaNuevaMedida.hide();"
+									 image="ui-icon-closethick" update=":formTabla:tbNeumatico,gridMedida">
+			        </p:commandButton> 
+		   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset" update="gridMedida"
+		   							 style="margin-left:5px" image="ui-icon-refresh"/>
+	        		 </h:panelGrid>
+	       		 </h:form>
+	        </p:dialog>
+			
+<!-- ºººººººººººººººººººººººººººººº REGISTRO EMERGENTE PROVEEDORººººººººººººººººººººººººººººº -->
+
+<!-- Etiqueta que define el formulario que contendra los campos de los a llenar del Proveedor nuevo -->
+			
+				<script type="text/javascript">
+				
+						//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+						function refrescarNuevoProveedor(xhr, status, args) {
+							if(args.limpiar){
+							document.getElementById("formTablaProveedor").reset();
+							document.getElementById("formNuevoProveedor").reset();
+							}
+						}
+				</script>
+				
+		<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+		<p:dialog widgetVar="ventanaNuevoProveedor" header="Registro de Proveedores" closeOnEscape="false"
+				  showEffect="fade" hideEffect="fade" closable="false" modal="true" appendToBody="true" width="300">
+			
+			
+		   <h:form id="formNuevoProveedor">		  
+			   <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+		       <h:panelGrid id="grid" columns="2">
+			   		
+			   		<h:outputLabel value="Rif: *" for="rif"/>
+			   		<h:inputText id="rif" value="#{serviciosVentanaProveedor.proveedor.rif}" label="Rif" required="true" >
+			   			<f:validateLength maximum="15"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Nombre: *" for="nombre"/>
+			   		<h:inputText id="nombre" value="#{serviciosVentanaProveedor.proveedor.nombre}" label="Nombre" required="true">
+			   			<f:validateLength maximum="60"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Direccion: *" for="direccion"/>
+			   		<h:inputTextarea id="direccion" value="#{serviciosVentanaProveedor.proveedor.direccion}" label="Direccion" required="true">
+			   			<f:validateLength maximum="255"/>
+			   		</h:inputTextarea>
+			   		
+			   		<h:outputLabel value="Teléfono: *" for="telefono"/>
+			   		<p:inputMask  id="telefono" value="#{serviciosVentanaProveedor.proveedor.telefono}" mask="(999) 999-9999" label="Teléfono" required="true" ></p:inputMask>
+			   		
+			   		<h:outputLabel value="Celular:" for="celular"/>
+			   		<p:inputMask  id="celular" value="#{serviciosVentanaProveedor.proveedor.celular}" mask="(999) 999-9999" label="Celular"></p:inputMask>
+			   		
+			   		<h:outputLabel value="Email:" for="email"/>
+			   		<h:inputText id="email" value="#{serviciosVentanaProveedor.proveedor.correo}" label="Email" >
+			   			<f:validateLength maximum="30"/>
+			   		</h:inputText>
+			   		
+			   		<h:outputLabel value="Empresa: *" for="empresa"/>
+					<h:inputText id="empresa" label="Empresa" value="#{serviciosVentanaProveedor.proveedor.empresa.nombre}" disabled="true"/>
+					
+				</h:panelGrid>
+				
+				<!-- Etiqueta que dibuja un separador en el panel -->
+				<p:separator/>
+				
+				<!-- Los siguientes botones, permiten al usuario decidir entre: 
+				Guardar la información ingresada en los campos(Aceptar)
+				Salirse de la ventana sin guardar ninguna información(Cancelar)
+				Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->
+	       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+	       						 actionListener="#{serviciosVentanaProveedor.guardarOModificar}" 
+	       						 image="ui-icon-disk" oncomplete="refrescarNuevoProveedor(xhr, status, args); ventanaNuevoProveedor.hide();" update=":mensajes,:formNuevo:proveedor, :formModificar:proveedor">
+		        </p:commandButton> 
+				<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+								 actionListener="#{serviciosVentanaProveedor.cancelar}" oncomplete="refrescarNuevoProveedor(xhr, status, args); ventanaNuevoProveedor.hide();"
+								 image="ui-icon-closethick" update=":formNuevo:proveedor, :formModificar:proveedor">
+		        </p:commandButton> 
+	   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset" update="grid"
+	   							 style="margin-left:5px" image="ui-icon-refresh"/>
+   			</h:form>
+		</p:dialog>
+			
+	</div>					
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,314 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="/templates/plantillaSinMenu.xhtml">
+	
+	<ui:define name="head">::SCSN - Seguridad</ui:define>
+	<ui:define name="content">
+	
+		<h1 class="title ui-widget-header ui-corner-all">Ingrese su Nombre de Usuario y Contraseña</h1>
+
+		<p:growl id="mensajes" showDetail="true" life="2000" />
+		
+		<h:form>
+			<h:panelGrid columns="1" cellpadding="15">
+				<p:commandButton id="ingresoUsuario" value="Ingresar" onclick="ventanaLogin.show();" style="width:300px; height:50px;"/>
+				<p:commandButton id="primerIngreso" value="Registrarse" onclick="ventanaPrimerIngreso.show();" style="width:300px; height:50px;"/>
+			</h:panelGrid>
+		</h:form>
+		
+<!-- ºººººººººººººººººººººººººººººººººº ACCESO USUARIOS REGISTRADOS ºººººººººººººººººººººººººººººººººººººººººººººººººººº -->	 		
+	   	
+	   	<script type="text/javascript">
+		    function handleClick(xhr, status, args){
+	        	switch (args.tarea) {
+					case "visita":
+						ventanaVisita.show();
+						break;			
+					
+				}
+	        }
+		  //Funcion que llama a las formularios "Login" y los vuelve a cargar
+			function refrescarLogin(xhr, status, args) {
+				if (args.limpiar) {
+					document.getElementById("formLogin").reset();
+				}
+			}
+		</script>	  
+  		
+  		<p:dialog widgetVar="ventanaLogin" header="Ingreso al Sistema" width="320" resizable="false" 
+  				  closeOnEscape="false" closable="false" modal="true" appendToBody="true">
+	   		<h:form id="formLogin">
+		   		<p:panel>
+		        	<h:panelGrid columns="2" cellpadding="5">
+		          		<h:outputLabel for="username" value="Usuario:" />
+		          		<h:inputText value="#{serviciosVentanaLogin.nombre}" id="username" 
+		             				 required="true" label="username" />
+		          		<h:outputLabel for="password" value="Contraseña:" />
+		        		<p:password promptLabel="Introduzca su clave" weakLabel="Débil" goodLabel="Buena" strongLabel="Fuerte"
+		        					value="#{serviciosVentanaLogin.clave}" id="password" required="true"
+		           				 	label="password" />
+				        <f:facet name="footer">
+				        	<p:commandButton id="btnLogin" value="Entrar" process="@this username password" 
+								           actionListener="#{serviciosVentanaLogin.login}" update=":mensajes :formVentanaVisita"
+								           oncomplete="manejarLogin(xhr, status, args),handleClick(xhr, status, args); refrescarLogin(xhr, status, args);" />
+							<p:commandButton value="Cancelar" style="margin-left:5px" oncomplete="ventanaLogin.hide(); refrescarLogin(xhr, status, args);"
+										   	 actionListener="#{serviciosVentanaLogin.cancelar}" image="ui-icon-closethick" process="@this"/>
+				        </f:facet>
+		      		</h:panelGrid>
+		    	</p:panel>
+	    	</h:form>
+  		</p:dialog>
+	  	
+<!-- ºººººººººººººººººººººººººººººººººº PRIMER INGRESO ºººººººººººººººººººººººººººººººººººººººººººººººººººº -->	  	
+	  	
+		<script type="text/javascript">
+				function refrescarVentana() {
+					document.getElementById("formPrimerIngreso").reset();
+				}
+		</script>	  	
+  	
+	  	<p:dialog widgetVar="ventanaPrimerIngreso" width="800" height="570" closable="false" closeOnEscape="false" modal="true" appendToBody="true">
+		    <h:form id="formPrimerIngreso"> 
+			    <p:wizard widgetVar="wiz" flowListener="#{serviciosVentanaLogin.flujoPrimerIngreso}" nextLabel="Siguiente" backLabel="Atrás">  
+			      
+			        <p:tab id="dataEempresa" title="Datos de la Empresa">  
+			  
+			            <p:panel header="Datos Básicos de la Empresa">    
+			                  
+			                <h:panelGrid columns="3">  
+			                    <h:outputLabel value="RIF: *" for="rifEmpresa"/>  
+			                    <h:inputText id="rifEmpresa" required="true" label="Rif" value="#{serviciosVentanaLogin.empresa.rif}" requiredMessage="* Campo requerido: Rif"/>  
+			                    <p:message for="rifEmpresa"/> 
+			                     
+			                    <h:outputLabel value="Nombre: *" for="nombreEmpresa"/>
+			                    <h:inputText id="nombreEmpresa" required="true" label="Nombre" value="#{serviciosVentanaLogin.empresa.nombre}" requiredMessage="* Campo requerido: Nombre" 
+						   					 maxlength="60" validatorMessage="Nombre:Ingrese solo LETRAS con inicial en Mayúscula" >
+                                	<f:validateRegex pattern="^[A-Z\s]+[a-z\sÃ¡Ã©Ã­Ã³ÃºÃ±]*" for="nombreEmpresa"/>
+						   		</h:inputText> 
+						   		<p:message for="nombreEmpresa"/>
+			                      
+			                    <h:outputLabel value="Dirección: *" for="direccionEmpresa"/>  
+			                    <h:inputTextarea id="direccionEmpresa" required="true" label="Dirección" value="#{serviciosVentanaLogin.empresa.direccion}" requiredMessage="* Campo requerido: Dirección">
+                                	<f:validateLength maximum="150"/>
+						   		</h:inputTextarea>
+						   		<p:message for="direccionEmpresa"/>
+			                    
+			                    <h:outputLabel value="Teléfono: *" for="telefonoEmpresa"/>
+			                    <p:inputMask  id="telefonoEmpresa" value="#{serviciosVentanaLogin.empresa.telefono}" mask="(999) 999-9999" label="Teléfono" required="true" requiredMessage="* Campo requerido: Telefono"/>
+			                    <p:message for="telefonoEmpresa"/>  
+			                      
+			                    <h:outputLabel value="Celular: " for="celularEmpresa"/>  
+			                    <p:inputMask  id="celularEmpresa" value="#{serviciosVentanaLogin.empresa.celular}" mask="(999) 999-9999" label="Celular"/>
+			                    <h:outputLabel/>
+			                    
+			                    <h:outputLabel value="Fax: " for="faxEmpresa"/>  
+			                    <p:inputMask id="faxEmpresa" label="Fax" value="#{serviciosVentanaLogin.empresa.fax}" mask="(999) 999-9999"/>
+			                    <h:outputLabel/>
+			                    
+			                    <h:outputLabel value="E-mail: *" for="emailEmpresa"/>  
+			                    <h:inputText id="emailEmpresa" label="E-mail" value="#{serviciosVentanaLogin.empresa.correo}" required="true" requiredMessage="* Campo requerido: E-mail" validatorMessage="Formato de E-mail Incorreto - Ejemplo: ejemplo@gmail.com">
+			                    	<f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$"/>
+			                    </h:inputText>
+			                    <p:message for="emailEmpresa"/>
+			                    
+			                </h:panelGrid>
+		                    <p:separator/>
+		                    <h:panelGrid columns="3">
+		                    <h:outputLabel value="Remanente de Retiro: *" for="remanenteEmpresa"/>  
+		                    <h:inputText id="remanenteEmpresa" label="Remanente de Retiro" value="#{serviciosVentanaLogin.empresa.remanenteRetiro}" required="true" requiredMessage="* Campo requerido: Remanente de Retiro"/>
+		                    <p:message for="remanenteEmpresa"/> 
+		                    </h:panelGrid> 
+							<p:separator/>
+							
+		                    <h:panelGrid columns="2">
+								<p:commandButton value="Cancelar" style="margin-left:5px" oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);ventanaPrimerIngreso.hide();refrescarVentana();"
+											    image="ui-icon-closethick" update="ventanaPrimerIngreso" actionListener="#{serviciosVentanaLogin.cancelar}"/> 
+								
+				                
+			                </h:panelGrid>
+			            </p:panel>  
+			        </p:tab>  
+			              
+			        <p:tab id="empleado" title="Registrar Super Usuario">  
+			            <p:panel header="Registrar Super Usuario">  
+			            	
+			            	<h:panelGrid columns="3">
+						   		<h:outputLabel value="Cédula: *" for="cedulaEmpleado"/>
+						   		<p:inputMask id="cedulaEmpleado" value="#{serviciosVentanaLogin.empleado.cedulaEmpleado}" label="Cedula" required="true" requiredMessage="* Campo requerido: Cédula" mask="V-99999999"/>
+						   		<p:message for="cedulaEmpleado"/>
+						   		
+						   		<h:outputLabel value="Nombre: *" for="nombreEmpleado"/>
+						   		<h:inputText id="nombreEmpleado" value="#{serviciosVentanaLogin.empleado.nombre}" label="Nombre" required="true" requiredMessage="* Campo requerido: Nombre" 
+						   					 maxlength="60" validatorMessage="Nombre:Ingrese solo LETRAS con inicial en Mayúscula" >
+                                	<f:validateRegex pattern="^[A-Z]+[a-zÃ¡Ã©Ã­Ã³ÃºÃ±]*" for="nombreEmpleado"/>
+						   		</h:inputText>
+						   		<p:message for="nombreEmpleado"/>
+						   		
+						   		<h:outputLabel value="Apellido: *" for="apellidoEmpleado"/>
+						   		<h:inputText id="apellidoEmpleado" value="#{serviciosVentanaLogin.empleado.apellido}" label="Apellido" required="true" requiredMessage="* Campo requerido: Apellido" 
+						   					 maxlength="60" validatorMessage="Apellido:Ingrese solo LETRAS con inicial en Mayúscula" >
+                                	<f:validateRegex pattern="^[A-Z]+[a-zÃ¡Ã©Ã­Ã³ÃºÃ±]*" for="apellidoEmpleado"/>
+						   		</h:inputText>
+						   		<p:message for="apellidoEmpleado"/>
+						   		
+						   		<h:outputLabel value="Direccion: *" for="direccionEmpleado"/>
+						   		<h:inputTextarea id="direccionEmpleado" value="#{serviciosVentanaLogin.empleado.direccion}" label="Direccion" required="true" requiredMessage="* Campo requerido: Dirección">
+                                	<f:validateLength maximum="150"/>
+						   		</h:inputTextarea>
+						   		<p:message for="direccionEmpleado"/>
+						   		
+						   		<h:outputLabel value="Teléfono:" for="telefonoEmpleado"/>
+						   		<p:inputMask  id="telefonoEmpleado" value="#{serviciosVentanaLogin.empleado.telefono}" mask="(999) 999-9999" label="Teléfono"></p:inputMask>
+						   		<h:outputLabel/>
+						   		
+						   		<h:outputLabel value="Celular: *" for="celularEmpleado"/>
+						   		<p:inputMask  id="celularEmpleado" value="#{serviciosVentanaLogin.empleado.celular}" mask="(999) 999-9999" required="true" label="Celular" requiredMessage="* Campo requerido: Celular"></p:inputMask>
+						   		<p:message for="celularEmpleado"/>
+						   		
+						   		<h:outputLabel value="Email: *" for="emailEmpleado"/>
+						   		<h:inputText id="emailEmpleado" value="#{serviciosVentanaLogin.empleado.correo}" label="Email" maxlength="60" required="true" requiredMessage="* Campo requerido: E-mail" validatorMessage="Formato de E-mail Incorreto - Ejemplo: ejemplo@gmail.com">
+						   			<f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$"/>
+						   		</h:inputText>
+						   		<p:message for="emailEmpleado"/>
+						   		
+						   		<h:outputLabel value="Empresa: *" for="empresaEmpleado"/>
+								<h:inputText id="empresaEmpleado" label="Empresa" value="#{serviciosVentanaLogin.empresa.nombre}" disabled="true"/>
+								<h:outputLabel/>
+								
+								<h:outputLabel value="Cargo: *" for="cargoEmpleado"/>
+								<h:inputText id="cargoEmpleado" label="CargoNuevo" value="#{serviciosVentanaLogin.cargo}" disabled="true"/>					     		
+						   		
+							</h:panelGrid>
+							<br/>
+								<h:outputLabel value="El formato para la cédula es V-xxxxxxxx, si su cédula no completa la cantidad de dígitos complete con 0" />
+							<br/>
+							<p:separator/>
+							
+		                     <h:panelGrid columns="2">
+			                
+								<p:commandButton value="Cancelar" style="margin-left:5px" oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);ventanaPrimerIngreso.hide();refrescarVentana();"
+										    image="ui-icon-closethick" update="ventanaPrimerIngreso" actionListener="#{serviciosVentanaLogin.cancelar}"/> 
+										    
+								 <p:commandButton value="Guardar" update=":mensajes" 
+			                            actionListener="#{serviciosVentanaLogin.guardar}" process="@form"
+			                            oncomplete="wiz.loadStep(wiz.cfg.steps[0], true);refrescarVentana(); manejarLogin(xhr, status, args);ventanaPrimerIngreso.hide();"/>
+								
+				                <h:messages errorClass="error"/>
+				        	</h:panelGrid> 
+			            </p:panel>  
+			        </p:tab>  
+			       
+			       <!--      
+			        <p:tab id="usuario" title="Usuario del Sistema">  
+			            <p:panel header="Registrar Usuario"> 
+			            
+			                <h:panelGrid columns="2">
+			                	<h:outputLabel value="Introduzca Usuario:" for="user"/>
+			                	<h:inputText id="user" value="#{serviciosVentanaLogin.userEmpleado}" required="true"/>
+			                	
+			                	<h:outputLabel value="Introduzca Clave:" for="clave" />
+			                	<p:password id="clave" value="#{serviciosVentanaLogin.claveEmpleado}" required="true"/>
+			                	
+			                	<h:outputLabel value="Introduzca de nuevo la Clave:" for="clave2"/>
+			                	<p:password id="clave2" value="#{serviciosVentanaLogin.claveEmpelado2}" required="true"/>
+			                	
+			                </h:panelGrid>
+							
+							<p:separator/>
+			            </p:panel>
+			        </p:tab>  
+			        -->  
+			       
+			    </p:wizard>  
+		    </h:form>
+		</p:dialog>
+		
+<!-- ºººººººººººººººººººººººººººººººººººººººººº DIALOGO ENCUESTAºººººººººººººººººººººººººº -->
+		
+		<p:dialog widgetVar="ventanaVisita" width="650" height="480" modal="true" appendToBody="true" 
+				  closeOnEscape="false" closable="false" header="Encuesta Obligatoria" id="ventanaV">
+		
+			<h:form id="formVentanaVisita" >
+				<p:panel >
+					<h:panelGrid style="width:101%; text-align:center;">
+						<f:facet name="header" >
+		    				<br/>
+		    					Encuesta Obligatoria
+		    				<br/>
+		    			</f:facet>
+		    		</h:panelGrid>
+		    		<br/>
+		    		<h:panelGrid style="width:101%; text-align:center;">
+		    			<p:column>
+		    				<p style="width:101%; text-align:center;"> 
+			    				<b>Gracias por confiar en Renovadora Cauca C.A.</b>
+			    			</p>
+			    			<p style="width:101%; text-align:center;">	
+			    				Su empresa ha sido visitada por nuestros vendedores desde la fecha:
+			    			</p>
+			    			<p style="width:101%; text-align:center;">
+			    				<h:outputText value="#{serviciosVentanaLogin.servicioEncuesta.fechaAntes}"/> - <h:outputText value="#{serviciosVentanaLogin.servicioEncuesta.fechaActual}"/>
+			    			</p>
+		    			</p:column>
+		    		</h:panelGrid>
+		    		<h:panelGrid columns="2" style="width:101%; text-align:center;">
+		    			<h:selectOneRadio id="oneRadio" value="#{serviciosVentanaLogin.servicioEncuesta.condicionSINO}" style="width:101%; text-align:center;">
+		    				<b><f:selectItem itemValue="#{false}" itemLabel="SI" id="si"  /></b>
+		    				<b><f:selectItem itemValue="#{true}" itemLabel="NO" id="no"/></b>
+		    				<f:ajax event="click" render="nombreV fechaA horaA obs valorHora amPm" ></f:ajax>
+	    				</h:selectOneRadio>
+		    		</h:panelGrid>
+		    		<br></br>
+		    		<h:panelGrid columns="2" style=" text-align:left;">
+		    			<h:outputLabel value="Nombre del Vendedor: " for="nombreV"/>
+		    			<h:selectOneMenu id="nombreV" value="#{serviciosVentanaLogin.servicioEncuesta.cedulaEmpleado}" disabled="#{serviciosVentanaLogin.servicioEncuesta.condicionSINO}" >
+			                <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+		               		<f:selectItems value="#{serviciosVentanaLogin.servicioEncuesta.listaEmpleado}" var="vendedor" itemValue="#{vendedor.cedulaEmpleado}" itemLabel="#{vendedor.nombre} #{vendedor.apellido}"/>
+		               	</h:selectOneMenu>
+		    			<h:outputLabel value="Fecha aproximada: " for="fechaA"/>
+		    			<p:calendar value="#{serviciosVentanaLogin.servicioEncuesta.fechaAproximada}" id="fechaA"  disabled="#{serviciosVentanaLogin.servicioEncuesta.condicionSINO}" />
+		    			<h:outputLabel value="Hora aproximada: " for="horaA"/>
+		    			<h:panelGrid columns="3" id="valorHora">		    			
+		    				<p:spinner id="horaA" value="#{serviciosVentanaLogin.servicioEncuesta.horaAproximada}" min="0" max="12" disabled="#{serviciosVentanaLogin.servicioEncuesta.condicionSINO}" style="width:60"/>
+		    				<p:spinner id="minA" value="#{serviciosVentanaLogin.servicioEncuesta.minutoAproximado}" min="0" max="59" disabled="#{serviciosVentanaLogin.servicioEncuesta.condicionSINO}" style="width:60"/>
+		    				<h:selectOneMenu id="amPm"  value="#{serviciosVentanaLogin.servicioEncuesta.horaAMPM}" disabled="#{serviciosVentanaLogin.servicioEncuesta.condicionSINO}" >
+		    					<f:selectItem itemLabel="-Seleccione-" itemValue="" />
+		    					<f:selectItem itemLabel="am" itemValue="am"/>
+		    					<f:selectItem itemLabel="pm" itemValue="pm"/>
+		    				</h:selectOneMenu>
+		    			</h:panelGrid>
+		    			<h:outputLabel value="Observaciones: " for="obs"/>
+		    			<h:inputTextarea id="obs" value="#{serviciosVentanaLogin.servicioEncuesta.observaciones}" />
+		    		</h:panelGrid>
+				</p:panel>
+				<h:panelGrid columns="2">
+					<p:commandButton id="entrar" value="Entrar" oncomplete="manejarLogin(xhr, status, args)" process="@this nombreV fechaA horaA minA amPm obs "
+							 actionListener="#{serviciosVentanaLogin.servicioEncuesta.botonRegistrarEncuesta}" update="mensajes"/>
+				</h:panelGrid>
+			
+			
+			</h:form>
+		</p:dialog>
+		
+<!-- ºººººººººººººººººººººººººººººººººººººººººº SCRIPT PARA MANEJAR EL LOGUEO ºººººººººººººººººººººººººº -->
+		<script type="text/javascript">
+		  //<![CDATA[
+		  function manejarLogin(xhr, status, args) {
+		    if (!args.validationFailed && args.estaLogeado) {
+		      setTimeout(function() {
+		        window.location = args.view;
+		      }, 500);
+	          ventanaLogin.hide();
+	          ventanaVisita.hide();
+		    } else {   
+	            ventanaLogin.jq.effect("shake", { times:5 }, 100); 
+		    }
+		  }
+		//]]>
+		</script>
+		
+	</ui:define>
+</ui:composition>

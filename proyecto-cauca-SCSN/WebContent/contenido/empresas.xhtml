@@ -1,0 +1,61 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Empresas</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Datos de la Empresa</h1>
+		<br/>
+		
+		<div style="padding-left: 98px; font-size: 15px;">
+			<p:growl id="mensajes" showDetail="true" life="2000" />
+			<!-- Etiqueta que define un formulario -->
+			<h:form>
+			
+				<!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+				<h:panelGrid columns="2">
+					<h:outputLabel style="font-weight: bold;" value="Nombre o Razón Social: " for="nombre"/>
+			        <h:inputText id="nombre" value="#{serviciosVentanaEmpresa.empresa.nombre}" required="true" label="Nombre" disabled="#{serviciosVentanaEmpresa.editarCampo}"/>
+			      
+			        <h:outputLabel style="font-weight: bold;" value="RIF:" for="rif"/>
+			        <h:inputText value="#{serviciosVentanaEmpresa.empresa.rif}" required="true" label="Rif" id="rif" disabled="#{serviciosVentanaEmpresa.editarCampo}"/>
+			                 
+					<h:outputLabel style="font-weight: bold;" value="Dirección:" for="dir"/>
+					<h:inputTextarea value="#{serviciosVentanaEmpresa.empresa.direccion}" required="true" label="Direccion" id="dir" disabled="#{serviciosVentanaEmpresa.editarCampo}"/>
+		
+					<h:outputLabel style="font-weight: bold;" value="Teléfono:" for="telefono"/>
+					<h:inputText value="#{serviciosVentanaEmpresa.empresa.telefono}" required="true" label="Telefono" id="telefono" disabled="#{serviciosVentanaEmpresa.editarCampo}"/>
+					
+					<h:outputLabel style="font-weight: bold;" value="Celular:" for="celular"/>
+					<h:inputText value="#{serviciosVentanaEmpresa.empresa.celular}" label="Celular" id="celular" disabled="#{serviciosVentanaEmpresa.editarCampo}"/>
+					
+					<h:outputLabel style="font-weight: bold;" value="Fax:" for="fax"/>
+					<h:inputText value="#{serviciosVentanaEmpresa.empresa.fax}" label="Fax" id="fax" disabled="#{serviciosVentanaEmpresa.editarCampo}"/>
+					
+					<h:outputLabel style="font-weight: bold;" value="Correo:" for="correo"/>
+					<h:inputText  value="#{serviciosVentanaEmpresa.empresa.correo}" label="text" id="correo" disabled="#{serviciosVentanaEmpresa.editarCampo}"/>
+										
+					<h:outputLabel style="font-weight: bold;" value="Remanente de Retiro:" for="remanente"/>
+					<h:inputText value="#{serviciosVentanaEmpresa.empresa.remanenteRetiro}" required="true" label="text" id="remanente" disabled="#{serviciosVentanaEmpresa.editarCampo}"/>
+				</h:panelGrid>
+				<h:panelGrid style="width:61%; text-align:right;">
+					<p:column>
+						<p:commandButton id="editar" value="Editar" actionListener="#{serviciosVentanaEmpresa.editarDatosEmpresa}" disabled="#{serviciosVentanaEmpresa.btonEditar}"
+										 update="rif, dir, telefono, celular, fax, correo, remanente, editar, guardar, nombre, mensajes"/>
+						<p:commandButton id="guardar" value="Guardar" actionListener="#{serviciosVentanaEmpresa.guardarDatosEmpresa}" disabled="#{serviciosVentanaEmpresa.editarCampo}"
+										 update="rif, dir, telefono, celular, fax, correo, remanente, editar, guardar, nombre, mensajes"/>
+					</p:column>
+				</h:panelGrid>
+			</h:form>
+		</div>
+		<br/>
+		
+		
+	</ui:define>
+</ui:composition>

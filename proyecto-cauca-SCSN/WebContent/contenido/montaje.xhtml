@@ -1,0 +1,387 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Montaje</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Gestionar Montaje</h1>
+		<br/>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+		
+		<h:form id="formMontaje">
+		    
+		    <script type="text/javascript">
+	            function refrescarMontaje(xhr, status, args) {
+					if (args.limpiar) {
+						document.getElementById("formMontaje").reset();
+						ventanaTerminar.hide();
+		            } else {
+		            	ventanaTerminar.hide();
+		            }
+	            }
+	            
+		        function handleRequest(xhr, status, args) {
+	            	switch (args.tarea) {
+						case "D":
+							confirmarDesmontaje.show();
+							break;
+						case "V":
+							confirmarCambioVehiculo.show();
+							break;
+						case "T":
+							confirmarTerminar.show();
+							break;
+					}
+		        }     
+	        </script>
+	        
+			<h:panelGrid columns="2" border="1" cellpadding="1" cellspacing="30">
+			    <h:panelGrid id="panelDatosVehiculo" columns="2">
+			    	<h:outputLabel value="Placa: " for="placa"/>
+			   		<h:selectOneMenu id="placa" label="Placa" value="#{serviciosVentanaMontaje.idVehiculo}" require="true" height="10" scrollable="true" scrollHeight="100">
+		                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+	               		<f:selectItems value="#{serviciosVentanaVehiculo.vehiculoDataModel}" var="vehiculo" itemValue="#{vehiculo.idVehiculo}" itemLabel="#{vehiculo.placa}"/>
+	               		
+	               		<p:ajax action="#{serviciosVentanaMontaje.actualizarVehiculoMontaje('')}" oncomplete="handleRequest(xhr, status, args);"
+	               				update="placa, modelo, marcaVehiculo, tipoVehiculo, dentroCarretera, ruta, kilometrajeAnterior, esquemaEje, mensajes
+	               						:neumatico :panelDatosNeumatico"/>
+	               	 </h:selectOneMenu>
+		            
+		            <h:outputLabel value="Modelo:" for="modelo"/>
+				    <h:inputText id="modelo" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.modeloVehiculo.nombre}" disabled="true" ajax="true"/>
+		            
+			    	<h:outputLabel value="Marca:" for="marcaVehiculo"/>
+				    <h:inputText id="marcaVehiculo" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.modeloVehiculo.marcaVehiculo.nombre}" disabled="true"/>
+				    
+				    <h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculo"/>
+				    <h:inputText id="tipoVehiculo" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.nombre}" disabled="true"/>
+			    
+			    	<h:outputLabel value=""/>
+			    	<h:selectOneRadio id="dentroCarretera" disabled="true"
+				                      value="#{serviciosVentanaMontaje.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.dentroCarretera}">
+				        <f:selectItem id="item1" itemLabel="Dentro Carretera" itemValue="S" />
+				        <f:selectItem id="item2" itemLabel="Fuera de Carretera" itemValue="N" />
+				    </h:selectOneRadio>
+				    
+				    <h:outputLabel value="Ruta:" for="ruta"/>
+				    <h:inputText id="ruta" value="#{serviciosVentanaMontaje.rutaVehiculo.ruta.nombre}" disabled="true"/>
+			    </h:panelGrid>
+			    
+			    <h:panelGrid id="panelDatosOperacion" columns="3">
+			    	
+			    	<h:outputLabel value="Fecha: " for="fecha" />
+			    	<p:calendar id="fecha" value="#{serviciosVentanaMontaje.movimientoId.fecha}" showOn="button" maxdate="#{serviciosVentanaMontaje.fechaActual}"/>
+			    	<h:outputLabel value="" />
+			    	
+			    	<h:outputLabel value="Último Kilometraje:" for="kilometrajeAnterior"/>
+					<h:inputText id="kilometrajeAnterior" label="KilometrajeAnterior" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.kilometraje}"
+								disabled="true">
+			   			<f:validateLength maximum="20"/>
+			   		</h:inputText>
+			   		<h:outputLabel value="Kilómetros" />
+			    	
+			    	<h:outputLabel value="Kilometraje Actual:" for="kilometrajeMontaje"/>
+					<h:inputText id="kilometrajeMontaje" label="KilometrajeMontaje" value="#{serviciosVentanaMontaje.kilometrajeMovimiento}" >
+			   			<f:validateLength maximum="20"/>
+			   		</h:inputText>
+			   		<h:outputLabel value="Kilómetros" />
+			    </h:panelGrid>
+			    		    
+			    
+			    <h:panelGrid columns="1" cellpadding="1" cellspacing="5">
+				    
+		            <h:panelGrid id="esquemaEje" columns="2" style="margin-left:35px;">
+						
+						<h:panelGrid columns="2" >
+						
+						
+							<h:outputLabel id="primerNeumaticoR21" value="R1"/>
+							<h:outputLabel id="primerNeumaticoR22" value="R2"/>
+							<p:commandButton id="neumaticoR21" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico21}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumaticoR21')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumaticoRepIzqDisabled}" update="neumaticoR21 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumaticoR22" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico22}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumaticoR22')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumaticoRepDerDisabled}" update="neumaticoR22 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							
+						
+						</h:panelGrid>
+						
+						<h:panelGrid columns="5">
+							<h:outputLabel id="primerNeumatico11" value="#{serviciosVentanaMontaje.primerNeumatico1}" />
+							<h:outputLabel id="primerNeumatico12" value="#{serviciosVentanaMontaje.primerNeumatico2}" />
+							<h:outputLabel id="primerNeumaticoNull1" value="" />
+							<h:outputLabel id="primerNeumatico13" value="#{serviciosVentanaMontaje.primerNeumatico3}" />
+							<h:outputLabel id="primerNeumatico14" value="#{serviciosVentanaMontaje.primerNeumatico4}" />
+						
+							<p:commandButton id="neumatico11" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico1}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico11')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico11Disabled}" update="neumatico11 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico12" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico2}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico12')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico12Disabled}" update="neumatico12 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="eje1" styleClass="eje" style="#{serviciosVentanaMontaje.serviciosVentanaEsquemaEjes.fondoEje1}; border: 0px;" disabled="true"/>
+							<p:commandButton id="neumatico13" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico3}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico13')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico13Disabled}" update="neumatico13 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico14" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico4}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico14')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico14Disabled}" update="neumatico14 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<h:outputLabel id="primerNeumatico21" value="#{serviciosVentanaMontaje.primerNeumatico5}" />
+							<h:outputLabel id="primerNeumatico22" value="#{serviciosVentanaMontaje.primerNeumatico6}" />
+							<h:outputLabel id="primerNeumaticoNull2" value="" />
+							<h:outputLabel id="primerNeumatico23" value="#{serviciosVentanaMontaje.primerNeumatico7}" />
+							<h:outputLabel id="primerNeumatico24" value="#{serviciosVentanaMontaje.primerNeumatico8}" />
+							<p:commandButton id="neumatico21" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico5}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico21')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico21Disabled}" update="neumatico21 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico22" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico6}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico22')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico22Disabled}" update="neumatico22 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="eje2" styleClass="eje" style="#{serviciosVentanaMontaje.serviciosVentanaEsquemaEjes.fondoEje2}; border: 0px;" disabled="true"/>
+							<p:commandButton id="neumatico23" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico7}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico23')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico23Disabled}" update="neumatico23 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico24" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico8}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico24')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico24Disabled}" update="neumatico24 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<h:outputLabel id="primerNeumatico31" value="#{serviciosVentanaMontaje.primerNeumatico9}" />
+							<h:outputLabel id="primerNeumatico32" value="#{serviciosVentanaMontaje.primerNeumatico10}" />
+							<h:outputLabel id="primerNeumaticoNull3" value="" />
+							<h:outputLabel id="primerNeumatico33" value="#{serviciosVentanaMontaje.primerNeumatico11}" />
+							<h:outputLabel id="primerNeumatico34" value="#{serviciosVentanaMontaje.primerNeumatico12}" />
+							<p:commandButton id="neumatico31" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico9}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico31')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico31Disabled}" update="neumatico31 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico32" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico10}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico32')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico32Disabled}" update="neumatico32 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="eje3" styleClass="eje" style="#{serviciosVentanaMontaje.serviciosVentanaEsquemaEjes.fondoEje3}; border: 0px;" disabled="true"/>
+							<p:commandButton id="neumatico33" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico11}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico33')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico33Disabled}" update="neumatico33 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico34" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico12}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico34')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico34Disabled}" update="neumatico34 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<h:outputLabel id="primerNeumatico41" value="#{serviciosVentanaMontaje.primerNeumatico13}" />
+							<h:outputLabel id="primerNeumatico42" value="#{serviciosVentanaMontaje.primerNeumatico14}" />
+							<h:outputLabel id="primerNeumaticoNull4" value="" />
+							<h:outputLabel id="primerNeumatico43" value="#{serviciosVentanaMontaje.primerNeumatico15}" />
+							<h:outputLabel id="primerNeumatico44" value="#{serviciosVentanaMontaje.primerNeumatico16}" />
+							<p:commandButton id="neumatico41" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico13}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico41')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico41Disabled}" update="neumatico41 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico42" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico14}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico42')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico42Disabled}" update="neumatico42 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="eje4" styleClass="eje" style="#{serviciosVentanaMontaje.serviciosVentanaEsquemaEjes.fondoEje4}; border: 0px;" disabled="true"/>
+							<p:commandButton id="neumatico43" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico15}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico43')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico43Disabled}" update="neumatico43 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico44" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico16}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico44')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico44Disabled}" update="neumatico44 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<h:outputLabel id="primerNeumatico51" value="#{serviciosVentanaMontaje.primerNeumatico17}" />
+							<h:outputLabel id="primerNeumatico52" value="#{serviciosVentanaMontaje.primerNeumatico18}" />
+							<h:outputLabel id="primerNeumaticoNull5" value="" />
+							<h:outputLabel id="primerNeumatico53" value="#{serviciosVentanaMontaje.primerNeumatico19}" />
+							<h:outputLabel id="primerNeumatico54" value="#{serviciosVentanaMontaje.primerNeumatico20}" />
+							<p:commandButton id="neumatico51" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico17}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico51')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico51Disabled}" update="neumatico51 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico52" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico18}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico52')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico52Disabled}" update="neumatico52 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="eje5" styleClass="eje" style="#{serviciosVentanaMontaje.serviciosVentanaEsquemaEjes.fondoEje5}; border: 0px;" disabled="true"/>
+							<p:commandButton id="neumatico53" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico19}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico53')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico53Disabled}" update="neumatico53 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+							<p:commandButton id="neumatico54" styleClass="neumatico" style="#{serviciosVentanaMontaje.neumatico20}; border: 0px;" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('neumatico54')}" ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);" disabled="#{serviciosVentanaMontaje.neumatico54Disabled}" update="neumatico54 mensajes panelDatosNeumatico neumatico :panelDatosOperacion :frmDialogos:confirmarDesmontajeID"/>
+						</h:panelGrid>
+					</h:panelGrid>
+			    </h:panelGrid>
+			    
+			    
+			    
+			    
+			    
+			    <h:panelGrid columns="1"  style="margin: 0 auto; text-align: center; border: none;">
+				    
+				    <h:panelGrid id="panelDatosNeumatico" columns="2">
+				    	<h:panelGrid columns="2">
+					    	<h:outputLabel value="Neumático: " for="neumatico"/>
+					   		<h:selectOneMenu id="neumatico" label="Neumatico" value="#{serviciosVentanaMontaje.idNeumatico}" require="true" height="10" scrollable="true" scrollHeight="100">
+				                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+			               		<f:selectItems value="#{serviciosVentanaMontaje.neumaticoDataModel}" var="neumatico" itemValue="#{neumatico.idNeumatico}" itemLabel="#{neumatico.codInterno}"/>
+			               		
+			               		<p:ajax action="#{serviciosVentanaMontaje.actualizarNeumaticoMontaje}"
+			               				update="marca, diseno, medida, tipoNeumatico, condicion, presion, remanente, imagenDiseno, mensajes, unidireccional"/>    	
+			               	</h:selectOneMenu>
+				            
+				            <h:outputLabel value="Marca:" for="marca"/>
+						    <h:inputText id="marca" value="#{serviciosVentanaMontaje.neumaticoSeleccionado.disenoMedida.diseno.marcaNeumatico.nombre}" disabled="true" ajax="true"/>
+				            
+					    	<h:outputLabel value="Diseño:" for="diseno"/>
+						    <h:inputText id="diseno" value="#{serviciosVentanaMontaje.neumaticoSeleccionado.disenoMedida.diseno.nombre}" disabled="true"/>
+						    
+						    <h:outputLabel value="Medida:" for="medida"/>
+						    <h:inputText id="medida" value="#{serviciosVentanaMontaje.neumaticoSeleccionado.disenoMedida.medida.nombre}" disabled="true"/>
+						    
+						    <h:outputLabel value="Tipo:" for="tipoNeumatico"/>
+						    <h:inputText id="tipoNeumatico" value="#{serviciosVentanaMontaje.tipoNeumatico}" disabled="true"/>
+						    
+						    <h:outputLabel value="Condicion:" for="condicion"/>
+						    <h:inputText id="condicion" value="#{serviciosVentanaMontaje.condicion}" disabled="true"/>
+						    
+						  	<h:outputLabel value="Presión de Montaje:" for="presion"/>
+						    <h:inputText id="presion" value="#{serviciosVentanaMontaje.presionMovimientoNeumatico}"/>
+						    
+						  	<h:outputLabel value="Remanente Actual:" for="remanente"/>
+						    <h:inputText id="remanente" value="#{serviciosVentanaMontaje.neumaticoSeleccionado.remanenteActual}" disabled="true"/>
+						    
+						    <h:outputLabel value="Unidireccional"/>
+					    	<h:selectOneRadio id="unidireccional" disabled="true"
+						                      value="#{serviciosVentanaMontaje.neumaticoSeleccionado.unidireccional}">
+						        <f:selectItem id="uniSi" itemLabel="Si" itemValue="S" />
+						        <f:selectItem id="uniNo" itemLabel="No" itemValue="N" />
+						    </h:selectOneRadio>
+						</h:panelGrid>
+						<h:panelGrid columns="1">
+							<p:graphicImage id="imagenDiseno" styleClass="muestraImagenDiseno" value="#{serviciosVentanaMontaje.streamedContentImagen}" ajax="true" cache="false"/>
+						</h:panelGrid>
+				
+				</h:panelGrid>
+			   	
+			   	<h:panelGrid columns="2">
+			   		<h:outputLabel value="Observaciones: " for="observaciones" />
+			   		<h:inputTextarea id="observaciones" value="#{serviciosVentanaMontaje.observacionesMovimiento}"/>
+				</h:panelGrid>
+	    	</h:panelGrid>	
+	    	
+	    	<p:growl id="mensajes" showDetail="true" life="8000"/>
+	    	
+	    	</h:panelGrid>
+			    
+			<p:commandButton id="btnFinalizarOperacion" title="Terminar" image="ui-icon-check" value="Finalizar Operación" 
+							 action="#{serviciosVentanaMontaje.procesarOperacion('A')}"  ajax="true" async="true" oncomplete="handleRequest(xhr, status, args);"  update=":frmDialogos:detalleTerminar"/>
+		</h:form>
+		
+		<h:form id="frmDialogos"> 
+		
+			<p:confirmDialog message="Existen neumáticos montados en el actual vehículo. Si acepta abandonar la operación los neumáticos serán desmontados automáticamente"
+							 header="Desea abandonar la operación?" severity="alert" widgetVar="confirmarCambioVehiculo" height="180" width="500"
+							 showEffect="fade" hideEffect="blind" modal="true" closable="false">
+		   		
+		   		<p:commandButton id="aceptar" styleClass="botonVentana" action="#{serviciosVentanaMontaje.actualizarVehiculoMontaje('SI')}" title="Aceptar"
+		        				 image="ui-icon-check" oncomplete="confirmarCambioVehiculo.hide();"
+		        				 update=":neumatico :formMontaje:panelDatosNeumatico :formMontaje:panelDatosOperacion :formMontaje:esquemaEje :formMontaje:panelDatosVehiculo :formMontaje:mensajes"/>
+				
+				<p:commandButton id="cancelar" styleClass="botonVentana" action="#{serviciosVentanaMontaje.actualizarVehiculoMontaje('NO')}" title="Cancelar"
+		        				 image="ui-icon-closethick" oncomplete="confirmarCambioVehiculo.hide();"
+		        				 update=":formMontaje:panelDatosNeumatico :formMontaje:panelDatosOperacion :formMontaje:esquemaEje :formMontaje:panelDatosVehiculo :formMontaje:mensajes"/>		        				 
+		   	</p:confirmDialog>
+		   	
+		   	
+		   	<p:dialog id="detalleTerminar" header="Resumen de la Operación"
+					widgetVar="confirmarTerminar" width="400" style="height:100%">
+
+					<h:panelGrid id="detalle" columns="2" cellpadding="4">
+					
+						<h:panelGrid id="datosVehiculo" columns="2">
+					    	<h:outputLabel value="Placa: " for="placaTerminar"/>
+					   		<h:inputText id="placaTerminar" label="Placa" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.placa}" disabled="true"/>
+				            
+				            <h:outputLabel value="Modelo:" for="modeloTerminar"/>
+						    <h:inputText id="modeloTerminar" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.modeloVehiculo.nombre}" disabled="true" ajax="true"/>
+				            
+					    	<h:outputLabel value="Marca:" for="marcaVehiculoTerminar"/>
+						    <h:inputText id="marcaVehiculoTerminar" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.modeloVehiculo.marcaVehiculo.nombre}" disabled="true"/>
+						    
+						    <h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculoTerminar"/>
+						    <h:inputText id="tipoVehiculoTerminar" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.nombre}" disabled="true"/>
+					    
+					    	<h:outputLabel value=""/>
+					    	<h:selectOneRadio id="dentroCarreteraTerminar" disabled="true"
+						                      value="#{serviciosVentanaMontaje.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.dentroCarretera}">
+						        <f:selectItem id="item1Terminar" itemLabel="Dentro Carretera" itemValue="S" />
+						        <f:selectItem id="item2Terminar" itemLabel="Fuera de Carretera" itemValue="N" />
+						    </h:selectOneRadio>
+						    
+						    <h:outputLabel value="Ruta:" for="rutaTerminar"/>
+						    <h:inputText id="rutaTerminar" value="#{serviciosVentanaMontaje.rutaVehiculo.ruta.nombre}" disabled="true"/>
+					    </h:panelGrid>
+				    
+					    <h:panelGrid id="datosOperacion" columns="2">
+					    	
+					    	<h:outputLabel value="Fecha: " for="fecha" />
+					    	<h:inputText id="fechaTerminar" value="#{serviciosVentanaMontaje.fechaTerminar}" disabled="true"/>
+					    	
+					    	<h:outputLabel value="Último Kilometraje:" for="kilometrajeAnteriorTerminar"/>
+							<h:inputText id="kilometrajeAnteriorTerminar" label="KilometrajeAnterior" value="#{serviciosVentanaMontaje.vehiculoSeleccionado.kilometraje} Km"
+										disabled="true"/>
+					    	
+					    	<h:outputLabel value="Kilometraje Actual:" for="kilometrajeMontajeTerminar"/>
+							<h:inputText id="kilometrajeMontajeTerminar" label="KilometrajeMontaje" value="#{serviciosVentanaMontaje.kilometrajeMovimiento} Km" disabled="true"/>
+					    </h:panelGrid>
+					</h:panelGrid>
+					
+					<p:outputPanel id="tbNeumaticos" style="height:300;">
+						<p:dataTable id="neumaticosMontados" value="#{serviciosVentanaMontaje.neumaticoVehiculoDataModel}" var="neumaticoVehiculo"
+						                emptyMessage="No se encontraron resultados">
+							
+							<p:column filterBy="#{neumaticoVehiculo.neumatico.codInterno}" filterMatchMode="contains">
+								<f:facet name="header">
+							        <h:outputText value="Cod Interno"/>
+							    </f:facet>
+								<h:outputText value="#{neumaticoVehiculo.neumatico.codInterno}"/>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+							        <h:outputText value="Presión"/>
+							    </f:facet>
+								<h:outputText value="#{neumaticoVehiculo.neumatico.presionActual}"/>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+							        <h:outputText value="Remanente"/>
+							    </f:facet>
+								<h:outputText value="#{neumaticoVehiculo.neumatico.remanenteActual}"/>
+							</p:column>
+							<p:column>
+								<f:facet name="header">
+							        <h:outputText value="Posición"/>
+							    </f:facet>
+								<h:outputText value="#{neumaticoVehiculo.posicion}"/>
+							</p:column>
+							
+						</p:dataTable>
+					</p:outputPanel>
+				</p:dialog>
+		   	
+		   	
+		   	
+	    	<p:dialog widgetVar="confirmarDesmontaje" id="confirmarDesmontajeID" header="Información del Neumático Seleccionado" closeOnEscape="false"
+							showEffect="fade" hideEffect="fade" closable="false" height="200" width="400">
+		    	<h:panelGrid id="pnlConfirmar" columns="1">
+		    		<h:panelGrid columns="2">
+			    		<h:panelGrid columns="2">
+				    		<h:outputLabel value="Neumático" for="neumaticoDes" />
+				    		<h:inputText id="neumaticoDes" value="#{serviciosVentanaMontaje.movimientoSeleccionado.neumatico.codInterno}" disabled="true" />
+				    		
+				    		<h:outputLabel value="Marca:" for="marcaDes"/>
+						    <h:inputText id="marcaDes" value="#{serviciosVentanaMontaje.movimientoSeleccionado.neumatico.disenoMedida.diseno.marcaNeumatico.nombre}" disabled="true" ajax="true"/>
+				            
+					    	<h:outputLabel value="Diseño:" for="disenoDes"/>
+						    <h:inputText id="disenoDes" value="#{serviciosVentanaMontaje.movimientoSeleccionado.neumatico.disenoMedida.diseno.nombre}" disabled="true"/>
+						    
+						    <h:outputLabel value="Medida:" for="medidaDes"/>
+						    <h:inputText id="medidaDes" value="#{serviciosVentanaMontaje.movimientoSeleccionado.neumatico.disenoMedida.medida.nombre}" disabled="true"/>
+						    
+						    <h:outputLabel value="Tipo:" for="tipoNeumaticoDes"/>
+						    <h:inputText id="tipoNeumaticoDes" value="#{serviciosVentanaMontaje.tipoNeumaticoConfirmar}" disabled="true"/>
+						    
+						    <h:outputLabel value="Condicion:" for="condicionDes"/>
+						    <h:inputText id="condicionDes" value="#{serviciosVentanaMontaje.condicionConfirmar}" disabled="true"/>
+						    
+						  	<h:outputLabel value="Presión de Montaje:" for="presionDes"/>
+						    <h:inputText id="presionDes" value="#{serviciosVentanaMontaje.movimientoSeleccionado.presion} psi" disabled="true"/>
+						    
+						  	<h:outputLabel value="Remanente Actual:" for="remanenteDes"/>
+						    <h:inputText id="remanenteDes" value="#{serviciosVentanaMontaje.movimientoSeleccionado.neumatico.remanenteActual} mm" disabled="true"/><h:outputLabel value="Unidireccional"/>
+					    	
+					    	<h:selectOneRadio id="unidireccionalDes" disabled="true"
+						                      value="#{serviciosVentanaMontaje.movimientoSeleccionado.neumatico.unidireccional}">
+						        <f:selectItem id="item1Des" itemLabel="Si" itemValue="S" />
+						        <f:selectItem id="item2Des" itemLabel="No" itemValue="N" />
+						    </h:selectOneRadio>
+						</h:panelGrid>
+						
+						<h:panelGrid columns="1">
+
+						</h:panelGrid>
+		    		</h:panelGrid>
+		    		
+		    		<p:separator />
+		    		
+		    		<h:panelGrid columns="4" >
+		    			
+		    			<h:selectBooleanCheckbox value="#{serviciosVentanaMontaje.desmontaje}" /> DESMONTAR?
+		    			<h:inputHidden value="#{serviciosVentanaMontaje.nombreRuedaOculto}" id="nombreRuedaOculto" />
+				        <p:commandButton id="confirmar" styleClass="botonVentana" action="#{serviciosVentanaMontaje.actualizarFondosNeumaticos('')}" title="Aceptar"
+				        				 image="ui-icon-check" oncomplete="confirmarDesmontaje.hide();" 
+				        				 update=":formMontaje:panelDatosNeumatico :formMontaje:panelDatosOperacion :formMontaje:esquemaEje :formMontaje:panelDatosVehiculo :formMontaje:mensajes"/>
+		       		</h:panelGrid>
+		       </h:panelGrid>
+	    	</p:dialog>
+		</h:form>
+		
+		
+	</div>					
+	</ui:define>
+</ui:composition>

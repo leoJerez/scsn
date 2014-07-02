@@ -1,0 +1,480 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Esquema de Ejes</ui:define>
+	<ui:define name="content">
+		
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Esquema de Ejes</h1>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+<!-- ······················································· BOTONERA ··············································· -->			
+			<!-- Esta botonera hace una solicitud al servidor donde se activan las funciones que se van a ejecutar, esto se hace
+			a través de la clase ServiciosVentanaEsquemaEjes y javascript recibe los parámetros, los cuales se usarán
+			para abrir la ventana corresppondiente según la operación requerida -->
+			
+			<!-- Etiqueta que define un formulario -->
+			<h:form id="formBotonera">
+			
+			<!-- Etiquetas que definen una serie de botones los cuales ejecutan funciones al presionarse -->
+				<p:commandButton id="btnNuevo" image="ui-icon-plusthick" onclick="ventanaRegistro.show()" update=":formNuevo:data" value="Nuevo" />
+				<p:commandButton id="btnModificar" image="ui-icon-wrench" action="#{serviciosVentanaEsquemaEjes.activarModificar}" update=":formModificar:ventanaCompletaModificar" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Modificar" />
+				<p:commandButton id="btnEliminar" image="ui-icon-trash" action="#{serviciosVentanaEsquemaEjes.activarEliminar}" update=":formEliminar" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Eliminar" />
+				<p:commandButton id="btnConsultar" image="ui-icon-search" action="#{serviciosVentanaEsquemaEjes.activarConsultar}" update=":formConsulta:ventanaCompletaConsulta" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Consultar"/>
+			</h:form>
+			
+			<!-- Script que permite decidir que ventana de manipulacion de datos va a mostrar (M: Modificar, E: Eliminar, C: Consultar) -->
+			<script type="text/javascript">
+			
+			//Metodo que decide que funcion ejecutar dependiendo del contenido del atributo args.tarea
+		        function handleRequest(xhr, status, args) {
+		            if (args.ok) {
+		            	switch (args.tarea) {
+							case "M":
+								ventanaModificar.show();	//Se ejecuta la ventana modificar
+								break;
+							case "E":
+				                confirmacion.show();		//Se ejecuta la ventana eliminar
+								break;
+							case "C":
+								ventanaConsulta.show();		//Se ejecuta la ventana consultar
+								break;
+						}
+		            }else{
+		                errorSeleccion.show();
+		            }
+		        }
+		    </script>
+		    
+		    <!-- Esta ventanita es un diálogo que le indica al usuario que no ha seleccionado ningún elemento para operar sobre él -->
+		    <p:dialog header="Operación Negada" widgetVar="errorSeleccion"
+		    			showEffect="fade" hideEffect="blind" modal="true" appendToBody="true" closable="false" closeOnEscape="false">
+		    	
+		    	<!-- Etiqueta que define un formulario simple con un boton de aceptar para ocultar la ventana -->
+		    	<h:form>
+		    		<h:panelGrid>
+		    			<f:facet name="header">
+		    				<br/>
+		    					Debe seleccionar un elemento
+		    				<br/>
+		    			</f:facet>
+		    		</h:panelGrid>
+		    		<p:separator/>
+		    		<p:commandButton id="aceptar" image="ui-icon-check" onclick="errorSeleccion.hide();" styleClass="botonVentana" title="Aceptar" type="buttom"/>
+		    	</h:form>
+		    </p:dialog>
+		   
+<!-- ······················································· TABLA ··············································· -->	
+
+			<!-- Esta es la tabla que contiene todos los registros de Esquema de Ejes en la base de datos para la empresa
+			en cuestión. Esta tabla permite organizar los registros por páginas y ofrece la funición de filtrar los registros
+			según la propiedad indicada. Además, permite hace la selección de un registro para operar sobre él -->
+			
+			<!-- Etiqueta que define el formulario de la tabla con todos los datos de los Esquemas de Eje -->
+			<h:form id="formTabla">
+			
+				<!-- Etiqueta que define un panel que contendra la tabla con los datos de los Esquemas de Eje -->
+				<p:outputPanel id="tbEsquemaEje" style="width:100%;overflow:auto;">
+					<p:dataTable id="Ejes" value="#{serviciosVentanaEsquemaEjes.esquemaEjeDataModel}" var="esquemaEje" style="width:129%" scrollable="false"
+                    				paginator="true" paginatorPosition="top" scrollHeight="450" rows="5"
+                 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+					                rowsPerPageTemplate="5,10,15"
+					                emptyMessage="No se encontraron resultados" selectionMode="single" 
+									selection="#{serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado}" onRowSelectUpdate=":formModificar:dataMod">
+						
+						<!-- Etiqueta que define el contenido de la primera columna de la tabla, en la que iran los nombres de los Esquemas de Eje-->
+						<p:column filterBy="#{esquemaEje.nombreEsquema}" filterMatchMode="contains">
+							
+							<!-- Etiqueta que define el titulo de la culumna -->
+							<f:facet name="header">
+						        <h:outputText value="Nombre" />
+						    </f:facet>
+						    
+						    <!-- Etiqueta que carga los datos del campo nombre -->
+							<h:outputText value="#{esquemaEje.nombreEsquema}" />
+						</p:column>
+						<p:column filterBy="#{esquemaEje.tipo}" filterMatchMode="contains">
+							<f:facet name="header">
+						        <h:outputText value="Tipo" />
+						    </f:facet>
+							<h:outputText value="#{esquemaEje.tipo}" />
+						</p:column>
+						<p:column >
+							<f:facet name="header">
+						        <h:outputText value="Descripción" />
+						    </f:facet>
+							<h:outputText value="#{esquemaEje.descripcion}" />
+						</p:column>
+						
+					</p:dataTable>
+				</p:outputPanel>
+			</h:form>
+
+<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+			
+			<!-- Etiqueta que habilita los mensajes FacesMessage, de informacion -->
+			<p:growl id="mensajes" showDetail="true" life="4000"/> <!-- Este es un diálogo especial para mensajes, a través de
+																él se mostrarán todos los mensajes de esta sección -->
+			
+			<!-- Este será un diálogo para agregar un nuevo registro en la base de datos de Esquema de Ejes. La presente cuenta con
+			20 botones destinados a seleccionar los neumáticos que el usuario desee activar para el esquema, de igual forma se presentan
+			5 botones para seleccionar los ejes del esquema; ambos tipos de botones cuentan con una variable en el lado del servidor
+			con la finalidad de cambiar el fondo de dicho botón y así mostrar de forma animada la interacción humano-computador,
+			también cuenta con funciones que le permiten registrar los cambios ocurridos en la selección para que posteriormente se puedan
+			registrar en la base de datos. Es importante resaltar que los botones deben efectuar la función de actualización sobre los
+			elementos que lo requieran para que se muestren los cambios.
+			
+			Este formulario también cuenta con los botones de Aceptar, Cancelar y Limpiar para efectuar las acciones correspondientes,
+			según lo requiera el usuario y así registrar los cambios necesarios en el lado del servidor -->
+			
+			
+				<script type="text/javascript">
+				
+					//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+					function refrescarNuevo(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevo").reset();
+						}
+					}
+				</script>
+				
+				<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+				<p:dialog widgetVar="ventanaRegistro" header="Crear Esquema de Ejes" closeOnEscape="false" modal="true" appendToBody="true"
+						  showEffect="fade" hideEffect="fade" closable="false" height="300" width="650">
+					
+					<!-- Etiqueta que define el formulario que contendra los campos de los a llenar del Esquema de Eje nuevo -->
+						<h:form id="formNuevo">
+						
+						<!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+						<h:panelGrid id="ventanaCompleta" columns="2">
+							<h:panelGrid id="imagen" columns="5">
+								<p:commandButton id="neumatico11" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico1}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico1}" update="nombre neumatico11 :mensajes"/>
+								<p:commandButton id="neumatico12" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico2}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico2}" update="nombre neumatico12 :mensajes"/>
+								<p:commandButton id="eje1" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje1}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje1}" update="nombre eje1 :mensajes"/>
+								<p:commandButton id="neumatico13" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico3}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico3}" update="nombre neumatico13 :mensajes"/>
+								<p:commandButton id="neumatico14" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico4}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico4}" update="nombre neumatico14 :mensajes"/>
+								<p:commandButton id="neumatico21" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico5}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico5}" update="nombre neumatico21 :mensajes"/>
+								<p:commandButton id="neumatico22" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico6}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico6}" update="nombre neumatico22 :mensajes"/>
+								<p:commandButton id="eje2" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje2}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje2}" update="nombre eje2 :mensajes"/>
+								<p:commandButton id="neumatico23" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico7}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico7}" update="nombre neumatico23 :mensajes"/>
+								<p:commandButton id="neumatico24" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico8}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico8}" update="nombre neumatico24 :mensajes"/>
+								<p:commandButton id="neumatico31" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico9}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico9}" update="nombre neumatico31 :mensajes"/>
+								<p:commandButton id="neumatico32" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico10}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico10}" update="nombre neumatico32 :mensajes"/>
+								<p:commandButton id="eje3" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje3}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje3}" update="nombre eje3 :mensajes"/>
+								<p:commandButton id="neumatico33" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico11}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico11}" update="nombre neumatico33 :mensajes"/>
+								<p:commandButton id="neumatico34" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico12}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico12}" update="nombre neumatico34 :mensajes"/>
+								<p:commandButton id="neumatico41" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico13}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico13}" update="nombre neumatico41 :mensajes"/>
+								<p:commandButton id="neumatico42" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico14}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico14}" update="nombre neumatico42 :mensajes"/>
+								<p:commandButton id="eje4" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje4}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje4}" update="nombre eje4 :mensajes"/>
+								<p:commandButton id="neumatico43" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico15}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico15}" update="nombre neumatico43 :mensajes"/>
+								<p:commandButton id="neumatico44" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico16}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico16}" update="nombre neumatico44 :mensajes"/>
+								<p:commandButton id="neumatico51" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico17}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico17}" update="nombre neumatico51 :mensajes"/>
+								<p:commandButton id="neumatico52" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico18}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico18}" update="nombre neumatico52 :mensajes"/>
+								<p:commandButton id="eje5" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje5}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje5}" update="nombre eje5 :mensajes"/>
+								<p:commandButton id="neumatico53" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico19}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico19}" update="nombre neumatico53 :mensajes"/>
+								<p:commandButton id="neumatico54" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico20}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico20}" update="nombre neumatico54 :mensajes"/>
+							</h:panelGrid> 
+						   
+							
+					       <h:panelGrid id="grid" columns="2">
+					       
+					       		<!-- Etiqueta que define un label(texto no modificable) -->
+						   		<h:outputLabel value="Tipo: *" for="tipo"/>
+						   		
+						   		<!-- Etiqueta que define un menu desplegable -->
+						   		<h:selectOneMenu id="tipo" label="Tipo" value="#{serviciosVentanaEsquemaEjes.tipo}" require="true">  
+					                
+					                <!-- Etiqueta que define los elementos dentro de la lista -->
+					                <f:selectItem itemLabel="-Seleccione-" itemValue="" />
+				               		<f:selectItems value="#{serviciosVentanaEsquemaEjes.listaTipo}" var="tipo" itemValue="#{tipo}"/>
+				               		
+				               		<!-- Etiqueta que permite escuchar eventos Ajax -->
+				               		<p:ajax action="#{serviciosVentanaEsquemaEjes.construirNombre}" update="nombre, neumatico11, neumatico12, neumatico13, neumatico14, 
+			       						 															 neumatico21, neumatico22, neumatico23, neumatico24, 
+			       						 															 neumatico31, neumatico32, neumatico33, neumatico34, 
+			       						 															 neumatico41, neumatico42, neumatico43, neumatico44, 
+			       						 															 neumatico51, neumatico52, neumatico53, neumatico54,
+			       						 															 eje1, eje2, eje3, eje4, eje5,
+			       						 															 tipo"/>
+					            </h:selectOneMenu>  
+						   		<h:outputLabel value="Nombre: *" for="nombre"/>
+						   		<h:inputText id="nombre" value="#{serviciosVentanaEsquemaEjes.esquemaEje.nombreEsquema}" label="Nombre" disabled="true" required="true">
+						   			<f:validateLength maximum="60"/>
+						   		</h:inputText>
+						   		
+						   		<h:outputLabel value="Descripción: " for="descripcion"/>
+						   		<h:inputTextarea id="descripcion" value="#{serviciosVentanaEsquemaEjes.esquemaEje.descripcion}" label="Descripción">
+						   			<f:validateLength maximum="255"/>
+						   		</h:inputTextarea>
+						   		
+						   		<!--  <h:outputLabel value="Empresa: *" for="empresa"/>
+								<h:inputText id="empresa" label="Empresa" value="#{serviciosVentanaEsquemaEjes.esquemaEje.empresa.nombre}" disabled="true" required="true"/>
+								-->						
+							</h:panelGrid>
+							
+						</h:panelGrid>
+						
+						<!-- Etiqueta que dibuja un separador en el panel -->
+						<p:separator/>			
+			       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaEsquemaEjes.guardarOModificar}" 
+			       						 image="ui-icon-disk" oncomplete="refrescarNuevo(xhr, status, args);" update=":mensajes,:formTabla:tbEsquemaEje, neumatico11, neumatico12, neumatico13, neumatico14, 
+			       						 																								neumatico21, neumatico22, neumatico23, neumatico24, 
+			       						 																								neumatico31, neumatico32, neumatico33, neumatico34, 
+			       						 																								neumatico41, neumatico42, neumatico43, neumatico44, 
+			       						 																								neumatico51, neumatico52, neumatico53, neumatico54,
+			       						 																								eje1, eje2, eje3, eje4, eje5,
+			       						 															 									tipo, nombre, descripcion">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+										 actionListener="#{serviciosVentanaEsquemaEjes.cancelar}" oncomplete="refrescarNuevo(xhr, status, args); ventanaRegistro.hide();"
+										 image="ui-icon-closethick" update=":formTabla:tbEsquemaEje, neumatico11, neumatico12, neumatico13, neumatico14, 
+			       						 															 neumatico21, neumatico22, neumatico23, neumatico24, 
+			       						 															 neumatico31, neumatico32, neumatico33, neumatico34, 
+			       						 															 neumatico41, neumatico42, neumatico43, neumatico44, 
+			       						 															 neumatico51, neumatico52, neumatico53, neumatico54,
+			       						 															 eje1, eje2, eje3, eje4, eje5,
+			       						 															 tipo, nombre, descripcion">
+				        </p:commandButton> 
+			   			<p:commandButton styleClass="botonVentana" title="Limpiar" actionListener="#{serviciosVentanaEsquemaEjes.cancelar}"
+			   							 style="margin-left:5px" image="ui-icon-refresh" update=":formTabla:tbEsquemaEje, neumatico11, neumatico12, neumatico13, neumatico14, 
+			       						 															 neumatico21, neumatico22, neumatico23, neumatico24, 
+			       						 															 neumatico31, neumatico32, neumatico33, neumatico34, 
+			       						 															 neumatico41, neumatico42, neumatico43, neumatico44, 
+			       						 															 neumatico51, neumatico52, neumatico53, neumatico54,
+			       						 															 eje1, eje2, eje3, eje4, eje5,
+			       						 															 tipo, nombre, descripcion">
+			       						 															 </p:commandButton>
+					</h:form>
+				</p:dialog>
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº MODIFICAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana emergente se abre cuando se tiene la necesidad de realizar un cambio sobre un esquema de ejes ya
+			registrado, pero para ello se debe seleccionar previamente en la tabla para que se actualicen los elementos de esta
+			ventana con los datos del registro. Es importante acotar que del lado del servidor existe una variable de tipo EsquemaEje
+			llamada esquemaEjeSeleccionado que se usa para recibir el registro seleccionado de la tabla y realizar los cambios
+			deseados sobre él, los cuales serán guardados en la base de datos.
+			
+			De forma análoga a la venta de agregar nuevo, esta ventana cuenta con botones para seleccionar ejes, neumáticos, botones para aceptar y cancelar. También,
+			cuenta con los método para realizar las operaciones del lado del servidor  -->
+			
+			
+				<script type="text/javascript">
+				
+					//Funcion que llama a los formularios "Modificar" y los vuelve a cargar
+					function refrescarMod(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formModificar").reset();
+							ventanaModificar.hide();
+						}
+					}
+				</script>
+				
+				<p:dialog widgetVar="ventanaModificar" header="Modificar Esquema de Eje" closeOnEscape="false" modal="true" appendToBody="true"
+							showEffect="fade" hideEffect="fade" closable="false" height="300" width="600">
+					<h:form id="formModificar">
+						<h:panelGrid id="ventanaCompletaModificar" columns="2">
+							<h:panelGrid id="imagenModificar" columns="5">
+								<p:commandButton id="neumatico11Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico1}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico1}" update="nombreMod neumatico11Mod :mensajes"/>
+								<p:commandButton id="neumatico12Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico2}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico2}" update="nombreMod neumatico12Mod :mensajes"/>
+								<p:commandButton id="eje1Mod" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje1}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje1}" update="nombreMod eje1Mod :mensajes"/>
+								<p:commandButton id="neumatico13Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico3}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico3}" update="nombreMod neumatico13Mod :mensajes"/>
+								<p:commandButton id="neumatico14Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico4}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico4}" update="nombreMod neumatico14Mod :mensajes"/>
+								<p:commandButton id="neumatico21Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico5}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico5}" update="nombreMod neumatico21Mod :mensajes"/>
+								<p:commandButton id="neumatico22Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico6}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico6}" update="nombreMod neumatico22Mod :mensajes"/>
+								<p:commandButton id="eje2Mod" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje2}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje2}" update="nombreMod eje2Mod :mensajes"/>
+								<p:commandButton id="neumatico23Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico7}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico7}" update="nombreMod neumatico23Mod :mensajes"/>
+								<p:commandButton id="neumatico24Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico8}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico8}" update="nombreMod neumatico24Mod :mensajes"/>
+								<p:commandButton id="neumatico31Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico9}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico9}" update="nombreMod neumatico31Mod :mensajes"/>
+								<p:commandButton id="neumatico32Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico10}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico10}" update="nombreMod neumatico32Mod :mensajes"/>
+								<p:commandButton id="eje3Mod" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje3}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje3}" update="nombreMod eje3Mod :mensajes"/>
+								<p:commandButton id="neumatico33Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico11}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico11}" update="nombreMod neumatico33Mod :mensajes"/>
+								<p:commandButton id="neumatico34Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico12}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico12}" update="nombreMod neumatico34Mod :mensajes"/>
+								<p:commandButton id="neumatico41Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico13}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico13}" update="nombreMod neumatico41Mod :mensajes"/>
+								<p:commandButton id="neumatico42Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico14}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico14}" update="nombreMod neumatico42Mod :mensajes"/>
+								<p:commandButton id="eje4Mod" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje4}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje4}" update="nombreMod eje4Mod :mensajes"/>
+								<p:commandButton id="neumatico43Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico15}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico15}" update="nombreMod neumatico43Mod :mensajes"/>
+								<p:commandButton id="neumatico44Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico16}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico16}" update="nombreMod neumatico44Mod :mensajes"/>
+								<p:commandButton id="neumatico51Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico17}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico17}" update="nombreMod neumatico51Mod :mensajes"/>
+								<p:commandButton id="neumatico52Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico18}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico18}" update="nombreMod neumatico52Mod :mensajes"/>
+								<p:commandButton id="eje5Mod" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje5}" actionListener="#{serviciosVentanaEsquemaEjes.activarEje5}" update="nombreMod eje5Mod :mensajes"/>
+								<p:commandButton id="neumatico53Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico19}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico19}" update="nombreMod neumatico53Mod :mensajes"/>
+								<p:commandButton id="neumatico54Mod" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico20}" actionListener="#{serviciosVentanaEsquemaEjes.activarNeumatico20}" update="nombreMod neumatico54Mod :mensajes"/>
+							</h:panelGrid> 
+						   
+							
+					       <h:panelGrid id="gridMod" columns="2">
+					       
+						   		<h:outputLabel value="Tipo: *" for="tipoMod"/>
+						   		<h:selectOneMenu id="tipoMod" label="Tipo" value="#{serviciosVentanaEsquemaEjes.tipo}" require="true"> 
+				               		<f:selectItems value="#{serviciosVentanaEsquemaEjes.listaTipo}" var="tipo" itemValue="#{tipo}"/>
+				               		
+				               		<p:ajax action="#{serviciosVentanaEsquemaEjes.construirNombre}" update="nombreMod, neumatico11Mod, neumatico12Mod, neumatico13Mod, neumatico14Mod, 
+			       						 															 neumatico21Mod, neumatico22Mod, neumatico23Mod, neumatico24Mod, 
+			       						 															 neumatico31Mod, neumatico32Mod, neumatico33Mod, neumatico34Mod, 
+			       						 															 neumatico41Mod, neumatico42Mod, neumatico43Mod, neumatico44Mod, 
+			       						 															 neumatico51Mod, neumatico52Mod, neumatico53Mod, neumatico54Mod,
+			       						 															 eje1Mod, eje2Mod, eje3Mod, eje4Mod, eje5Mod,
+			       						 															 tipoMod"/>
+					            </h:selectOneMenu>  
+						   		<h:outputLabel value="Nombre: *" for="nombreMod"/>
+						   		<h:inputText id="nombreMod" value="#{serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.nombreEsquema}" label="Nombre" disabled="true" required="true">
+						   			<f:validateLength maximum="60"/>
+						   		</h:inputText>
+						   		
+						   		<h:outputLabel value="Descripción: " for="descripcionMod"/>
+						   		<h:inputTextarea id="descripcionMod" value="#{serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.descripcion}" label="Descripción">
+						   			<f:validateLength maximum="255"/>
+						   		</h:inputTextarea>
+						   		
+						   		<!--  <h:outputLabel value="Empresa: *" for="empresaMod"/>
+								<h:inputText id="empresaMod" label="Empresa" value="#{serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.empresa.nombre}" disabled="true" required="true"/>
+								-->
+							</h:panelGrid>
+							
+						</h:panelGrid>  
+				 
+				       <p:separator />			
+			       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+			       						 actionListener="#{serviciosVentanaEsquemaEjes.guardarOModificar}"  
+			       						 image="ui-icon-disk" oncomplete="refrescarMod(xhr, status, args); " update=":mensajes,dataMod,:formTabla:tbEsquemaEje,
+			       						 																					neumatico11Mod, neumatico12Mod, neumatico13Mod, neumatico14Mod, 
+			       						 																					neumatico21Mod, neumatico22Mod, neumatico23Mod, neumatico24Mod, 
+			       						 																					neumatico31Mod, neumatico32Mod, neumatico33Mod, neumatico34Mod, 
+			       						 																					neumatico41Mod, neumatico42Mod, neumatico43Mod, neumatico44Mod, 
+			       						 																					neumatico51Mod, neumatico52Mod, neumatico53Mod, neumatico54Mod,
+			       						 																					eje1Mod, eje2Mod, eje3Mod, eje4Mod, eje5Mod,
+			       						 															 						tipoMod, nombreMod, descripcionMod">
+				        </p:commandButton> 
+						<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+										 actionListener="#{serviciosVentanaEsquemaEjes.cancelar}" oncomplete="refrescarMod(xhr, status, args); ventanaModificar.hide();"
+										 image="ui-icon-closethick" update=":formTabla:tbEsquemaEje, neumatico11Mod, neumatico12Mod, neumatico13Mod, neumatico14Mod, 
+			       						 															 neumatico21Mod, neumatico22Mod, neumatico23Mod, neumatico24Mod, 
+			       						 															 neumatico31Mod, neumatico32Mod, neumatico33Mod, neumatico34Mod, 
+			       						 															 neumatico41Mod, neumatico42Mod, neumatico43Mod, neumatico44Mod, 
+			       						 															 neumatico51Mod, neumatico52Mod, neumatico53Mod, neumatico54Mod,
+			       						 															 eje1Mod, eje2Mod, eje3Mod, eje4Mod, eje5Mod,
+			       						 															 tipoMod, nombreMod, descripcionMod"/>
+					</h:form>
+				</p:dialog>
+				
+			
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº ELIMINAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta es una simple ventana de diálogo para aceptar o rechazar la operación de eliminación de unn registro,
+			pero dicho registro debe haber sido seleccionado en la tabla previamente para que en el lado del servidor se pueda
+			recibir este registro y escribirlo en la variable esquemaEjeSeleccionado, el cual servirá para realizar la operación
+			de eliminación. Como en todos los botones, se debe efectuar la operación de actualización pero esta vez para
+			que se aprecie la eliminación en la tabla -->
+			
+			<p:dialog id="ventanaEliminar" header="Confirme la operación" widgetVar="confirmacion"
+						showEffect="fade" hideEffect="blind" closable="false" closeOnEscape="false" modal="true" appendToBody="true">
+				<h:form id="formEliminar">
+					<script type="text/javascript">
+					
+							//Funcion que llama a los formularios eliminar y los vuelve a cargar
+							function refrescarEliminar() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formEliminar").reset();
+							}
+					</script>
+					<h:panelGrid>
+						<f:facet name="header">
+							<br/>
+								Está seguro que desea eliminar este Esquema de Eje?
+							<br/>
+						</f:facet>
+					</h:panelGrid>
+					<p:separator/>
+					<p:commandButton id="confirmar" styleClass="botonVentana" title="Aceptar" actionListener="#{serviciosVentanaEsquemaEjes.eliminar}"
+				        				 image="ui-icon-check" oncomplete="refrescarEliminar(); confirmacion.hide();" update=":formTabla:tbEsquemaEje,:mensajes"/>  
+				    <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" title="Cancelar" update=":formTabla:tbEsquemaEje"
+				        				 actionListener="#{serviciosVentanaEsquemaEjes.cancelar}" oncomplete="confirmacion.hide();"/>  
+				</h:form>
+			</p:dialog>
+		   	
+<!-- ººººººººººººººººººººººººººººººººººººººº CONSULTA ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana se asemeja a la ventana de modificación, ya que utiliza la misma variable en el lado del servidor
+			y con la misma dinámica para operarla, con la pequeña diferencia de que los botones y cajas de texto estan
+			inhabilitadas para que solo puedan mostrar los datos de la variable antes mencionada -->
+			
+			
+				<p:dialog widgetVar="ventanaConsulta" header="Consultar Esquema" closeOnEscape="false" modal="true" appendToBody="true"
+					showEffect="fade" hideEffect="fade" closable="false" height="300" width="650">
+					<h:form id="formConsulta">
+						<h:panelGrid id="ventanaCompletaConsulta" columns="2">
+							<h:panelGrid id="imagenConsulta" columns="5">
+								<p:commandButton id="neumatico11Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico1}" disabled="true"/>
+								<p:commandButton id="neumatico12Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico2}" disabled="true"/>
+								<p:commandButton id="eje1Consul" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje1}" disabled="true"/>
+								<p:commandButton id="neumatico13Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico3}" disabled="true"/>
+								<p:commandButton id="neumatico14Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico4}" disabled="true"/>
+								<p:commandButton id="neumatico21Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico5}" disabled="true"/>
+								<p:commandButton id="neumatico22Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico6}" disabled="true"/>
+								<p:commandButton id="eje2Consul" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje2}" disabled="true"/>
+								<p:commandButton id="neumatico23Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico7}" disabled="true"/>
+								<p:commandButton id="neumatico24Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico8}" disabled="true"/>
+								<p:commandButton id="neumatico31Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico9}" disabled="true"/>
+								<p:commandButton id="neumatico32Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico10}" disabled="true"/>
+								<p:commandButton id="eje3Consul" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje3}" disabled="true"/>
+								<p:commandButton id="neumatico33Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico11}" disabled="true"/>
+								<p:commandButton id="neumatico34Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico12}" disabled="true"/>
+								<p:commandButton id="neumatico41Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico13}" disabled="true"/>
+								<p:commandButton id="neumatico42Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico14}" disabled="true"/>
+								<p:commandButton id="eje4Consul" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje4}" disabled="true"/>
+								<p:commandButton id="neumatico43Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico15}" disabled="true"/>
+								<p:commandButton id="neumatico44Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico16}" disabled="true"/>
+								<p:commandButton id="neumatico51Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico17}" disabled="true"/>
+								<p:commandButton id="neumatico52Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico18}" disabled="true"/>
+								<p:commandButton id="eje5Consul" styleClass="eje" style="#{serviciosVentanaEsquemaEjes.fondoEje5}" disabled="true"/>
+								<p:commandButton id="neumatico53Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico19}" disabled="true"/>
+								<p:commandButton id="neumatico54Consul" styleClass="neumatico" style="#{serviciosVentanaEsquemaEjes.fondoNeumatico20}" disabled="true"/>
+							</h:panelGrid> 
+						   
+							
+					       <h:panelGrid id="gridConsul" columns="2">
+					       
+						   		<h:outputLabel value="Tipo: *" for="tipoConsul"/>
+						   		<h:inputText id="tipoConsul" value="#{serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.tipo}" label="Tipo" disabled="true"/> 
+						   		<h:outputLabel value="Nombre: *" for="nombreConsul"/>
+						   		<h:inputText id="nombreConsul" value="#{serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.nombreEsquema}" label="Nombre" disabled="true" required="true">
+						   			<f:validateLength maximum="60"/>
+						   		</h:inputText>
+						   		
+						   		<h:outputLabel value="Descripción: " for="descripcionConsul"/>
+						   		<h:inputTextarea id="descripcionConsul" value="#{serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.descripcion}" label="Descripción" disabled="true">
+						   			<f:validateLength maximum="255"/>
+						   		</h:inputTextarea>
+						   		
+						   		<!-- <h:outputLabel value="Empresa: *" for="empresaConsul"/>
+								<h:inputText id="empresaConsul" label="Empresa" value="#{serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.empresa.nombre}" disabled="true" required="true"/>
+								-->
+							</h:panelGrid>
+							
+						</h:panelGrid>  
+				 
+				       <p:separator />		
+		     			<p:commandButton styleClass="botonVentana" title="Aceptar" onclick="ventanaConsulta.hide();" actionListener="#{serviciosVentanaEsquemaEjes.cancelar}"
+										 image="ui-icon-check" update=":formTabla:tbEsquemaEje"/>
+				   </h:form>
+				</p:dialog>
+			
+			
+		</div>
+		
+	</ui:define>
+</ui:composition>

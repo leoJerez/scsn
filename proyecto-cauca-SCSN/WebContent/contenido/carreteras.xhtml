@@ -1,0 +1,273 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.prime.com.tr/ui"
+	template="../templates/plantilla.xhtml">
+	
+	<!-- Etiqueta que define el texto en la cabecera de la pagina -->
+	<ui:define name="head">::SCSN - Tipos de Carreteras</ui:define>
+	<ui:define name="content">
+	
+		<!-- Etiqueta que define un titulo -->
+		<h1 class="title ui-widget-header ui-corner-all">Tipos de Carreteras</h1>
+		<br/>
+		
+		<div class="entry" style="line-height:200%">
+<!-- ······················································· BOTONERA ··············································· -->			
+			
+			<!-- Esta botonera hace una solicitud al servidor donde se activan las funciones que se van a ejecutar, esto se hace
+			a través de la clase ServiciosVentanaTipoCarretera y javascript recibe los parámetros, los cuales se usarán
+			para abrir la ventana corresppondiente según la operación requerida -->
+			
+			<!-- Etiqueta que define un formulario -->
+			<h:form id="formBotonera">
+			
+			<!-- Etiquetas que definen una serie de botones los cuales ejecutan funciones al presionarse -->
+				<p:commandButton id="btnNuevo" image="ui-icon-plusthick" onclick="ventanaRegistro.show()" update=":formNuevo:data" value="Nuevo"/>
+				<p:commandButton id="btnModificar" image="ui-icon-wrench" action="#{serviciosVentanaTipoCarretera.activarModificar}" update=":formModificar:dataMod" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Modificar" />
+				<p:commandButton id="btnEliminar" image="ui-icon-trash" action="#{serviciosVentanaTipoCarretera.activarEliminar}" update=":formEliminar:eliminar" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Eliminar"/>
+				<p:commandButton id="btnConsultar" image="ui-icon-search" action="#{serviciosVentanaTipoCarretera.activarConsultar}" update=":formConsulta:dataConsulta" style="margin-left:5px" oncomplete="handleRequest(xhr, status, args);" value="Consultar"/>
+			</h:form>
+			
+			<!-- Script que permite decidir que ventana de manipulacion de datos va a mostrar (M: Modificar, E: Eliminar, C: Consultar) -->
+			<script type="text/javascript">
+			
+				//Metodo que decide que funcion ejecutar dependiendo del contenido del atributo args.tarea
+		        function handleRequest(xhr, status, args) {
+		            if (args.ok) {
+		            	switch (args.tarea) {
+							case "M":
+								ventanaModificar.show();	//Se ejecuta la ventana modificar
+								break;
+							case "E":
+				                confirmacion.show();		//Se ejecuta la ventana eliminar
+								break;
+							case "C":
+								ventanaConsulta.show();		//Se ejecuta la ventana consultar
+								break;
+						}
+		            }else{
+		                errorSeleccion.show();
+		            }
+		        }
+		    </script>
+		    
+		    <!-- Etiqueta que define una ventana de mensaje en caso de que no se halla seleccionado ningun elemento de la tabla -->
+		   	<p:confirmDialog message="Debe seleccionar un elemento" header="Operaciòn Negada" severity="alert" widgetVar="errorSeleccion"
+							showEffect="fade" hideEffect="blind" modal="false" closable="false" closeOnEscape="false">
+		   		
+		   		<!-- Etiqueta que define un formulario simple con un boton de aceptar para ocultar la ventana -->
+		   		<h:form>
+		   			<p:commandButton id="aceptar" image="ui-icon-check" onclick="errorSeleccion.hide();" styleClass="botonVentana" title="Aceptar" type="buttom"/>
+		   		</h:form>
+		   	</p:confirmDialog>
+
+<!-- ······················································· TABLA ··············································· -->	
+
+			<!-- Esta es tabla contiene los registros los Tipos de Carreteras introducidos en la base de datos. 
+			Esta tabla permite organizar los registros por páginas y ofrece la funición de filtrar los registros
+			según la propiedad indicada. Además, permite hace la selección de un registro para manipularlo(Consultarlo, Modificarlo y Eliminarlo) -->
+			
+			<!-- Etiqueta que define el formulario de la tabla con todos los datos de las carreteras -->
+			<h:form id="formTabla">
+			
+				<!-- Etiqueta que define un panel que contendra la tabla con los datos de las carreteras -->
+				<p:outputPanel id="tbTipoCarretera" style="width:100%;overflow:auto;" >
+				
+					<!-- Etiqueta que define la tabla con los datos de las carreteras -->
+					<p:dataTable id="tipoCarretera" value="#{serviciosVentanaTipoCarretera.tipoCarreteraDataModel}" var="tipoCarretera" 
+                    				paginator="true" paginatorPosition="top" style="width:129%" scrollable="false" scrollHeight="450"
+                 					paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"  
+					                rowsPerPageTemplate="5,10,15" 
+					                emptyMessage="No se encontraron resultados" selectionMode="single" 
+									selection="#{serviciosVentanaTipoCarretera.tipoCarreteraSeleccionado}" onRowSelectUpdate=":formModificar:dataMod">
+						
+						<!-- Etiqueta que define el contenido de la primera columna de la tabla, en la que iran los nombres de los tipos de carreteras-->
+						<p:column filterBy="#{tipoCarretera.nombre}" filterMatchMode="contains" >
+							
+							<!-- Etiqueta que define el titulo de la culumna -->
+							<f:facet name="header">
+						        <h:outputText value="Nombre" />
+						    </f:facet>
+						    
+						    <!-- Etiqueta que carga los datos del campo nombre -->
+							<h:outputText value="#{tipoCarretera.nombre}" />
+						</p:column>
+						
+						<p:column>
+							<f:facet name="header">
+						        <h:outputText value="Descripción" />
+						    </f:facet>
+							<h:outputText value="#{tipoCarretera.descripcion}" />
+						</p:column>
+						
+					</p:dataTable>
+				</p:outputPanel>
+			</h:form>
+
+<!-- ······················································· VENTANAS EMERGENTES ······················································· -->
+
+<!-- ººººººººººººººººººººººººººººº NUEVO ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá al usuario agregar un nuevo Tipo de Carretera a la base de datos, 
+			una vez llenados y validados todos los campos -->
+			
+			<!-- Etiqueta que habilita los mensajes FacesMessage, de informacion -->
+			<p:growl id="mensajes" showDetail="true" life="4000"/>
+			
+			<!-- Etiqueta que define el formulario que contendra los campos de los a llenar del tipo de carretera nueva -->
+			<h:form id="formNuevo">
+				<script type="text/javascript">
+				
+					//Funcion que llama a las formularios "Nuevo" y los vuelve a cargar
+						
+					function refrescarNuevo(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formNuevo").reset();
+						}
+					}
+				</script>
+				
+				
+				<!-- Etiqueta que define un panel que se sobrepondra al panel que lo llame -->
+				<p:dialog widgetVar="ventanaRegistro" header="Registro de Tipos de Carreteras" modal="false"
+						  showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" width="350">
+			       
+			       <!-- Etiqueta que define una grid que contendra los campos y etiquetas del formulario -->
+			       <h:panelGrid id="grid" columns="2">
+				   		
+				   		<!-- Etiqueta que define un label(texto no modificable) -->
+				   		<h:outputLabel value="Nombre: *" for="nombre"/>
+				   		
+				   		<!-- Etiqueta que define un campo de texto -->
+				   		<h:inputText id="nombre" value="#{serviciosVentanaTipoCarretera.tipoCarretera.nombre}" label="Nombre" required="true" >
+				   			
+				   			<!-- Etiqueta que define la validacion del campo permitiendo no mas de 60 caracteres -->
+				   			<f:validateLength maximum="60"/>
+				   		</h:inputText>
+				   		
+				   		<h:outputLabel value="Descripción: *" for="descripcion"/>
+				   		<h:inputTextarea id="descripcion" value="#{serviciosVentanaTipoCarretera.tipoCarretera.descripcion}" label="Descripcion">
+				   			<f:validateLength maximum="150"/>
+				   		</h:inputTextarea>
+				   		
+					</h:panelGrid>
+					
+					<!-- Etiqueta que dibuja un separador en el panel -->
+					<p:separator/>
+					
+					<!-- Los siguientes botones, permiten al usuario decidir entre: 
+					Guardar la información ingresada en los campos(Aceptar)
+					Salirse de la ventana sin guardar ninguna información(Cancelar)
+					Limpiar toda la ventana en caso de algún error al ingresar los datos(Limpiar) -->
+		       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+		       						 actionListener="#{serviciosVentanaTipoCarretera.guardarOModificar}" 
+		       						 image="ui-icon-disk" oncomplete="refrescarNuevo(xhr, status, args);" update=":mensajes,:formTabla:tbTipoCarretera">
+			        </p:commandButton> 
+					<p:commandButton styleClass="botonVentana" title="Cancelar"  style="margin-left:5px"
+									 actionListener="#{serviciosVentanaTipoCarretera.cancelar}" oncomplete="refrescarNuevo(xhr, status, args); ventanaRegistro.hide();"
+									 image="ui-icon-closethick" update=":formTabla:tbTipoCarretera">
+			        </p:commandButton> 
+		   			<p:commandButton styleClass="botonVentana" title="Limpiar" type="reset"
+		   							 style="margin-left:5px" image="ui-icon-refresh"/>
+				</p:dialog>
+			</h:form>
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº MODIFICAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá realizar cambios sobre los Tipos de Carretera ingresados en la base de datos 
+				 un vez que haya sido seleccionado de la tabla -->
+
+			<h:form id="formModificar">
+				<script type="text/javascript">
+						
+						
+					//Funcion que llama a los formularios modificar y los vuelve a cargar
+					function refrescarMod(xhr, status, args) {
+						if (args.limpiar) {
+							document.getElementById("formTabla").reset();
+							document.getElementById("formModificar").reset();
+							ventanaModificar.hide();
+						}
+					}
+				</script>
+				
+				<p:dialog widgetVar="ventanaModificar" header="Modificar Datos del Tipo de Carretera" modal="false"
+							showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" width="350">
+					<h:panelGrid id="dataMod" columns="2">
+				   		<h:outputLabel value="Nombre: *" for="nombreMod"/>
+				   		<h:inputText id="nombreMod" value="#{serviciosVentanaTipoCarretera.tipoCarreteraSeleccionado.nombre}" label="Nombre" required="true" />
+				   		
+				   		<h:outputLabel value="Descripción: *" for="descripcionMod"/>
+				   		<h:inputTextarea id="descripcionMod" value="#{serviciosVentanaTipoCarretera.tipoCarreteraSeleccionado.descripcion}" label="Direccion"/>
+				   		
+			       </h:panelGrid>  
+			 
+			       <p:separator />
+		       		<p:commandButton styleClass="botonVentana" title="Aceptar"
+		       						 actionListener="#{serviciosVentanaTipoCarretera.guardarOModificar}" 
+		       						 image="ui-icon-disk" oncomplete="refrescarMod(xhr, status, args);" update=":mensajes,dataMod,:formTabla:tbTipoCarretera">
+			        </p:commandButton>
+					<p:commandButton styleClass="botonVentana" title="Cancelar" style="margin-left:5px"
+									 actionListener="#{serviciosVentanaTipoCarretera.cancelar}" oncomplete="refrescarMod(xhr, status, args); ventanaModificar.hide();"
+									 image="ui-icon-closethick" update=":formTabla:tbTipoCarretera">
+			        </p:commandButton>
+				</p:dialog>
+			</h:form>
+			
+<!-- ººººººººººººººººººººººººººººººººººººººº ELIMINAR ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana permitirá eliminar un Tipo de Carretera seleccionado previamente en la tabla
+				 esta ventana pide confirmación antes de procesar la operación -->
+			
+			<p:confirmDialog id="ventanaEliminar" message="Está seguro que desea eliminar este Tipo de Carretera?"  
+		               		header="Confirme la operación" severity="alert" widgetVar="confirmacion" modal="false"
+							showEffect="fade" hideEffect="blind" closable="false" closeOnEscape="false">  
+		       <h:form id="formEliminar">
+					<script type="text/javascript">
+					
+							//Funcion que llama a los formularios eliminar y los vuelve a cargar
+							function refrescarEliminar() {
+								document.getElementById("formTabla").reset();
+								document.getElementById("formEliminar").reset();
+							}
+					</script>
+			       <h:panelGrid id="eliminar" columns="2"> 
+				        <p:commandButton id="confirmar" styleClass="botonVentana" title="Aceptar" actionListener="#{serviciosVentanaTipoCarretera.eliminar}"
+				        				 image="ui-icon-check" oncomplete="refrescarEliminar(); confirmacion.hide();" update=":formTabla:tbTipoCarretera,:mensajes"/>  
+				        <p:commandButton id="rechazar" image="ui-icon-closethick" styleClass="botonVentana" title="Cancelar" update=":formTabla:tbEmpleado"
+				        				 actionListener="#{serviciosVentanaTipoCarretera.cancelar}" oncomplete="confirmacion.hide();"/>  
+			       </h:panelGrid>
+			   </h:form>
+		   	</p:confirmDialog>
+		   	
+<!-- ººººººººººººººººººººººººººººººººººººººº CONSULTA ººººººººººººººººººººººººººººº -->
+			
+			<!-- Esta ventana se encarga de mostrar toda la información referente al Tipo de Carretera seleccionado -->
+			
+			<h:form id="formConsulta">
+				<p:dialog widgetVar="ventanaConsulta" header="Consultar Tipo de Carretera" modal="false"
+					showEffect="fade" hideEffect="fade" closable="false" closeOnEscape="false" width="350">
+	       	
+			       <h:panelGrid id="dataConsulta" columns="2">
+				   		
+				   		<h:outputLabel value="Nombre: " for="nombreConsulta"/>
+				   		<h:outputText id="nombreConsulta" value="#{serviciosVentanaTipoCarretera.tipoCarreteraSeleccionado.nombre}"/>
+				   		
+				   		<h:outputLabel value="Descripción: " for="descripcionConsulta"/>
+				   		<h:inputTextarea id="descripcionConsulta" value="#{serviciosVentanaTipoCarretera.tipoCarreteraSeleccionado.descripcion}" disabled="true"/>
+			     		
+					</h:panelGrid>
+					<p:separator/>
+	     			<p:commandButton styleClass="botonVentana" title="Aceptar" onclick="ventanaConsulta.hide();"
+									 image="ui-icon-check" update=":formTabla:tbTipoCarretera"/>
+				</p:dialog>
+			</h:form>
+			
+			
+		</div>
+		
+	</ui:define>
+</ui:composition>
