@@ -48,7 +48,7 @@
      
       <!--<param-value>\var\lib\tomcat7\webapps\cauca-SCSN\WebContent\imagenes\filesUploaded</param-value>-->
      
-      <!-- <param-value>\var\lib\tomcat7\webapps\cauca-SCSN\imagenes\filesUploaded</param-value> -->  
+      <!-- <param-value>\var\lib\tomcat7\webapps\cauca-SCSN\imagenes\filesUploaded</param-value>-->
       
     </init-param>
   </filter>

@@ -190,16 +190,7 @@
 									   		</h:inputText>
 									   		<h:outputLabel/>
 									   		
-									   		<h:outputLabel value="Modelo: *" for="modelo"/>
-									   		<h:selectOneMenu id="modelo" label="Modelo" value="#{serviciosVentanaVehiculo.idModeloVehiculo}" >
-								                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
-							               		<f:selectItems value="#{serviciosVentanaVehiculo.listaModeloVehiculo}" var="modelo" itemValue="#{modelo.idModeloVehiculo}" itemLabel="#{modelo.nombre}"/>
-							               		<f:ajax event="blur" render="modelo messages"/>
-							               		<p:ajax action="#{serviciosVentanaVehiculo.actualizarMarcaTipoDentroCarretera}" update="tipoVehiculo, marcaVehiculo, dentroCarretera"/>
-								            </h:selectOneMenu>
-								            <p:commandButton onclick="ventanaNuevoModelo.show();" title="Nuevo Modelo" styleClass="botonVentana" image="ui-icon-plusthick" height="20" width="20"/>
-								  
-									   		<h:outputLabel value="Tipo Esquema de ejes: *" for="tipoEjes"/>
+									   		<h:outputLabel value="Tipo de Vehículo: *" for="tipoEjes"/>
 									   		<h:selectOneMenu id="tipoEjes" value="#{serviciosVentanaVehiculo.tipoEsquemaEjes}" >
 									   			<f:selectItem itemLabel="-Seleccione-" itemValue="0"/>
 									   			<f:selectItem itemValue="chuto" itemLabel="Chuto"/>
@@ -208,11 +199,20 @@
 									   		</h:selectOneMenu>
 									   		<h:outputLabel/>
 									   		
+									   		<h:outputLabel value="Modelo: *" for="modelo"/>
+									   		<h:selectOneMenu id="modelo" label="Modelo" value="#{serviciosVentanaVehiculo.idModeloVehiculo}" >
+								                <f:selectItem itemLabel="-Seleccione-" itemValue="0" />
+							               		<f:selectItems value="#{serviciosVentanaVehiculo.listaModeloVehiculo}" var="modelo" itemValue="#{modelo.idModeloVehiculo}" itemLabel="#{modelo.nombre}"/>
+							               		<f:ajax event="blur" render="modelo messages"/>
+							               		<p:ajax action="#{serviciosVentanaVehiculo.actualizarMarcaTipoDentroCarretera}" update="tipoVehiculo, marcaVehiculo, dentroCarretera"/>
+								            </h:selectOneMenu>
+								            <p:commandButton onclick="ventanaNuevoModelo.show();" title="Nuevo Modelo" styleClass="botonVentana" image="ui-icon-plusthick" height="20" width="20"/>
+									   		
 									   		<h:outputLabel value="Marca:" for="marcaVehiculo"/>
 									   		<h:inputText id="marcaVehiculo" value="#{serviciosVentanaVehiculo.vehiculo.modeloVehiculo.marcaVehiculo.nombre}" label="Marca" disabled="true"/>
 									   		<h:outputLabel/>
 								             
-									   		<h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculo"/>
+									   		<h:outputLabel value="Vehículo:" for="tipoVehiculo"/>
 									   		<h:inputText id="tipoVehiculo" value="#{serviciosVentanaVehiculo.vehiculo.modeloVehiculo.tipoVehiculo.nombre}" label="Tipo Vehículo" disabled="true"/>
 									   		<h:outputLabel value=""/>
 									   		
@@ -551,6 +551,19 @@
 									   		</h:inputText>
 									   		<h:outputLabel value=""/>
 									   		
+									   		
+								           <h:outputLabel value="Tipo de Vehículo Actual: *" for="tipoEjesMod"/>
+								           <h:inputText id="tipoEjesMod" value="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.tipo}" disabled="true"/>
+								           <h:outputLabel/>
+								           
+								            <h:outputLabel value="Cambiar tipo de Vehículo " for="tipoEjesCambioMod"/>
+									   		<h:selectOneMenu id="tipoEjesCambioMod" value="#{serviciosVentanaVehiculo.tipoEsquemaEjesMod}" >
+									   			<f:selectItem itemLabel="-Seleccione-" itemValue="0"/>
+									   			<f:selectItem itemValue="chuto" itemLabel="Chuto"/>
+									   			<f:selectItem itemValue="remolque" itemLabel="Remolque"/>
+									   		</h:selectOneMenu>
+									   		<h:outputLabel/>
+									   		
 									   		<h:outputLabel value="Modelo Actual: *" for="modeloActual"/>
 									   		<h:inputText id="modeloActual" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.nombre}" label="Modelo_Actual" disabled="true" />
 									   		<h:outputLabel value=""/>
@@ -562,25 +575,13 @@
 							               		
 							               		<p:ajax action="#{serviciosVentanaVehiculo.actualizarMarcaTipoDentroCarretera}" update="tipoVehiculoMod, marcaVehiculoMod, dentroCarreteraMod, modeloActual"/>
 								            </h:selectOneMenu>
-								            <p:commandButton onclick="ventanaNuevoModelo.show();" styleClass="botonVentana" image="ui-icon-plusthick" height="20" width="20" title="Registrar Nuevo Modelo"/>
-								             
-								           <h:outputLabel value="Tipo Esquema de ejes: *" for="tipoEjesMod"/>
-								           <h:inputText id="tipoEjesMod" value="#{serviciosVentanaVehiculo.serviciosVentanaEsquemaEjes.esquemaEjeSeleccionado.tipo}" disabled="true"/>
-								           <h:outputLabel/>
-								           
-								            <h:outputLabel value="Cambio Esquema de ejes: " for="tipoEjesCambioMod"/>
-									   		<h:selectOneMenu id="tipoEjesCambioMod" value="#{serviciosVentanaVehiculo.tipoEsquemaEjesMod}" >
-									   			<f:selectItem itemLabel="-Seleccione-" itemValue="0"/>
-									   			<f:selectItem itemValue="chuto" itemLabel="Chuto"/>
-									   			<f:selectItem itemValue="remolque" itemLabel="Remolque"/>
-									   		</h:selectOneMenu>
-									   		<h:outputLabel/> 
+								            <p:commandButton onclick="ventanaNuevoModelo.show();" styleClass="botonVentana" image="ui-icon-plusthick" height="20" width="20" title="Registrar Nuevo Modelo"/> 
 									   		
 									   		<h:outputLabel value="Marca:" for="marcaVehiculoMod"/>
 									   		<h:inputText id="marcaVehiculoMod" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.marcaVehiculo.nombre}" label="Marca" disabled="true"/>
 									   		<h:outputLabel value=""/>
 								             
-									   		<h:outputLabel value="Tipo de Vehículo:" for="tipoVehiculoMod"/>
+									   		<h:outputLabel value="Vehículo:" for="tipoVehiculoMod"/>
 									   		<h:inputText id="tipoVehiculoMod" value="#{serviciosVentanaVehiculo.vehiculoSeleccionado.modeloVehiculo.tipoVehiculo.nombre}" label="Tipo Vehículo" disabled="true"/>
 									   		<h:outputLabel value=""/>
 									   		
