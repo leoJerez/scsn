@@ -108,7 +108,7 @@ public class ServiciosVentanaLogin implements Serializable{
 		empleado = new Empleado();
 		session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
 		System.out.println("MAC -- LOGIN: "+session.getAttribute("mac"));
-		cargo = ((Cargo) CargoDAO.getInstancia().buscarEntidadPorClave(1)).getNombre();
+		cargo = ((Cargo) CargoDAO.getInstancia().buscarEntidadPorClave(4)).getNombre();
 		
 	}
 	

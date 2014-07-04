@@ -56,6 +56,7 @@ import cauca.scsn.modelo.entidad.Cargo;
 import cauca.scsn.modelo.entidad.EjeTraccion;
 import cauca.scsn.modelo.entidad.Empleado;
 import cauca.scsn.modelo.entidad.Empresa;
+import cauca.scsn.modelo.entidad.EntidadGenerica;
 import cauca.scsn.modelo.entidad.EsquemaEje;
 import cauca.scsn.modelo.entidad.ModeloVehiculo;
 import cauca.scsn.modelo.entidad.Ruta;
@@ -653,7 +654,9 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 					} else {
 						throw new Exception();
 					}
-					System.out.println("tamaño del mapa "+mapaEjesTraccion.size());
+					
+					eliminarEjeTraccion();
+					System.out.println("tamaño del mapa modificar "+mapaEjesTraccion.size());
 					Iterator iteradorMod = mapaEjesTraccion.entrySet().iterator();
 					Map.Entry entry;
 					while(iteradorMod.hasNext()){
@@ -789,8 +792,6 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 			//hacer mètodo que recorra el mapa y segùn la clave o key del valor obtenido del mapa evaluarlo en un switch, el cual serà un mètodo aparte
 			//que le esntre como paràmetro un String (valor a evaluar en los case), este mètodo lo debemos usar tambièn en el mètodo antes
 			//creado llamado validar traccion
-			
-			
 			
 			cargarListaEmpleados();
 			modificarVisibilidadBotonesAsignacionConductor();
@@ -937,7 +938,6 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		activarCheck();	
 		validarEsquemasEjes();
 		mapaEjesTraccion.clear();
-		System.out.println("limpiar ejes: "+mapaEjesTraccion);
 	}
 	
 	
@@ -954,11 +954,10 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		activarCheck();
 		validarEsquemasEjes();
 		mapaEjesTraccion.clear();
-		System.out.println("limpiar ejes: "+mapaEjesTraccion);
 	}
 	
 	public void introducirEsquemaSeleccionado() {
-		if(!modificar){
+		if(!modificar) {
 			vehiculo.setEsquemaEjes(listaEsquemaEjes.get(indiceListaEsquemaEje));
 		} else {
 			vehiculoSeleccionado.setEsquemaEjes(listaEsquemaEjes.get(indiceListaEsquemaEje));
@@ -1287,7 +1286,7 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		
 //		if(listaEmpleadosDestino.size() > 0){
 //			if(conductorPrincipal.getCedulaEmpleado()!=null && !conductorPrincipal.getCedulaEmpleado().equals("")){
-//				
+//				RequestContext.getCurrentInstance().addCallbackParam("validar", true);
 //			}else{
 //				mensajes.error("Error:", "Campo requerido, debe asignar un conductor principal");
 //			}
@@ -1316,10 +1315,7 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 	}
 	
 	
-	public void validarEsquemaEjesMod(){
-		System.out.println("id esquema eje: "+serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getIdEsquemaEje());
-		System.out.println("esquema seleccionado: "+serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo());
-		
+	public void validarEsquemaEjesMod(){		
 		if(!tipoEsquemaEjesMod.equals("0")){
 			
 			if(tipoEsquemaEjesMod.equals("chuto")){
@@ -1335,13 +1331,11 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 			System.out.println("no se hace nada");
 			if(serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo().equals("Chuto")){
 				renderConductor = true;
-				activarCheck();
 				System.out.println("esquema seleccionado1: "+serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo());
 
 			}else{
 				if(serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo().equals("Remolque")){
 					renderConductor = false;
-					activarCheck();
 					System.out.println("esquema seleccionado1: "+serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo());
 
 				}
@@ -1351,16 +1345,57 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 	
 	private boolean renderdConsultar = false;
 	public  void renderConsulta(){
-		System.out.println("=============> "+serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo());
 		if(serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo().equals("Chuto")){
 			renderdConsultar = true;
-			System.out.println("estamos en consulta chuto");
 		}else{
 			if(serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo().equals("Remolque")){
-				System.out.println("estamos en consulta remolque");
 				renderdConsultar = false;
 			}
 		}
+		
+	}
+	
+	
+	public void eliminarEjeTraccion(){
+		List<EjeTraccion> listaEjeTraccionCompleta = (List<EjeTraccion>) EjeTraccionDAO.getInstancia().buscarTodasEntidades();
+		if(!tipoEsquemaEjesMod.equals("0")){
+			if(tipoEsquemaEjesMod.equals("chuto")){
+				System.out.println("se elimina la transmision");
+				for (int i = 0; i < listaEjeTraccionCompleta.size(); i++) {
+					if(listaEjeTraccionCompleta.get(i).getVehiculo().getIdVehiculo() == vehiculoSeleccionado.getIdVehiculo()){
+						System.out.println("lista de ejes traccion: "+listaEjeTraccionCompleta.get(i).getVehiculo().getIdVehiculo());
+						EjeTraccionDAO.getInstancia().eliminarFisicamente(listaEjeTraccionCompleta.get(i));
+					}
+				}
+			}else{
+				if(tipoEsquemaEjesMod.equals("remolque")){
+					System.out.println("Si se elimina cuando selecciona remolque");
+					for (int i = 0; i < listaEjeTraccionCompleta.size(); i++) {
+						if(listaEjeTraccionCompleta.get(i).getVehiculo().getIdVehiculo() == vehiculoSeleccionado.getIdVehiculo()){
+							System.out.println("lista de ejes traccion: "+listaEjeTraccionCompleta.get(i).getVehiculo().getIdVehiculo());
+							EjeTraccionDAO.getInstancia().eliminarFisicamente(listaEjeTraccionCompleta.get(i));
+						}
+					}
+				}
+			}
+			
+		}else{
+			if(serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo().equals("Chuto")){
+				System.out.println("se elimina la transmision");
+				for (int i = 0; i < listaEjeTraccionCompleta.size(); i++) {
+					if(listaEjeTraccionCompleta.get(i).getVehiculo().getIdVehiculo() == vehiculoSeleccionado.getIdVehiculo()){
+						System.out.println("lista de ejes traccion: "+listaEjeTraccionCompleta.get(i).getVehiculo().getIdVehiculo());
+						EjeTraccionDAO.getInstancia().eliminarFisicamente(listaEjeTraccionCompleta.get(i));
+					}
+				}
+			}else{
+				if(serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo().equals("Remolque")){
+					System.out.println("No se elimina nada");
+				}
+			}
+		}
+		
+		
 		
 	}
 	
