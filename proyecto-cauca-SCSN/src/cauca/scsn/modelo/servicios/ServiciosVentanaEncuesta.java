@@ -75,6 +75,9 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 		fechaVisita = validador.formatearFechaEstiloCompleto(fechaEncuesta);
 	}
 
+   /**
+    * Metodo que se encarga de buscar todas las encuesta segun sea la empresa del usuario que alla ingresado al sistema.
+  **/ 
 	public void cargarListaUsuario(int idEmpresa){
 		List<Empleado> listaEmpleadoCompleta = EmpleadoDAO.getInstancia().buscarEntidadesPorPropiedad("empresa", (Empresa) EmpresaDAO.getInstancia().buscarEntidadPorClave(idEmpresa));
 		for (int i = 0; i < listaEmpleadoCompleta.size(); i++) {
@@ -88,7 +91,12 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 //			}
 //		}
 	}
-	 	
+	  
+    /**
+    * El metodo cargarListaEncuesta, se hace el metodo de la burbujas para saber la fecha mas reciente de la encuesta y desde 
+      esa fecha mas reciente se hara la comparacion de los 15 dias que allan pasado.
+    *  
+  **/   
 	 public void cargarListaEncuesta(){
 		 List<Encuesta> listaEncuestaCompleta = EncuestaDAO.getInstancia().buscarTodasEntidades();	
 		 for (int i = 0; i < listaEncuestaCompleta.size(); i++) {
@@ -115,6 +123,10 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 		}
 	 }
 	 
+  /**
+    * Este metodo lo que hace es verificar con la fecha mas reciente que se busco atraves del metodo de la burbujas, y comparar atraves,
+      de la fecha del computador para saber si han pasado los 15 dias apra que salga el mensaje de la encuesta.  
+  **/ 
 	 public boolean verificarUltimaEncuestaMayor15Dias(){
 		    Calendar calendario = new GregorianCalendar();
 		    calendario.setTime(listaEncuesta.get(0).getFechaEncuesta());
@@ -134,6 +146,10 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 			}
 	 }
 	 
+    /**
+    * Aqui se guardara los datos de los campos que halla llenado el usuario y despues entrara al sistema correctamente pero sino llena
+      la encuesta no podra ingresar al sistema.
+  **/  
 	 public void botonRegistrarEncuesta(){
 		RequestContext context = RequestContext.getCurrentInstance();
 		logueado = true;
@@ -199,7 +215,10 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 		}
 	}
 	
-	
+	 /**
+     * Este metodo es utilizado para los operadores cauca en donde se crea un login en la vista plantilla.xhm, se hace una validacion
+       que solo pueden ingresar los empleados cauca para hacer mantenimiento al sistema.
+  **/ 
 	public void loginOperadorCauca(ActionEvent event){
 		usuario = (Usuario) UsuarioDAO.getInstancia().buscarEntidadPorPropiedad("login", loginOperador);
 		if(usuario !=null && loginOperador != null && loginOperador.equals(usuario.getLogin()) && claveOperador != null && claveOperador.equals(usuario.getPassword())){
@@ -208,14 +227,17 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 				mensajes.informativo("Bienvenido", loginOperador);
 				RequestContext.getCurrentInstance().addCallbackParam("tarea", "ventanaMantenimiento");
 			}else{
-				mensajes.error("Login Error","Credenciales no válidas");
+				mensajes.error("Login Error","Credenciales no vÃ¡lidas");
 			}	
 			
 		}else{
-			mensajes.error("Login Error","Credenciales no válidas");
+			mensajes.error("Login Error","Credenciales no vÃ¡lidas");
 		}
 	}
 	
+   /**
+        * Este metodo es para guardar la visita cuando el operador cauca va para empresa cliente y guardar las observaciones de la visita.
+  **/  
 	public void guardarVisita(){
 		if(observacionesVisita != ""){
 			Visita visita = new Visita();
@@ -223,12 +245,15 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 			visita.setObservaciones(observacionesVisita);
 			visita.setUsuario((Usuario) UsuarioDAO.getInstancia().buscarEntidadPorClave(usuario.getIdUsuario()));
 			VisitaDAO.getInstancia().insertarOActualizar(visita);
-			mensajes.informativo("Mensaje", "Se guardo correctamente la observación de la visita");
+			mensajes.informativo("Mensaje", "Se guardo correctamente la observaciÃ³n de la visita");
 		}else{
-			mensajes.error("Error: Campo requerido", "Colocar la observación de la visita");
+			mensajes.error("Error: Campo requerido", "Colocar la observaciÃ³n de la visita");
 		}
 	} 
 	
+   /**
+    * El metodo cancelar para limpiar los campos y salir de la operacion mantenimiento
+  **/  
 	public void cancelar(ActionEvent actionEvent){
 		this.loginOperador = "";
 		this.claveOperador = "";
@@ -237,7 +262,12 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 		RequestContext.getCurrentInstance().addCallbackParam("limpiar", true);
 	}
 	
-	public void crearBackup(String host, String puerto, String usuario, String clave, String bDatos, String format, String path) {
+   /**
+    * Este metodo es para crear un  backup o respaldo de la base de datos, este metodo esta especializado solo para hacer backup en 
+      postgres. Si llega presentar falla en alguna computadora solo hay que cambiar la ruta en donde se encuntre la carpeta de postgres.
+    * La ruta que se tiene que modificar es la variable pb eso para encontrar pg_dump.exe para hacer la funcion de backup
+  **/   
+  public void crearBackup(String host, String puerto, String usuario, String clave, String bDatos, String format, String path) {
 		  try { /*
 		          C:\Archivos de programa\PostgreSQL\9.2\bin\pg_dump.exe 
 		          --host localhost --port 5432 --username "postgres" --role "postgres"  
@@ -270,6 +300,11 @@ public class ServiciosVentanaEncuesta  implements Serializable{
 		     }
 		 }
 	
+    /**
+    * El metodo guardarRespaldo, hace el llamado del metodo crearBackup y llenar los parametros correspondiente.
+    * En este metodo tambien hace la funcion de colocaler un nombre atraves de la vista de como se va llamar el backup
+    * Tambien se puede configuarar el path que seria la ruta de donde se va aguardar el respaldo siempre.
+  **/ 
 	 public void guardarRespaldo(){
 		 if(guardarArchivo != ""){
 			 System.out.println("nombre del archivo: "+guardarArchivo+".backup");
