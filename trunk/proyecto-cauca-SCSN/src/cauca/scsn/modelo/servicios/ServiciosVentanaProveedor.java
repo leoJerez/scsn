@@ -52,6 +52,10 @@ public class ServiciosVentanaProveedor implements ServiciosMaestros{
 		llenarDataModel();
 	}
 	
+   /**
+    * Metodo para Guardar o Modificar los datos a la ves, a cual ya cuenta con una validacion para que los campos que sean obligatorios no
+      falten.
+  **/  
 	public void guardarOModificar(ActionEvent actionEvent) {
 		try {
 			if(validador.validarProveedor(proveedor)
@@ -59,11 +63,11 @@ public class ServiciosVentanaProveedor implements ServiciosMaestros{
 			
 				if (!modificar) {
 					proveedorDAO.insertarOActualizar(this.proveedor);
-					mensajes.informativo("Operación exitosa", "Proveedor: "+ this.proveedor.getNombre() +" ha sido guardado!");
+					mensajes.informativo("OperaciÃ³n exitosa", "Proveedor: "+ this.proveedor.getNombre() +" ha sido guardado!");
 					RequestContext.getCurrentInstance().addCallbackParam("limpiar", true);
 				} else {
 					proveedorDAO.actualizar(this.proveedorSeleccionado);
-					mensajes.informativo("Operación exitosa", "Proveedor: "+ this.proveedorSeleccionado.getNombre() +" ha sido guardado!");
+					mensajes.informativo("OperaciÃ³n exitosa", "Proveedor: "+ this.proveedorSeleccionado.getNombre() +" ha sido guardado!");
 					RequestContext.getCurrentInstance().addCallbackParam("limpiar", true);
 				}
 			}else{
@@ -72,25 +76,31 @@ public class ServiciosVentanaProveedor implements ServiciosMaestros{
 			llenarDataModel();
 		} catch (Exception e) {
 			RequestContext.getCurrentInstance().addCallbackParam("limpiar", false);
-			mensajes.error("Operación fallida", "Existen datos que no concuerdan con lo establecido en el modelo de datos");
+			mensajes.error("OperaciÃ³n fallida", "Existen datos que no concuerdan con lo establecido en el modelo de datos");
 			return;
 		}
 		cancelar(eventoCancelar);
 		empresaEnLaSesion();
 	}
 
+   /**
+    * El metodo elimar, elimina los datos logicamente, los datos no se eliminaran fisicamente
+  **/ 
 	public void eliminar(ActionEvent actionEvent) {
 		try {
 			proveedorDAO.eliminarLogicamente(this.proveedorSeleccionado);
 			llenarDataModel();
-			mensajes.informativo("Operación exitosa", "Proveedor: "+ this.proveedorSeleccionado.getNombre() +" ha sido eliminado!");
+			mensajes.informativo("OperaciÃ³n exitosa", "Proveedor: "+ this.proveedorSeleccionado.getNombre() +" ha sido eliminado!");
 		} catch (Exception e) {
-			mensajes.error("Operación fallida", "Se produjo un error, por favor, verifique");
+			mensajes.error("OperaciÃ³n fallida", "Se produjo un error, por favor, verifique");
 		}
 		cancelar(eventoCancelar);
 		empresaEnLaSesion();
 	}
 	
+    /**
+    * El metodo cancelar limpia los campos y cierra las ventana de la vista
+  **/ 
 	public void cancelar(ActionEvent actionEvent) {
 		this.proveedor = null;
 		this.proveedor = new Proveedor();
@@ -103,42 +113,54 @@ public class ServiciosVentanaProveedor implements ServiciosMaestros{
 		empresaEnLaSesion();
 	}
 	
-	public void activarModificar() {
+	 /**
+    * El metodo activarModificar, es para seleccionar el proveedor o validar el proveedor que se va a modificar.
+  **/ 
+   public void activarModificar() {
 		if (proveedorSeleccionado.getIdProveedor() != null){
 			modificar = true;
 			RequestContext.getCurrentInstance().addCallbackParam("ok", true);
 			RequestContext.getCurrentInstance().addCallbackParam("tarea", "M");
 			System.out.println("Aceptar");
 		} else {
-			mensajes.advertencia("Verifique", "Primero debe seleccionar algún proveedor de la lista");
+			mensajes.advertencia("Verifique", "Primero debe seleccionar algÃºn proveedor de la lista");
 			cancelar(eventoCancelar);
 			System.out.println("Cancelar");
 		}
 	}
 	
+    /**
+    * El metodo activarConsultar, se hace una validacion para tomar en cuenta si se ha seleccionado, el proveedor que se va hacer la             cosulta.
+  **/ 
 	public void activarConsultar() {
 		if (proveedorSeleccionado.getIdProveedor() != null){
 			setConsultar(true);
 			RequestContext.getCurrentInstance().addCallbackParam("ok", true);
 			RequestContext.getCurrentInstance().addCallbackParam("tarea", "C");
 		} else {
-			mensajes.advertencia("Verifique", "Primero debe seleccionar algún proveedor de la lista");
+			mensajes.advertencia("Verifique", "Primero debe seleccionar algÃºn proveedor de la lista");
 			cancelar(eventoCancelar);
 		}
 	}
 	
+   /**
+    * El metodo activarEliminar, se hace una validacion para tomar en cuenta si se ha seleccionado, el Proveedor que se va hacer la             Eliminar.
+  **/  
 	public void activarEliminar() {
 		if (proveedorSeleccionado.getIdProveedor() != null){
 			eliminar = true;
-			setMensajeEliminar("Está seguro de eliminar a "+ proveedorSeleccionado.getNombre() +"?");
+			setMensajeEliminar("EstÃ¡ seguro de eliminar a "+ proveedorSeleccionado.getNombre() +"?");
 			RequestContext.getCurrentInstance().addCallbackParam("ok", true);
 			RequestContext.getCurrentInstance().addCallbackParam("tarea", "E");
 		} else {
-			mensajes.advertencia("Verifique", "Primero debe seleccionar algún proveedor de la lista");
+			mensajes.advertencia("Verifique", "Primero debe seleccionar algÃºn proveedor de la lista");
 			cancelar(eventoCancelar);
 		}
 	}
 	
+   /**
+    * El metodo, se encarga de buscar todos los proveedores que tenga dicha empresa, a la cual se mostrara en la vista de dataTable.
+  **/  
 	public void llenarDataModel() {		
 		setListaProveedores(proveedorDAO.buscarEntidadesPorPropiedad("empresa", this.empresa));
 		setProveedorDataModel(new ProveedorDataModel(listaProveedores));
