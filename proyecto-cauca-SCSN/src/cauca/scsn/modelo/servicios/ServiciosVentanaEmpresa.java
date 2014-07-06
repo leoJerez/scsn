@@ -66,6 +66,9 @@ public class ServiciosVentanaEmpresa {
 		
 	}
 	
+   /**
+    * Metodo para desbloquear el boton editar, campos y guardar, con boolean y en la vista disabled 
+  **/  
 	public void editarDatosEmpresa(){
 		if(editarCampo = true){
 			editarCampo = false;
@@ -73,11 +76,13 @@ public class ServiciosVentanaEmpresa {
 		}
 	}
 	
+   /**
+    * Metodo para modificar los datos de la empresa en la vista empresa.xhtml
+  **/  
 	public void guardarDatosEmpresa(){
 		if(editarCampo == false){
 			editarCampo = true;
 			btonEditar = false;
-//			empresa.setDireccion("soy la nueva direccion");
 			EmpresaDAO.getInstancia().insertarOActualizar(empresa);
 			session.setAttribute("empresa", empresa);
 			mensajes.informativo("Mensaje", "Los Datos se modificaron correctamente");
