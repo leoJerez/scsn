@@ -112,10 +112,12 @@ public class ServiciosVentanaLogin implements Serializable{
 		
 	}
 	
-	 public void listoCarga() {
-	       mensajes.informativo("mensaje", "listo la carga");
-	 }
-	
+ 
+	 /**
+    * El metodo controlAccesro, es para tomar el control del acceso para cada usuario que ingrese al sistema, a la cual mostrara
+      solo lo que va hacer el usurio segun sea el rol y esto llarmara a la base de datos la tabla operacion_rol para hacer las 
+      comparaciones del rol en operaciones. 
+  **/ 
 	public void controlAcceso(Rol rol){
 		listaOperacioRol = OperacionRolDAO.getInstancia().buscarTodasEntidades();
 		boolean valorObtenido = false; 
@@ -131,6 +133,11 @@ public class ServiciosVentanaLogin implements Serializable{
 		}	
 	}
 	
+   /**
+    * Este metodo login, va hacer la validacion del usuario y contraseña, tambien hara la validacion si esta registrado o no.
+    * Hace validaciones a los conductores a la cual no pueden ingresar al sistema.
+    * Tambien mostrara la encuesta a los rolos administradores, gerencia y operador, cuando allan pasado 15 dias.
+  **/  
 	public void login(ActionEvent actionEvent) {
 		RequestContext context = RequestContext.getCurrentInstance();
 		ControladorMensajes controlMensaje = new ControladorMensajes();
@@ -163,6 +170,9 @@ public class ServiciosVentanaLogin implements Serializable{
 							RequestContext.getCurrentInstance().addCallbackParam("limpiar", true);
 						}
 					}
+          /*
+            En este pequeño metodo tomara el registro de cada usuario que alla ingresado al sistema como la fecha y hora.
+          */     
 					log = new Log();
 					log.setFechaUltimoIngreso(new Date());
 					log.setUsuario((Usuario) UsuarioDAO.getInstancia().buscarEntidadPorClave(usuario.getIdUsuario()));
@@ -172,7 +182,7 @@ public class ServiciosVentanaLogin implements Serializable{
 					
 				} else {
 					logueado = false;
-					controlMensaje.error("Login Error","Credenciales no v�lidas");
+					controlMensaje.error("Login Error","Credenciales no válidas");
 					
 				}
 			} else {
@@ -217,26 +227,35 @@ public class ServiciosVentanaLogin implements Serializable{
 		cancelar();
 	}
 	
+   /**
+    * En el metodo guardar, lo que hace es guardar, el primer ingreso de la empresa que sera cliente de Renovadora cauca.
+    * Se llama el metodo registrarPrimerEncuesta, que es el llevara el control de la encuesta cuando se ingresa al sistema.
+    * Tambien se llama el metodo registarProveedorCauca, donde va aguardar cada empresa que se registre por primera ves van
+      a tener como principal prooveedor a cauca.
+  **/  
 	public void guardar(ActionEvent actionEvent) {
 		try {
 			EmpresaDAO.getInstancia().insertarOActualizar(empresa);
-			new ControladorMensajes().informativo("Operaci�n exitosa", "Empresa: "+ this.empresa.getNombre() +" ha sido guardada!");
+			new ControladorMensajes().informativo("Operación exitosa", "Empresa: "+ this.empresa.getNombre() +" ha sido guardada!");
 			registrarAdministrador();
 			empleado.setEmpresa(empresa);
 			empleado.setCargo((Cargo) CargoDAO.getInstancia().buscarEntidadPorClave(4));
 			EmpleadoDAO.getInstancia().insertarOActualizar(this.empleado);
 			registrarPrimerEncuesta();
 			registrarProveedorCauca();
-			new ControladorMensajes().informativo("Operaci�n exitosa", "Empleado: "+ this.empleado.getNombre() +" ha sido guardado!");
+			new ControladorMensajes().informativo("Operación exitosa", "Empleado: "+ this.empleado.getNombre() +" ha sido guardado!");
 			
 			login(actionEvent);
 		} catch (Exception e) {
 			System.out.println("========"+e);
-			new ControladorMensajes().error("Operaci�n fallida", "Existen datos que no concuerdan con lo establecido en el modelo de datos");
+			new ControladorMensajes().error("Operación fallida", "Existen datos que no concuerdan con lo establecido en el modelo de datos");
 			primerIngreso = false;
 		}
 	}
-		
+	 
+   /**
+    * Este es el metodo que sera seteado cada ves que se registre una empresa por primera ves.
+  **/   
 	public void registrarProveedorCauca(){
 		Empresa empresaCauca = new Empresa();
 		empresaCauca = (Empresa) EmpresaDAO.getInstancia().buscarEntidadPorClave(1);
@@ -250,7 +269,10 @@ public class ServiciosVentanaLogin implements Serializable{
 		proveedor.setCelular(empresaCauca.getCelular());
 		ProveedorDAO.getInstancia().insertarOActualizar(proveedor);
 	}
-	
+   
+	 /**
+    * Metodo para registra la encuesta para llevar el control de la visita en cada 15 dias
+  **/ 
 	public void registrarPrimerEncuesta(){
 		Encuesta encuesta = new Encuesta();
 		encuesta.setObservaciones("Primer Ingreso");
@@ -260,6 +282,9 @@ public class ServiciosVentanaLogin implements Serializable{
 		EncuestaDAO.getInstancia().insertarOActualizar(encuesta);
 	}
 	
+   /**
+      * Metodo cancelar, lo que hace es limpiar los campos Registar en la vista login.xhtml
+  **/  
 	public void cancelar(){
 		System.out.println("entramos a cancelar");
 		this.nombre = "";
@@ -288,6 +313,10 @@ public class ServiciosVentanaLogin implements Serializable{
 					
 	}
 	
+   /**
+    * Este metodo, es para el wizard de la vista registrar en login.xhml, lo que hace es un contador para llevar el control de los botones
+    siguiente  y atras.
+  **/  
 	public String flujoPrimerIngreso(FlowEvent event) {
             return event.getNewStep(); 
     }  
