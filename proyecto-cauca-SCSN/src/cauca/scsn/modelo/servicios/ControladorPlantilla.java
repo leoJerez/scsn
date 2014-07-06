@@ -6,6 +6,13 @@ import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 
+
+/**
+  * El ControladorPlantilla, es un controlador que esta modificado para los tipos de roles que tenga los usuario, especificando su tipo, podra
+  * mostrar solo lo necesario que hara el usuario que alla ingresado al sitemas, esto sera manejado atraves de un boolean para identificar si 
+  * es falso o no, si se comparara atraves de la base de datos operacion, a la cual ya esta identificada para cada rol. 
+ **/
+
 @ManagedBean
 @SessionScoped
 public class ControladorPlantilla {
@@ -23,7 +30,7 @@ public class ControladorPlantilla {
 	private boolean			renderGestionarNeumaticos;
 	private boolean			renderConfiguracionesNeumaticosMarcas;
 	private boolean			renderConfiguracionesNeumaticosMedidas;
-	private boolean			renderConfiguracionesNeumaticosDiseño;
+	private boolean			renderConfiguracionesNeumaticosDiseÃ±o;
 	private boolean			renderMovimientosCausasOperaciones;
 	private boolean			renderMovimientosTiposDesgaste;
 	
@@ -221,13 +228,13 @@ public class ControladorPlantilla {
 		this.renderConfiguracionesNeumaticosMedidas = renderConfiguracionesNeumaticosMedidas;
 	}
 
-	public boolean isRenderConfiguracionesNeumaticosDiseño() {
-		this.renderConfiguracionesNeumaticosDiseño = (boolean) session.getAttribute("96");
-		return renderConfiguracionesNeumaticosDiseño;
+	public boolean isRenderConfiguracionesNeumaticosDiseÃ±o() {
+		this.renderConfiguracionesNeumaticosDiseÃ±o = (boolean) session.getAttribute("96");
+		return renderConfiguracionesNeumaticosDiseÃ±o;
 	}
 
-	public void setRenderConfiguracionesNeumaticosDiseño(boolean renderConfiguracionesNeumaticosDiseño) {
-		this.renderConfiguracionesNeumaticosDiseño = renderConfiguracionesNeumaticosDiseño;
+	public void setRenderConfiguracionesNeumaticosDiseÃ±o(boolean renderConfiguracionesNeumaticosDiseÃ±o) {
+		this.renderConfiguracionesNeumaticosDiseÃ±o = renderConfiguracionesNeumaticosDiseÃ±o;
 	}
 
 	public boolean isRenderMovimientosCausasOperaciones() {
