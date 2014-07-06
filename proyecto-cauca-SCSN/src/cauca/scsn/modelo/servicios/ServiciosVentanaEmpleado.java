@@ -61,11 +61,15 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 	
 	boolean guardarConductor = false;
 	
-	public void activarGuardarConductor() { //Este metodo y el atributo guardarConductor posiblemente se eliminará cuando se agregue la parte de ROL
+	public void activarGuardarConductor() { //Este metodo y el atributo guardarConductor posiblemente se eliminarÃ¡ cuando se agregue la parte de ROL
 		guardarConductor = true;
 		guardarOModificar(eventoCancelar);
 	}
 	
+  /**
+   * Este metodo hace la funciÃ³n de guardar y modificar a la ves, en los campos de la vista o modulo empleado.
+   * Tambien se hacen las validaciones para que ningun, campo se queden sin llenar y cuales son obligatorios.
+  **/ 
 	public void guardarOModificar(ActionEvent actionEvent) {
 		
 		if((empleado.getCedulaEmpleado()!="") || (empleadoSeleccionado.getCedulaEmpleado()!=null) ){
@@ -74,7 +78,7 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 					if((empleado.getDireccion()!="") || (empleadoSeleccionado.getDireccion()!=null)){
 						if((empleado.getCelular()!="") || (empleadoSeleccionado.getCelular()!=null)){
 								if((idCargo !=0) || (empleadoSeleccionado.getCargo()!=null)){
-									if(!guardarConductor) { //este condicional se va a eliminar cuando se modifique la base de datos, es decir, cuando se agregue la parte de ROL
+									if(!guardarConductor) { 
 										cargo = (Cargo) CargoDAO.getInstancia().buscarEntidadPorClave(this.idCargo);
 										this.empleado.setCargo(cargo);										
 									}
@@ -95,12 +99,12 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 												  inserta un nuevo empleado o actualiza los datos de un empleado ingresado previamente*/
 												empleadoDAO.insertarOActualizar(this.empleado);
 												
-												mensajes.informativo("Operación exitosa", "Empleado: "+ this.empleado.getNombre() +" ha sido guardado!");
+												mensajes.informativo("OperaciÃ³n exitosa", "Empleado: "+ this.empleado.getNombre() +" ha sido guardado!");
 												RequestContext.getCurrentInstance().addCallbackParam("limpiar", true);
 											
 											} else {
 												empleadoDAO.actualizar(this.empleadoSeleccionado);
-												mensajes.informativo("Operación exitosa", "Empleado: "+ this.empleadoSeleccionado.getNombre() +" ha sido guardado!");
+												mensajes.informativo("OperaciÃ³n exitosa", "Empleado: "+ this.empleadoSeleccionado.getNombre() +" ha sido guardado!");
 												RequestContext.getCurrentInstance().addCallbackParam("limpiar", true);
 											}
 										}else{
@@ -109,7 +113,7 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 										llenarDataModel();
 										
 									} catch (Exception e) {
-										mensajes.error("Operación fallida", "Existen datos que no concuerdan con lo establecido en el modelo de datos");
+										mensajes.error("OperaciÃ³n fallida", "Existen datos que no concuerdan con lo establecido en el modelo de datos");
 										RequestContext.getCurrentInstance().addCallbackParam("limpiar", false);
 									return;
 									}
@@ -119,10 +123,10 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 									mensajes.error("Error", "Campo requerido, seleccionar un Cargo");
 								}
 							}else{
-								mensajes.error("Error", "Campo requerido, colocar el número de Cedular");
+								mensajes.error("Error", "Campo requerido, colocar el nÃºmero de Cedular");
 							}
 						}else{
-							mensajes.error("Error", "Campo requerido, colocar la Dirección");
+							mensajes.error("Error", "Campo requerido, colocar la DirecciÃ³n");
 						}
 					}else{
 						mensajes.error("Error", "Campo requerido, colocar el Apellido");
@@ -131,13 +135,19 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 					mensajes.error("Error", "Campo requerido, colocar el Nombre");
 				}
 			}else{
-				mensajes.error("Error", "Campo requerido, colocar el número de Cedula");
+				mensajes.error("Error", "Campo requerido, colocar el nÃºmero de Cedula");
 			}
 		
 		
 		
 	}
 	
+  /**
+    * Este metodo lo que hace es guardar el usuario del empleado cuando es registrado.
+    * El usuario que se registra va a depender del rol que seleccione para hacer las funciones que le tocan en el sistema.
+    * Cuando se guarda el usuario su login y password, es la cedula del empleado que se registre.
+    * Este metodo no crea usuario para el conductor ya que no es necesario para ello porque no va entrar al sistema.
+  **/ 
 	private Usuario usuario = new Usuario();
 	public void guardarUsuario(){
 		usuario.setLogin(empleado.getCedulaEmpleado());
@@ -146,7 +156,12 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 		UsuarioDAO.getInstancia().insertarOActualizar(usuario);
 		this.empleado.setUsuario((Usuario) UsuarioDAO.getInstancia().buscarEntidadPorClave(usuario.getIdUsuario()));
 		
-		Encuesta encuesta = new Encuesta();
+		/*
+      * La encuesta tambien se registra para cada empleado segun su rol, menos el del conductor.
+      * Este registro es necesario para llevar el control de la encuesta que se haran cada 15 dias a los empleados,
+        como es primer registro, se tomara con nulo, pero se utilizara la fecha para empezar a tomar el control de las encueta.
+    */
+    Encuesta encuesta = new Encuesta();
 		encuesta.setObservaciones("Primer Ingreso");
 		encuesta.setFechaEncuesta(new Date());
 		encuesta.setUsuario( (Usuario) UsuarioDAO.getInstancia().buscarEntidadPorClave(usuario.getIdUsuario()));
@@ -155,18 +170,24 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 		mensajes.informativo("Mensaje", "Se a creado el usuario con el login y clave con la cedula del empleado");
 	}
 	
+  /**
+    * Este metodo eliminara los datos de la vista del cliente logicamente, no sera eliminada fisicamente.
+  **/ 
 	public void eliminar(ActionEvent actionEvent) {
 		try {
 			empleadoDAO.eliminarLogicamente(this.empleadoSeleccionado);
 			llenarDataModel();
-			mensajes.informativo("Operación exitosa", "Empleado: "+ this.empleadoSeleccionado.getNombre() +" ha sido eliminado!");
+			mensajes.informativo("OperaciÃ³n exitosa", "Empleado: "+ this.empleadoSeleccionado.getNombre() +" ha sido eliminado!");
 		} catch (Exception e) {
-			mensajes.error("Operación fallida", "Se produjo un error, por favor, verifique");
+			mensajes.error("OperaciÃ³n fallida", "Se produjo un error, por favor, verifique");
 		}
 		cancelar(eventoCancelar);
 		empresaEnLaSesion();
 	}
 	
+   /**
+     * El metodo cancelar lo que hace es limpiar todos los campos de la vista empleado.xhtml.
+   **/
 	public void cancelar(ActionEvent actionEvent) {
 		this.empleado = null;
 		this.empleado = new Empleado();
@@ -180,39 +201,53 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 		empresaEnLaSesion();
 	}
 	
+  /**
+    * El metodo activar modificar, se hace una validacion para tomar en cuenta si se ha seleccionado el empleado que sera modificado
+  **/ 
 	public void activarModificar() {
 		if (empleadoSeleccionado.getCedulaEmpleado() != null){
 			modificar = true;
 			RequestContext.getCurrentInstance().addCallbackParam("ok", true);
 			RequestContext.getCurrentInstance().addCallbackParam("tarea", "M");
 		} else {
-			mensajes.advertencia("Verifique", "Primero debe seleccionar algún empleado de la lista");
+			mensajes.advertencia("Verifique", "Primero debe seleccionar algÃºn empleado de la lista");
 			cancelar(eventoCancelar);
 		}
 	}
 	
+  /**
+    * El metodo activarConsultar, se hace una validacion para tomar en cuenta si se ha seleccionado, el empleado que se va hacer la             cosulta.
+  **/ 
 	public void activarConsultar() {
 		if (empleadoSeleccionado.getCedulaEmpleado() != null){
 			setConsultar(true);
 			RequestContext.getCurrentInstance().addCallbackParam("ok", true);
 			RequestContext.getCurrentInstance().addCallbackParam("tarea", "C");
 		} else {
-			mensajes.advertencia("Verifique", "Primero debe seleccionar algún empleado de la lista");
+			mensajes.advertencia("Verifique", "Primero debe seleccionar algÃºn empleado de la lista");
 			cancelar(eventoCancelar);
 		}
 	}
 	
+   /**
+    * El metodo activarEliminar, se hace una validacion para tomar en cuenta si se ha seleccionado, el empleado que se va a eliminar.
+  **/  
 	public void activarEliminar() {
 		if (empleadoSeleccionado.getCedulaEmpleado() != null){
 			eliminar = true;
-			setMensajeEliminar("Está seguro de eliminar a "+ empleadoSeleccionado.getNombre() +"?");
+			setMensajeEliminar("EstÃ¡ seguro de eliminar a "+ empleadoSeleccionado.getNombre() +"?");
 			RequestContext.getCurrentInstance().addCallbackParam("ok", true);
 			RequestContext.getCurrentInstance().addCallbackParam("tarea", "E");
 		} else {
-			mensajes.advertencia("Verifique", "Primero debe seleccionar algún empleado de la lista");
+			mensajes.advertencia("Verifique", "Primero debe seleccionar algÃºn empleado de la lista");
 			cancelar(eventoCancelar);
 		}
 	}
+   
+   /**
+    * Este metodo lo que hace es seleccionar todos los datos de los empleados que se encuentre en la base de datos para ser monstrado en
+      la vista de dataTable.
+  **/  
 	private int rows;
 	public void llenarDataModel() {
 		//setEmpleadoDataModel(new EmpleadoDataModel(empleadoDAO.buscarTodasEntidades()));
@@ -226,6 +261,10 @@ public class ServiciosVentanaEmpleado implements ServiciosMaestros{
 		}
 	}
 	
+   /**
+    * Este metodo empresaEnLaSession lo que haces es tomar encuenta el usuario que ingreso al sistema y se trae la empresa de ese 
+      usuario y se mantendra en la session la empresa en todo el sistema hasta que el usuario cierre la session.
+  **/  
 	public void empresaEnLaSesion() {
 		HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
 		empresa = (Empresa) session.getAttribute("empresa");
