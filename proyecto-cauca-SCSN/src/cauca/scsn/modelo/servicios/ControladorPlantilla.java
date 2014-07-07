@@ -30,7 +30,7 @@ public class ControladorPlantilla {
 	private boolean			renderGestionarNeumaticos;
 	private boolean			renderConfiguracionesNeumaticosMarcas;
 	private boolean			renderConfiguracionesNeumaticosMedidas;
-	private boolean			renderConfiguracionesNeumaticosDiseño;
+	private boolean			renderConfiguracionesNeumaticosDiseno;
 	private boolean			renderMovimientosCausasOperaciones;
 	private boolean			renderMovimientosTiposDesgaste;
 	
@@ -228,13 +228,13 @@ public class ControladorPlantilla {
 		this.renderConfiguracionesNeumaticosMedidas = renderConfiguracionesNeumaticosMedidas;
 	}
 
-	public boolean isRenderConfiguracionesNeumaticosDiseño() {
-		this.renderConfiguracionesNeumaticosDiseño = (boolean) session.getAttribute("96");
-		return renderConfiguracionesNeumaticosDiseño;
+	public boolean isRenderConfiguracionesNeumaticosDiseno() {
+		this.renderConfiguracionesNeumaticosDiseno = (boolean) session.getAttribute("96");
+		return renderConfiguracionesNeumaticosDiseno;
 	}
 
-	public void setRenderConfiguracionesNeumaticosDiseño(boolean renderConfiguracionesNeumaticosDiseño) {
-		this.renderConfiguracionesNeumaticosDiseño = renderConfiguracionesNeumaticosDiseño;
+	public void setRenderConfiguracionesNeumaticosDiseno(boolean renderConfiguracionesNeumaticosDiseno) {
+		this.renderConfiguracionesNeumaticosDiseno = renderConfiguracionesNeumaticosDiseno;
 	}
 
 	public boolean isRenderMovimientosCausasOperaciones() {

@@ -864,6 +864,9 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		}
 	}
 
+	/**
+	 * Este metodo llenarDataModel, es un metodo de que se encarga de buscar todos los vehiculos
+	 */
 	@Override
 	public void llenarDataModel() {
 		this.listaVehiculo = vehiculoDAO.buscarEntidadesPorPropiedad("empresa", this.empresa);
@@ -923,6 +926,11 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		introducirEsquemaSeleccionado();
 	}
 	
+	/**
+	 * El metodo adelantarEsquema, es un metodo que muestra todos los equema de ejes cuando se pulsa el boton de siguiente en la vista 
+	 * para ir cambiando los esquema por otros.
+	 * Este metodo es usado para nuevo y modificar.
+	 */
 	public void adelantarEsquema() {
 		int tamanoLista = 0;
 		tamanoLista = listaEsquemaEjes.size()-1;
@@ -940,7 +948,11 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		mapaEjesTraccion.clear();
 	}
 	
-	
+	/**
+	 * El metodo retrocederEsquema, es un metodo que muestra todos los equema de ejes cuando se pulsa el boton de atras en la vista 
+	 * para ir cambiando los esquema por otros.
+	 * Este metodo es usado para nuevo y modificar.
+	 */
 	public void retrocederEsquema() {
 		int indiceComparativo = 0;
 		serviciosVentanaEsquemaEjes.cancelar(eventoCancelar);
@@ -975,6 +987,10 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
         mensajes.informativo("Conductor Asignado", builder.toString());
     }  
 	
+	/**
+	 * Este metodo obtenerNombreEje, lo que hace es, obtener el nombre del id que viene desde la vista pero como nombre es largo lo unico que se
+	 * quiere el nommbre eje, se hace un for para ir contanto por caracter hasta la posicion que se quiere y obtener el valor esperado. 
+	 */
 	public String obtenerNombreEje(String nombreEje) {
 		String nombreEjeT = "";
 		for (int i = 0; i < nombreEje.length(); i++) {
@@ -985,6 +1001,11 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		return nombreEjeT;
 	}
 	
+	/**
+	 * El metodo activarCheck, lo que hace es mostrar los check de la vista cuando son diferente de :, que seria remolque, y los check son necesario para lo
+	 * que son chutos, que es para tomar la opcion de traccion.
+	 * Cuando se muestra los remolque que es igual a los :, con este metodo, no mostrara los check ya que ninguno usa traccion.
+	 */
 	public void activarCheck(){
 		if(serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getNombreEsquema().charAt(0)!=':'){
 			renderedCheck = true;
@@ -1063,6 +1084,13 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		
 	}
 	
+	/**
+	 * Con el metodo validarTransmision, es un evento que esta compuesto por ajax para hacer la oeracion sin poder recargar la pagina nuevamente.
+	 * Este evento lo que hace es tomar el id de la vista atraves de un switch, si el id del eje es seleccionado es igual al case, cambia la imagen
+	 * de eje por una de traccion y a la ves se va almacenando en un mapa para ir guardando los valores de los ejes que son seleccionado.
+	 * Si se desea destildar la opcion de traccion, se hace otro switch para volver colocar la imagen del eje como estaba antes y se remueve del mapa 
+	 * para que el valor no sea guardado. 
+	 */
 	public void validarTransmision(ValueChangeEvent event){
 		/*
 		 1.- Obtener ID del eje en cuestion (hacer metodo obtenerNombre)
@@ -1129,6 +1157,14 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		}
 	}
 	
+	/**
+	 * El flujoPrimerIngreso, es un evento que va con la funcion del wizard en la vista de nuevo, a la cual sirve para la funcion de los 
+	 * botones siguiente y atras, para las operacciones que se van hacer.
+	 * Tambien se hacen las validaciones para cuando le de siguiente no falte ningun campo por llenar, que sean obligatorio.
+	 * Tambien se hacen validaciones en el esquema de eje,  que seria cuando pasa a la siguiente operacion. Cuando sea chuto tiene validacion
+	 * debe selecccionar al menos un eje contraccion con la condicion de mapaEjesTraccion.size que es el que toma el tamaño del mapa y si
+	 * tiene un valor asignado o un eje contraccion tildado.
+	 */
 	public String flujoPrimerIngreso(FlowEvent event) {
 		
 		if(!event.getNewStep().equals("tab1")){
@@ -1205,6 +1241,11 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		}
 	}
 	
+	/**
+	 * El flujoPrimerIngresoMod, es un evento que va con la funcion del wizard en la vista de modificar, a la cual sirve para la funcion de los 
+	 * botones siguiente y atras, para las operacciones que se van hacer.
+	 * Tambien se hacen las validaciones para cuando le de siguiente no falte ningun campo por llenar, que sean obligatorio.
+	 */
 	public String flujoPrimerIngresoMod(FlowEvent event) {
 		if(!event.getNewStep().equals("datosBasicos")){
 			validarEsquemaEjesMod();
@@ -1241,6 +1282,13 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		
 	}
 	
+	/**
+	 * El metodo validarConductorMod, es para hacer validaciones en boton de guarda que es la final de la operacion de la vista,
+	 * cuando se halla que modificar, si es chuto muestra los conductores, hacen las validaciones para cada campo, como asignar conductor,
+	 * asignar conductor principal y la ruta en donde va ir el vehiculo.
+	 * Si es remolque solo se hace la validacion de la ruta en donde se va a ir el remolque, como no muestra ningun conductor no es necesario 
+	 * haccer mas validaciones.   
+	 */
 	public void validarConductorMod(){
 		if(!tipoEsquemaEjesMod.equals("0")){
 			if(tipoEsquemaEjesMod.equals("chuto")){
@@ -1295,7 +1343,14 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 //		}
 	}
 	
-	
+	/**
+	 * El metodo validarEsquemaEjes, se usa para validar un nuevo registro del vehiculo y mostrar si es un chuto o remolque atraves de un boolean.
+	 * Cuando se selecciona un chuto muestra los conductores y si es remolque no muestra los conductores ya que los remolque no se le asigna conductores.
+	 * La condición serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getNombreEsquema().charAt(0) != ':', cuando es diferente de : solo muestra el 
+	 * esquema que sean chuto.
+	 * La condición serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getNombreEsquema().charAt(0) == ':', cuando es igual a : muestra los esquema 
+	 * de ejes que son remolque.
+	 */
 	public void validarEsquemasEjes(){
 		if(tipoEsquemaEjes.equals("chuto")){
 			renderConductor = true;
@@ -1314,7 +1369,10 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		
 	}
 	
-	
+	/**
+	 * El metodo validarEsquemaEjesMod, es cuando se halla que modificar un valor, esto lo que hace es validar cuando el vehiculo es seleccionado y
+	 * tambien cuando selecciona si es chuto o remolque para mostrar los conductores atraves de un boolean.
+	**/
 	public void validarEsquemaEjesMod(){		
 		if(!tipoEsquemaEjesMod.equals("0")){
 			
@@ -1343,6 +1401,11 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		}
 	}
 	
+	/**
+	 * El metodo renderdConsular, a la cual esta compuesto por boolean, es la validacion que va tener cuando se quiere hacer la consulta de un vehiculo
+	 * dependiendo el tipo de vehiculo si es chuto, muestra los conductores y si es remolque no muestra los conductores porque a los remolque no se 
+	 * le asigna conductores. 
+	**/
 	private boolean renderdConsultar = false;
 	public  void renderConsulta(){
 		if(serviciosVentanaEsquemaEjes.getEsquemaEjeSeleccionado().getTipo().equals("Chuto")){
@@ -1355,7 +1418,11 @@ public class ServiciosVentanaVehiculo implements ServiciosMaestros{
 		
 	}
 	
-	
+	/**
+	 * El metodo eliminarEjeTraccion, es un metodo que elimina los datos fisico de la base de datos eje_traccion que es el que lleva el control de los ejes
+	 * decada vehiculo que se seleccione, lo que hace, cuando se quiere modificar cada eje segun la traccion va eliminar los valores guardado para hacer
+	 * remplazado por los nuevos valores de los ejes con traccion segun se seleccione. 
+	 * **/
 	public void eliminarEjeTraccion(){
 		List<EjeTraccion> listaEjeTraccionCompleta = (List<EjeTraccion>) EjeTraccionDAO.getInstancia().buscarTodasEntidades();
 		if(!tipoEsquemaEjesMod.equals("0")){
