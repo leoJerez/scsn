@@ -1,0 +1,1 @@
+Esta aplicación será utilizada por los clientes de Cauca como una facilidad que le presta la empresa para que lleven el control del desgaste de sus neumáticos y así puedan mejorar los costos operacionales
